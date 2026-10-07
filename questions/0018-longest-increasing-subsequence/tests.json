@@ -1,0 +1,127 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {
+      "input": {
+        "nums": [
+          10,
+          9,
+          2,
+          5,
+          3,
+          7,
+          101,
+          18
+        ]
+      },
+      "output": 4,
+      "hidden": false
+    },
+    {
+      "input": {
+        "nums": [
+          0,
+          1,
+          0,
+          3,
+          2,
+          3
+        ]
+      },
+      "output": 4,
+      "hidden": false
+    },
+    {
+      "input": {
+        "nums": [
+          7,
+          7,
+          7,
+          7,
+          7
+        ]
+      },
+      "output": 1,
+      "hidden": false
+    },
+    {
+      "input": {
+        "nums": [
+          1
+        ]
+      },
+      "output": 1,
+      "hidden": true
+    },
+    {
+      "input": {
+        "nums": [
+          5,
+          4,
+          3,
+          2,
+          1
+        ]
+      },
+      "output": 1,
+      "hidden": true
+    },
+    {
+      "input": {
+        "nums": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "output": 5,
+      "hidden": true
+    },
+    {
+      "input": {
+        "nums": [
+          -3,
+          -1,
+          -2,
+          4,
+          5
+        ]
+      },
+      "output": 4,
+      "hidden": true
+    },
+    {
+      "input": {
+        "nums": [
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "output": 1,
+      "hidden": true
+    },
+    {
+      "input": {
+        "nums": []
+      },
+      "output": 0,
+      "hidden": true
+    },
+    {
+      "input": {
+        "nums": [
+          -10000,
+          -10000,
+          10000,
+          10000
+        ]
+      },
+      "output": 2,
+      "hidden": true
+    }
+  ]
+}
