@@ -11,6 +11,8 @@ use serde_json::{Value, json};
 pub enum Provider {
     Claude,
     OpenAi,
+    /// A local model through Ollama: free, nothing leaves the machine.
+    Ollama,
 }
 
 impl Provider {
@@ -18,6 +20,7 @@ impl Provider {
         match s.to_ascii_lowercase().as_str() {
             "claude" | "anthropic" => Some(Provider::Claude),
             "openai" | "gpt" => Some(Provider::OpenAi),
+            "ollama" | "local" => Some(Provider::Ollama),
             _ => None,
         }
     }
@@ -26,13 +29,20 @@ impl Provider {
         match self {
             Provider::Claude => "claude",
             Provider::OpenAi => "openai",
+            Provider::Ollama => "ollama",
         }
+    }
+
+    /// Whether drafting needs an API key (local models don't).
+    pub fn needs_key(self) -> bool {
+        self != Provider::Ollama
     }
 
     pub fn label(self) -> &'static str {
         match self {
             Provider::Claude => "Anthropic",
             Provider::OpenAi => "OpenAI",
+            Provider::Ollama => "Ollama",
         }
     }
 
@@ -40,6 +50,7 @@ impl Provider {
         match self {
             Provider::Claude => "ANTHROPIC_API_KEY",
             Provider::OpenAi => "OPENAI_API_KEY",
+            Provider::Ollama => "OLLAMA_HOST",
         }
     }
 }
@@ -71,8 +82,14 @@ pub struct Client {
     pub provider: Provider,
     pub model: String,
     key: String,
+    /// Ollama's address (unused for hosted providers).
+    base_url: String,
     http: reqwest::blocking::Client,
 }
+
+/// Context window requested from Ollama. Its default is small enough to
+/// silently cut off the system prompt and worked example.
+const OLLAMA_CONTEXT: u32 = 32_768;
 
 /// Claude models that accept the server-side refusal fallback.
 const FALLBACK_MODELS: &[&str] = &[
@@ -83,15 +100,20 @@ const FALLBACK_MODELS: &[&str] = &[
 ];
 
 impl Client {
-    pub fn new(provider: Provider, model: String, key: String) -> Result<Client> {
+    pub fn new(provider: Provider, model: String, key: String, base_url: String) -> Result<Client> {
         let http = reqwest::blocking::Client::builder()
-            // Drafting a whole question with reasoning can take minutes.
-            .timeout(Duration::from_secs(15 * 60))
+            // Drafting a whole question takes minutes, more on a local model.
+            .timeout(Duration::from_secs(if provider == Provider::Ollama {
+                45 * 60
+            } else {
+                15 * 60
+            }))
             .build()?;
         Ok(Client {
             provider,
             model,
             key,
+            base_url: base_url.trim_end_matches('/').to_string(),
             http,
         })
     }
@@ -106,7 +128,42 @@ impl Client {
         match self.provider {
             Provider::Claude => self.claude(system, messages, schema),
             Provider::OpenAi => self.openai(system, messages, schema),
+            Provider::Ollama => self.ollama(system, messages, schema),
         }
+    }
+
+    /// Ollama's native chat API: `format` takes the JSON schema directly.
+    fn ollama(&self, system: &str, messages: &[Value], schema: &Value) -> Result<Turn> {
+        let mut all = vec![json!({ "role": "system", "content": system })];
+        all.extend(messages.iter().cloned());
+        let body = json!({
+            "model": self.model,
+            "messages": all,
+            "stream": false,
+            "format": schema,
+            "options": { "num_ctx": OLLAMA_CONTEXT, "temperature": 0.2 },
+        });
+        let resp = self.send(|| self.http.post(format!("{}/api/chat", self.base_url)).json(&body))?;
+        if resp["done_reason"] == "length" {
+            bail!("the draft ran past the model's output limit; try a smaller question");
+        }
+        let text = resp["message"]["content"]
+            .as_str()
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        if text.is_empty() {
+            bail!("the model returned nothing; try again, or a different model in /config");
+        }
+        Ok(Turn {
+            assistant: json!({ "role": "assistant", "content": text }),
+            json: text,
+            usage: Usage {
+                input_tokens: resp["prompt_eval_count"].as_u64().unwrap_or(0),
+                output_tokens: resp["eval_count"].as_u64().unwrap_or(0),
+                cache_read_tokens: 0,
+            },
+        })
     }
 
     fn claude(&self, system: &str, messages: &[Value], schema: &Value) -> Result<Turn> {
@@ -226,7 +283,17 @@ impl Client {
                     delay *= 2;
                     continue;
                 }
-                Err(e) => return Err(anyhow!("could not reach {}: {e}", self.provider.label())),
+                Err(e) => {
+                    return Err(anyhow!(
+                        "could not reach {}: {e}{}",
+                        self.provider.label(),
+                        if self.provider == Provider::Ollama {
+                            "  ·  is `ollama serve` running?"
+                        } else {
+                            ""
+                        }
+                    ));
+                }
             };
             let status = resp.status();
             let retry_after = resp
@@ -239,8 +306,10 @@ impl Client {
             if status.is_success() {
                 return Ok(body);
             }
+            // Hosted APIs nest the message; Ollama returns {"error": "..."}.
             let message = body["error"]["message"]
                 .as_str()
+                .or(body["error"].as_str())
                 .unwrap_or("no details")
                 .to_string();
             let retryable =

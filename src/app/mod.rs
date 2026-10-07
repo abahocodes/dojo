@@ -63,10 +63,14 @@ pub struct Prompt {
 }
 
 /// What to do after a command that took over the terminal finishes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AfterCommand {
     Editor,
     GhInstall,
     GhLogin,
+    OllamaInstall,
+    OllamaUpdate,
+    OllamaPull,
 }
 
 /// Messages from background work.
@@ -835,7 +839,7 @@ pub fn run(initial: Option<String>) -> Result<()> {
                 ui::terminal::resume(&mut term)?;
                 match after {
                     AfterCommand::Editor => app.editor_closed(result),
-                    other => app.after_gh(other, result.unwrap_or(false)),
+                    other => app.after_setup(other, result.unwrap_or(false)),
                 }
             }
             while let Ok(msg) = app.rx.try_recv() {

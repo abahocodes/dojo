@@ -71,6 +71,9 @@ pub struct ContributeConfig {
     pub provider: String,
     pub claude_model: String,
     pub openai_model: String,
+    pub ollama_model: String,
+    /// Where Ollama listens; `OLLAMA_HOST` overrides.
+    pub ollama_url: String,
 }
 
 impl Default for ContributeConfig {
@@ -79,6 +82,8 @@ impl Default for ContributeConfig {
             provider: "claude".into(),
             claude_model: "claude-opus-5-5".into(),
             openai_model: "gpt-5".into(),
+            ollama_model: "qwen3.8:27b".into(),
+            ollama_url: "http://localhost:11434".into(),
         }
     }
 }

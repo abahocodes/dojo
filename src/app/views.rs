@@ -979,7 +979,8 @@ pub fn donate(url: &str, opened: bool) -> Entry {
 
 // ---- /contribute ------------------------------------------------------------
 
-pub fn contrib_intro(provider: &str, model: &str) -> Entry {
+pub fn contrib_intro(p: crate::contribute::llm::Provider, model: &str) -> Entry {
+    let provider = p.label();
     let t = theme();
     entry(vec![
         Para::plain("Contribute a question", t.heading()),
@@ -997,9 +998,15 @@ pub fn contrib_intro(provider: &str, model: &str) -> Entry {
             ),
         ]),
         Para::plain(
-            format!(
-                "Drafting uses {provider} ({model}) with your API key; your description is sent to {provider}."
-            ),
+            if p.needs_key() {
+                format!(
+                    "Drafting uses {provider} ({model}) with your API key; your description is sent to {provider}."
+                )
+            } else {
+                format!(
+                    "Drafting runs locally with Ollama ({model}): free, and nothing leaves your machine. A draft can take several minutes."
+                )
+            },
             t.dim(),
         ),
     ])

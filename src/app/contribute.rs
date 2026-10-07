@@ -20,10 +20,12 @@ pub enum Stage {
     },
     /// A built draft is on screen: accept or revise.
     Review,
-    /// Asking before installing `gh`.
-    ConfirmInstall {
+    /// Asking before running a setup command (install gh or Ollama, update
+    /// Ollama, download a model).
+    Confirm {
         description: String,
         command: String,
+        after: AfterCommand,
     },
     /// Opening the PR.
     Submitting {
@@ -82,12 +84,61 @@ impl App {
         match p {
             Provider::Claude => self.config.contribute.claude_model.clone(),
             Provider::OpenAi => self.config.contribute.openai_model.clone(),
+            Provider::Ollama => self.config.contribute.ollama_model.clone(),
         }
+    }
+
+    /// Checks the local model is ready: Ollama installed, its server up,
+    /// the model downloaded. Offers to fix the first thing missing (a y/n
+    /// question) and returns what to show; `None` means ready.
+    fn ollama_gate(&mut self) -> Option<Entry> {
+        use crate::contribute::ollama;
+        let base = ollama::base_url(&self.config.contribute.ollama_url);
+        let model = self.config.contribute.ollama_model.clone();
+        let logs = contrib_base(self);
+        let c = self.contrib.as_mut()?;
+        let mut confirm = |description: String, command: String, after: AfterCommand| {
+            c.stage = Stage::Confirm {
+                description,
+                command,
+                after,
+            };
+        };
+
+        if !ollama::installed() {
+            return Some(match ollama::install_plan() {
+                Some((description, command)) => {
+                    confirm(description.clone(), command, AfterCommand::OllamaInstall);
+                    views::warn(format!(
+                        "Drafting locally needs Ollama, which isn't installed.\nInstall it now {description}? (y/n)"
+                    ))
+                }
+                None => views::error(
+                    "Drafting locally needs Ollama: install it from https://ollama.com/download, then /contribute",
+                ),
+            });
+        }
+        if ollama::models(&base).is_none() && !ollama::start_server(&base, &logs) {
+            return Some(views::error(format!(
+                "couldn't start Ollama at {base}  ·  run `ollama serve` in another terminal, then try again"
+            )));
+        }
+        if !ollama::has_model(&base, &model) {
+            confirm(
+                format!("download {model}"),
+                ollama::pull_command(&model),
+                AfterCommand::OllamaPull,
+            );
+            return Some(views::warn(format!(
+                "The model {model} isn't downloaded yet (a one-time download of several GB).\nDownload it now? (y/n)"
+            )));
+        }
+        None
     }
 
     pub(super) fn cmd_contribute(&mut self, args: &[&str]) -> Option<Entry> {
         match args.first().copied() {
-            Some("claude") | Some("openai") => {
+            Some("claude") | Some("openai") | Some("ollama") => {
                 let p = Provider::parse(args[0]).unwrap_or(Provider::Claude);
                 self.config.contribute.provider = p.name().into();
                 if let Err(e) = self.config.save(&self.paths.config_file) {
@@ -101,7 +152,7 @@ impl App {
                 if let Some(c) = self.contrib.as_mut() {
                     c.provider = p;
                 }
-                if keys::get(p).is_none() {
+                if p.needs_key() && keys::get(p).is_none() {
                     return self.ask_key(p);
                 }
                 None
@@ -109,7 +160,7 @@ impl App {
             Some("key") => self.ask_key(self.provider()),
             Some("new") => self.start_contrib(true),
             Some(other) => Some(views::error(format!(
-                "unknown option `{other}`  ·  /contribute [new | key | claude | openai]"
+                "unknown option `{other}`  ·  /contribute [new | key | claude | openai | ollama]"
             ))),
             None => self.start_contrib(false),
         }
@@ -157,7 +208,7 @@ impl App {
     /// Starts a new draft, or resumes the latest unsubmitted one.
     fn start_contrib(&mut self, fresh: bool) -> Option<Entry> {
         let p = self.provider();
-        if keys::get(p).is_none() {
+        if p.needs_key() && keys::get(p).is_none() {
             return self.ask_key(p);
         }
         let base = contrib_base(self);
@@ -217,7 +268,14 @@ impl App {
                     stage: Stage::Describe,
                     job: 0,
                 });
-                Some(views::contrib_intro(p.label(), &model))
+                let intro = views::contrib_intro(p, &model);
+                if p == Provider::Ollama
+                    && let Some(setup) = self.ollama_gate()
+                {
+                    self.transcript.push(intro);
+                    return Some(setup);
+                }
+                Some(intro)
             }
         }
     }
@@ -230,19 +288,19 @@ impl App {
         };
         match &c.stage {
             Stage::Describe | Stage::Review => {}
-            Stage::ConfirmInstall { command, .. } => {
-                let command = command.clone();
+            Stage::Confirm { command, after, .. } => {
+                let (command, after) = (command.clone(), *after);
                 let yes = matches!(text.to_ascii_lowercase().as_str(), "y" | "yes");
-                c.stage = Stage::Review;
-                if yes {
-                    let command = format!(
-                        "{command}; status=$?; echo; read -r -p 'Press Enter to return to dojo... ' _; exit $status"
-                    );
-                    self.pending_command = Some((command, AfterCommand::GhInstall));
+                c.stage = if c.state.draft.is_some() {
+                    Stage::Review
                 } else {
-                    self.transcript.push(views::info(
-                        "ok, not installing gh  ·  /accept again when you're ready",
-                    ));
+                    Stage::Describe
+                };
+                if yes {
+                    self.pending_command = Some((with_pause(&command), after));
+                } else {
+                    self.transcript
+                        .push(views::info("ok, skipped  ·  run /contribute again when you're ready"));
                 }
                 return true;
             }
@@ -253,15 +311,30 @@ impl App {
             Stage::Submitted { .. } => return false,
         }
 
-        let key = match keys::get(c.provider) {
-            Some((k, _)) => k,
-            None => {
-                let p = c.provider;
-                if let Some(e) = self.ask_key(p) {
-                    self.transcript.push(e);
+        let provider = c.provider;
+        let key = if !provider.needs_key() {
+            String::new()
+        } else {
+            match keys::get(provider) {
+                Some((k, _)) => k,
+                None => {
+                    if let Some(e) = self.ask_key(provider) {
+                        self.transcript.push(e);
+                    }
+                    return true;
                 }
-                return true;
             }
+        };
+        // A local model must be installed, running and downloaded first.
+        if provider == Provider::Ollama
+            && let Some(e) = self.ollama_gate()
+        {
+            self.transcript.push(e);
+            return true;
+        }
+        let base_url = crate::contribute::ollama::base_url(&self.config.contribute.ollama_url);
+        let Some(c) = self.contrib.as_mut() else {
+            return true;
         };
         let mut messages = c.state.messages.clone();
         messages.push(match c.state.draft {
@@ -274,7 +347,7 @@ impl App {
                     .unwrap_or(&[]),
             ),
         });
-        let client = match Client::new(c.provider, c.state.model.clone(), key) {
+        let client = match Client::new(c.provider, c.state.model.clone(), key, base_url) {
             Ok(cl) => cl,
             Err(e) => {
                 self.transcript.push(views::error(format!("{e:#}")));
@@ -455,20 +528,17 @@ impl App {
         }
         let Some(gh) = github::gh() else {
             let (description, command) = github::install_plan();
-            c.stage = Stage::ConfirmInstall {
-                description: description.clone(),
+            c.stage = Stage::Confirm {
+                description: format!("install gh {description}"),
                 command,
+                after: AfterCommand::GhInstall,
             };
             return Some(views::warn(format!(
                 "Opening the PR needs the GitHub CLI (gh), which isn't installed.\nInstall it now {description}? (y/n)"
             )));
         };
         if !github::signed_in(&gh) {
-            let command = format!(
-                "{}; status=$?; echo; read -r -p 'Press Enter to return to dojo... ' _; exit $status",
-                github::login_command(&gh)
-            );
-            self.pending_command = Some((command, AfterCommand::GhLogin));
+            self.pending_command = Some((with_pause(&github::login_command(&gh)), AfterCommand::GhLogin));
             return Some(views::info("signing you in to GitHub with gh…"));
         }
 
@@ -502,8 +572,41 @@ impl App {
     }
 
     /// After the `gh` install or sign-in ran in the terminal: carry on.
-    pub(super) fn after_gh(&mut self, after: AfterCommand, ok: bool) {
+    pub(super) fn after_setup(&mut self, after: AfterCommand, ok: bool) {
         match after {
+            AfterCommand::OllamaPull
+                if !crate::contribute::ollama::has_model(
+                    &crate::contribute::ollama::base_url(&self.config.contribute.ollama_url),
+                    &self.config.contribute.ollama_model,
+                ) =>
+            {
+                // The usual reason: the model needs a newer Ollama.
+                let update = crate::contribute::ollama::update_plan();
+                match (update, self.contrib.as_mut()) {
+                    (Some((description, command)), Some(c)) => {
+                        c.stage = Stage::Confirm {
+                            description: description.clone(),
+                            command,
+                            after: AfterCommand::OllamaUpdate,
+                        };
+                        self.transcript.push(views::warn(format!(
+                            "The download didn't finish. If it said the model needs a newer Ollama,\nupdate Ollama now {description}? (y/n)"
+                        )));
+                    }
+                    _ => self.transcript.push(views::error(
+                        "the download didn't finish  ·  update Ollama (https://ollama.com/download), then try again",
+                    )),
+                }
+            }
+            AfterCommand::OllamaInstall | AfterCommand::OllamaUpdate | AfterCommand::OllamaPull => {
+                match self.ollama_gate() {
+                    Some(e) => self.transcript.push(e),
+                    None => self.transcript.push(views::ok(format!(
+                        "Ollama is ready with {}  ·  describe the question (or your change) to draft",
+                        self.config.contribute.ollama_model
+                    ))),
+                }
+            }
             AfterCommand::GhInstall if github::gh().is_none() => {
                 self.transcript.push(views::error(if ok {
                     "gh still isn't on your PATH  ·  open a new terminal, then /accept"
@@ -562,10 +665,9 @@ impl App {
                 tip("type", "a change to revise"),
                 tip("/contribute new", "start another"),
             ],
-            Stage::ConfirmInstall { description, .. } => vec![
-                tip("y", &format!("install gh {description}")),
-                tip("n", "not now"),
-            ],
+            Stage::Confirm { description, .. } => {
+                vec![tip("y", description), tip("n", "not now")]
+            }
             Stage::Submitted { url } => vec![
                 tip("", &format!("opened {url}")),
                 tip("/contribute", "add another question"),
@@ -582,4 +684,12 @@ pub fn signature(d: &Draft) -> String {
         .map(|p| format!("{}: {}", p.name, p.ty))
         .collect();
     format!("{}({}) -> {}", d.function, params.join(", "), d.returns)
+}
+
+/// Runs `command`, then waits for Enter so its output can be read before
+/// dojo takes the terminal back.
+fn with_pause(command: &str) -> String {
+    format!(
+        "{command}; status=$?; echo; read -r -p 'Press Enter to return to dojo... ' _; exit $status"
+    )
 }

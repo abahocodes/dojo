@@ -168,7 +168,7 @@ pub const COMMANDS: &[Spec] = &[
     ),
     spec(
         "contribute",
-        "[new | key | claude | openai]",
+        "[new | key | claude | openai | ollama]",
         "add a question: describe it, review the draft, open a PR",
         Group::App,
         None,

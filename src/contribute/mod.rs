@@ -6,4 +6,5 @@ pub mod draft;
 pub mod github;
 pub mod keys;
 pub mod llm;
+pub mod ollama;
 pub mod workflow;
