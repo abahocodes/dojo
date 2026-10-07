@@ -145,7 +145,8 @@ fn arguments(bank: &Bank, spec: &Spec, line: &str, args: &str) -> Vec<Item> {
             let mut values = bank.labels();
             values.extend(["easy", "medium", "hard"].map(String::from));
             if spec.name == "solve" && position == 0 {
-                values.insert(0, "random".into());
+                values.insert(0, "need".into());
+                values.insert(1, "random".into());
             }
             rank(token, &values, |v| v.clone())
                 .into_iter()
@@ -262,7 +263,14 @@ mod tests {
         assert!(!idle.contains(&"/test".to_string()));
         assert_eq!(idle[0], "/solve");
         // Removed and unbuilt commands are never suggested.
-        for gone in ["/resume", "/end", "/giveup", "/history", "/random", "/past"] {
+        for gone in [
+            "/resume",
+            "/end",
+            "/giveup",
+            "/history",
+            "/random",
+            "/contribute",
+        ] {
             assert!(!idle.contains(&gone.to_string()), "{gone} suggested");
             assert!(!all.contains(&gone.to_string()), "{gone} suggested");
         }

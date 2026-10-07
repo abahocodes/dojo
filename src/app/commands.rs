@@ -68,7 +68,7 @@ const fn spec(
 pub const COMMANDS: &[Spec] = &[
     spec(
         "solve",
-        "<id | query | random> [-n N]",
+        "<id | query | need | random> [N]",
         "start fresh on one or more questions",
         Group::Practice,
         None,
@@ -133,10 +133,10 @@ pub const COMMANDS: &[Spec] = &[
     ),
     spec(
         "past",
-        "<id>",
-        "your past attempts and code",
+        "[id] [n]",
+        "your past attempts and their code",
         Group::Browse,
-        Some("M3"),
+        None,
     ),
     spec(
         "report",
@@ -180,6 +180,7 @@ pub const COMMANDS: &[Spec] = &[
         Group::App,
         None,
     ),
+    spec("donate", "", "support dojo's development", Group::App, None),
     spec("clear", "", "clear the screen", Group::App, None),
     spec("help", "[command]", "list commands", Group::App, None),
     Spec {

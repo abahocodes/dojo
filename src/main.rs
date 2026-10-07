@@ -2,6 +2,7 @@ mod app;
 mod config;
 mod lang;
 mod model;
+mod project;
 mod questions;
 mod runner;
 mod scaffold;

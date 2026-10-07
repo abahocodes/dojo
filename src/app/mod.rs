@@ -437,6 +437,73 @@ impl App {
         self.execute(line);
     }
 
+    /// `/past [question] [n]`: past attempts and their code. Without a
+    /// question, the one being worked on.
+    fn cmd_past(&self, args: &[&str]) -> Option<Entry> {
+        let (q_args, n) = match args {
+            [.., last] if args.len() > 1 && last.parse::<usize>().is_ok() => {
+                (&args[..args.len() - 1], last.parse::<usize>().ok())
+            }
+            _ => (args, None),
+        };
+        let q = if q_args.is_empty() {
+            match self
+                .session
+                .as_ref()
+                .and_then(|s| s.queue.get(s.index))
+                .and_then(|id| self.bank.get(*id))
+            {
+                Some(q) => q,
+                None => return Some(views::error("which question?  ·  /past 11")),
+            }
+        } else {
+            match self.resolve(q_args) {
+                Ok(q) => q,
+                Err(e) => return Some(e),
+            }
+        };
+        let attempts = match self.store.past_attempts(q.meta.id) {
+            Ok(a) => a,
+            Err(e) => return Some(views::error(format!("could not read attempts: {e:#}"))),
+        };
+        if attempts.is_empty() {
+            return Some(views::info(format!(
+                "no attempts on #{} yet  ·  /solve {} to try it",
+                q.meta.id, q.meta.id
+            )));
+        }
+        // Default to the most recent attempt that has code.
+        let shown = match n {
+            Some(n) if (1..=attempts.len()).contains(&n) => n,
+            Some(n) => {
+                return Some(views::error(format!(
+                    "#{} has {} attempt{}, not {n}",
+                    q.meta.id,
+                    attempts.len(),
+                    if attempts.len() == 1 { "" } else { "s" }
+                )));
+            }
+            None => attempts
+                .iter()
+                .rposition(|a| a.code.as_deref().is_some_and(|c| !c.trim().is_empty()))
+                .map_or(attempts.len(), |i| i + 1),
+        };
+        Some(views::past(q, &attempts, shown))
+    }
+
+    /// `/donate`: opens the project's donation page.
+    fn cmd_donate(&self) -> Entry {
+        match crate::project::DONATE_URL {
+            Some(url) => {
+                let opened = crate::project::open_url(url).is_ok();
+                views::donate(url, opened)
+            }
+            None => views::info(
+                "Thanks for wanting to support dojo! Donations aren't set up yet.\nContributing questions and reporting bugs help a lot in the meantime.",
+            ),
+        }
+    }
+
     /// Opens the report, optionally on one tag, company or difficulty.
     fn cmd_report(&mut self, args: &[&str]) -> Option<Entry> {
         let filter = args.first().map(|a| a.to_ascii_lowercase());
@@ -529,6 +596,8 @@ impl App {
             "lang" => self.cmd_lang(&args),
             "config" => Some(views::config(&self.config, &self.paths)),
             "report" => self.cmd_report(&args),
+            "past" => self.cmd_past(&args),
+            "donate" => Some(self.cmd_donate()),
             "copy" => self.cmd_copy(),
             "clear" => {
                 self.transcript.clear();

@@ -1,0 +1,98 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT language, started_at, active_secs, outcome, test_runs, hints_used, code\n                 FROM attempts\n                 WHERE question_id = ?\n                 ORDER BY id",
+  "describe": {
+    "columns": [
+      {
+        "name": "language",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "language"
+          }
+        }
+      },
+      {
+        "name": "started_at",
+        "ordinal": 1,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "started_at"
+          }
+        }
+      },
+      {
+        "name": "active_secs",
+        "ordinal": 2,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "active_secs"
+          }
+        }
+      },
+      {
+        "name": "outcome",
+        "ordinal": 3,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "outcome"
+          }
+        }
+      },
+      {
+        "name": "test_runs",
+        "ordinal": 4,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "test_runs"
+          }
+        }
+      },
+      {
+        "name": "hints_used",
+        "ordinal": 5,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "hints_used"
+          }
+        }
+      },
+      {
+        "name": "code",
+        "ordinal": 6,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "code"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "9d8732019ca0d6b08c1a2d85fa8963064a26f9c809f07ea5e495c89a91421976"
+}

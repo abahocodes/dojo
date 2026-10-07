@@ -36,7 +36,12 @@ pub fn input(line: &str) -> Entry {
 }
 
 pub fn info(msg: impl Into<String>) -> Entry {
-    entry(vec![Para::plain(msg, theme().dim())])
+    let msg = msg.into();
+    entry(
+        msg.lines()
+            .map(|l| Para::plain(l.to_string(), theme().dim()))
+            .collect(),
+    )
 }
 
 pub fn ok(msg: impl Into<String>) -> Entry {
@@ -852,4 +857,122 @@ pub fn summary_text(bank: &Bank, done: &[Done]) -> String {
         );
     }
     out.trim_end().to_string()
+}
+
+/// Why `/solve need` picked each question.
+pub fn need_picks(picks: &[crate::model::Suggestion]) -> Entry {
+    let t = theme();
+    let mut paras = vec![Para::plain(
+        "Picked for where you need practice",
+        t.heading(),
+    )];
+    for (i, p) in picks.iter().enumerate() {
+        paras.push(
+            Para::new(vec![
+                Span::styled(format!("{}. ", i + 1), t.dim()),
+                Span::styled(fit(&format!("#{}", p.question_id), 5), t.accent()),
+                Span::styled(fit(&p.title, 34), t.bold()),
+                Span::styled(p.reason.clone(), t.dim()),
+            ])
+            .indent(2),
+        );
+    }
+    entry(paras)
+}
+
+/// `/past`: every attempt on a question, and the code of one of them.
+pub fn past(q: &Question, attempts: &[crate::store::PastAttempt], shown: usize) -> Entry {
+    let t = theme();
+    let mut paras = vec![Para::new(vec![
+        Span::styled("Your attempts", t.heading()),
+        Span::styled(format!("  ·  #{} {}", q.meta.id, q.meta.title), t.dim()),
+    ])];
+    for (i, a) in attempts.iter().enumerate() {
+        let n = i + 1;
+        let (icon, style) = match a.outcome.as_deref() {
+            Some("pass") => ("✓", t.ok()),
+            Some("revealed") => ("✓", t.warn()),
+            Some("fail") => ("✗", t.err()),
+            Some("skip") => ("↷", t.dim()),
+            _ => ("⏸", t.warn()),
+        };
+        let when = a
+            .started_at
+            .parse::<jiff::Timestamp>()
+            .map(|ts| {
+                ts.to_zoned(jiff::tz::TimeZone::system())
+                    .strftime("%b %-d, %H:%M")
+                    .to_string()
+            })
+            .unwrap_or_default();
+        let marker = if n == shown { "▸" } else { " " };
+        paras.push(
+            Para::new(vec![
+                Span::styled(format!("{marker} {n:>2}  "), t.accent()),
+                Span::styled(fit(&when, 15), t.dim()),
+                Span::raw(fit(&a.language, 11)),
+                Span::styled(format!("{icon} "), style),
+                Span::styled(fit(a.outcome.as_deref().unwrap_or("unfinished"), 11), style),
+                Span::raw(crate::session::clock(std::time::Duration::from_secs(
+                    a.active_secs.max(0) as u64,
+                ))),
+                Span::styled(
+                    format!(
+                        "  {} run{} · {} hint{}",
+                        a.test_runs,
+                        if a.test_runs == 1 { "" } else { "s" },
+                        a.hints_used,
+                        if a.hints_used == 1 { "" } else { "s" }
+                    ),
+                    t.dim(),
+                ),
+            ])
+            .indent(1),
+        );
+    }
+
+    let a = &attempts[shown - 1];
+    paras.push(Para::blank());
+    paras.push(Para::new(vec![
+        Span::styled(format!("Attempt {shown}"), t.bold()),
+        Span::styled(
+            format!(
+                "  ·  {}  ·  {}",
+                a.language,
+                a.outcome.as_deref().unwrap_or("unfinished")
+            ),
+            t.dim(),
+        ),
+    ]));
+    match a.code.as_deref().filter(|c| !c.trim().is_empty()) {
+        Some(code) => paras.extend(markdown::render(&format!("```\n{}\n```", code.trim_end()))),
+        None => paras.push(Para::plain("no code was saved for this attempt", t.dim()).indent(2)),
+    }
+    if attempts.len() > 1 {
+        paras.push(Para::new(vec![
+            Span::styled(format!("/past {} <n>", q.meta.id), t.accent()),
+            Span::styled(" to see another attempt", t.dim()),
+        ]));
+    }
+    entry(paras)
+}
+
+pub fn donate(url: &str, opened: bool) -> Entry {
+    let t = theme();
+    entry(vec![
+        Para::plain("Thank you for supporting dojo", t.heading()),
+        Para::plain(
+            "dojo is free and open source. Donations keep it maintained and the question bank growing.",
+            t.text(),
+        ),
+        Para::blank(),
+        Para::new(vec![
+            Span::styled(if opened { "opened  " } else { "visit  " }, t.dim()),
+            Span::styled(
+                url.to_string(),
+                t.accent()
+                    .add_modifier(ratatui::style::Modifier::UNDERLINED),
+            ),
+        ]),
+    ])
 }

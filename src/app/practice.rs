@@ -84,18 +84,49 @@ impl App {
             ));
         }
 
+        // `random` and `need` take an optional count: `/solve need 3`.
+        let count = |keyword: &str| match (words.get(1), n) {
+            (Some(w), _) => match w.parse::<usize>() {
+                Ok(v) if v > 0 => Ok(v),
+                _ => Err(views::error(format!("usage: /solve {keyword} [N]"))),
+            },
+            (None, Some(v)) => Ok(v),
+            (None, None) => Ok(1),
+        };
         let (queue, mode, query): (Vec<u32>, &str, Option<String>) = if words[0] == "need" {
-            return Some(views::warn(
-                "/solve need picks questions where your gaps are  ·  it arrives with /report in M4",
-            ));
+            let count = match count("need") {
+                Ok(c) => c,
+                Err(e) => return Some(e),
+            };
+            let report = match super::build_report(&self.store, &self.bank) {
+                Ok(r) => r,
+                Err(e) => return Some(views::error(format!("could not read your history: {e:#}"))),
+            };
+            let picks: Vec<crate::model::Suggestion> = crate::model::suggest(
+                &report.questions,
+                &report.topics,
+                jiff::Timestamp::now(),
+                usize::MAX,
+            )
+            .into_iter()
+            .filter(|s| {
+                self.bank
+                    .get(s.question_id)
+                    .is_some_and(|q| q.supports(lang))
+            })
+            .take(count)
+            .collect();
+            if picks.is_empty() {
+                return Some(views::info(
+                    "nothing to suggest yet  ·  /solve random to start",
+                ));
+            }
+            self.transcript.push(views::need_picks(&picks));
+            (picks.iter().map(|p| p.question_id).collect(), "need", None)
         } else if words[0] == "random" {
-            let count = match (words.get(1), n) {
-                (Some(w), _) => match w.parse::<usize>() {
-                    Ok(v) if v > 0 => v,
-                    _ => return Some(views::error("usage: /solve random [N]")),
-                },
-                (None, Some(v)) => v,
-                (None, None) => 1,
+            let count = match count("random") {
+                Ok(c) => c,
+                Err(e) => return Some(e),
             };
             let pool: Vec<u32> = self
                 .bank

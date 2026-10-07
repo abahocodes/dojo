@@ -1,7 +1,7 @@
 # dojo — plan
 
 A fullscreen terminal app for coding-interview practice. Run `dojo`, type slash
-commands (`/solve 42`, `/need 3`, `/report`). Solve in your own editor; dojo runs
+commands (`/solve 42`, `/solve need 3`, `/report`). Solve in your own editor; dojo runs
 the tests, keeps time, tracks every attempt and models where you're strong and
 where you have gaps.
 
@@ -64,12 +64,12 @@ Commands (a deliberately tight set; the prompt always suggests the next one):
 
 | Area | Commands |
 |---|---|
-| Practice | `/solve <id \| query \| random> [-n N]` (always fresh; `/solve need` in M4) |
+| Practice | `/solve <id \| query \| need \| random> [N]` (always fresh) |
 | On a question | `/test`, `/submit`, `/hint`, `/solution`, `/edit`, `/pause`, `/skip`, `/next` |
-| Browse | `/list`, `/show`, `/past` (M3) |
-| Insight | `/report` (M4, includes history) |
+| Browse | `/list`, `/show`, `/past [id] [n]` |
+| Insight | `/report [tag \| company \| difficulty]` (includes history) |
 | Settings | `/editor`, `/lang`, `/config` |
-| App | `/copy`, `/clear`, `/help`, `/quit` (`/exit`, `/q`), `/contribute` (M6) |
+| App | `/copy`, `/clear`, `/donate`, `/help`, `/quit` (`/exit`, `/q`), `/contribute` (M6) |
 
 A **session** is the period the dojo window is open: it starts with the first
 question and ends when dojo closes. `/solve` always starts fresh. `/edit` is
@@ -112,8 +112,8 @@ competence model can change without migrations.
   same over all its questions, untried counting as 0.
 - Suggestions: gap topics (< 60%) first, then due reviews (solved, not
   cleanly, a week+ ago), then never-practiced topics.
-- `/need` score: due review + tag weakness + unseen-in-weak-tag − recently seen,
-  ramping difficulty with mastery.
+- `/solve need` order: gap topics, due reviews, unpracticed topics, then
+  unsolved questions (easiest first), then the weakest solved ones.
 
 ## Contribute
 
@@ -130,8 +130,8 @@ ships in the next release.
 | M0 | Cargo project, question schema, `dojo validate`, seed questions, Python adapter | done (17 questions) |
 | M1 | Fullscreen shell: layout, transcript, input + autocomplete, status bar, markdown, `/help` `/list` `/show` | done |
 | M2 | Session core: `/solve <id>`, editor launch/suspend, timer, `/test` `/submit` `/hint` `/solution` `/skip`, SQLite recording | done (also multi-question queues, `/next`, `/giveup`, `/pause`, save-triggered tests) |
-| M3 | end-of-session review, `/past`, idle detection | `/solve random` done |
-| M4 | Grading, mastery, tabbed `/report`, `dojo report --json`; `/solve need` | report done; `/solve need` next |
+| M3 | end-of-session review, idle detection | `/solve random`, `/past` done |
+| M4 | Grading, mastery, tabbed `/report`, `dojo report --json`, `/solve need` | done |
 | M5 | More languages (Go, TypeScript, Rust, Java, C++) | Python + JavaScript done |
 | M6 | `/contribute` + repo CI | |
 | M7 | cargo-dist releases, Homebrew tap | |

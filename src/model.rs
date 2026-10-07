@@ -205,7 +205,7 @@ pub fn build(bank: &Bank, attempts: &[Attempt], now: Timestamp, tz: &TimeZone) -
 
     let topics = label_stats(&questions, |q| &q.tags, false);
     let companies = label_stats(&questions, |q| &q.companies, true);
-    let suggestions = suggest(&questions, &topics, now);
+    let suggestions = suggest(&questions, &topics, now, 3);
 
     Report {
         generated_at: now,
@@ -416,10 +416,11 @@ pub fn suggest(
     questions: &[QuestionStat],
     topics: &[LabelStat],
     now: Timestamp,
+    limit: usize,
 ) -> Vec<Suggestion> {
     let mut out: Vec<Suggestion> = Vec::new();
     let push = |q: &QuestionStat, reason: String, out: &mut Vec<Suggestion>| {
-        if out.len() < 3 && !out.iter().any(|s| s.question_id == q.id) {
+        if out.len() < limit && !out.iter().any(|s| s.question_id == q.id) {
             out.push(Suggestion {
                 question_id: q.id,
                 title: q.title.clone(),
@@ -464,6 +465,27 @@ pub fn suggest(
         if let Some(q) = in_topic(questions, &t.label).min_by_key(|q| q.difficulty) {
             push(q, format!("{} not practiced yet", t.label), &mut out);
         }
+    }
+    // 4. Still short (asked for many): unsolved questions, easiest first,
+    //    then the weakest solved ones.
+    let mut rest: Vec<&QuestionStat> = questions.iter().filter(|q| !q.solved).collect();
+    rest.sort_by_key(|q| (q.difficulty, q.id));
+    for q in rest {
+        let reason = if q.attempts == 0 {
+            "not tried yet"
+        } else {
+            "not solved yet"
+        };
+        push(q, reason.into(), &mut out);
+    }
+    let mut weakest: Vec<&QuestionStat> = questions.iter().filter(|q| q.solved).collect();
+    weakest.sort_by(|a, b| a.score.unwrap_or(0.0).total_cmp(&b.score.unwrap_or(0.0)));
+    for q in weakest {
+        push(
+            q,
+            format!("weakest solved ({:.0}%)", q.score.unwrap_or(0.0) * 100.0),
+            &mut out,
+        );
     }
     out
 }
@@ -527,6 +549,12 @@ mod tests {
         assert_eq!(r.activity.len(), ACTIVITY_DAYS as usize);
         assert_eq!(r.activity.last().unwrap().1, 2);
         assert_eq!(r.sessions.len(), 1);
+        // Asking for more than the gaps fills up with untried questions.
+        let many = suggest(&r.questions, &r.topics, now, 10);
+        assert_eq!(many.len(), 10);
+        assert_eq!(many[0].question_id, r.suggestions[0].question_id);
+        let all = suggest(&r.questions, &r.topics, now, 99);
+        assert_eq!(all.len(), bank.all().len());
     }
 
     #[test]

@@ -72,6 +72,18 @@ pub struct AttemptRecord {
     pub hints_used: i64,
 }
 
+/// One past attempt on a question, with its code.
+#[derive(Debug, Clone)]
+pub struct PastAttempt {
+    pub language: String,
+    pub started_at: String,
+    pub active_secs: i64,
+    pub outcome: Option<String>,
+    pub test_runs: i64,
+    pub hints_used: i64,
+    pub code: Option<String>,
+}
+
 struct Id {
     id: i64,
 }
@@ -274,6 +286,22 @@ impl Store {
         )?)
     }
 
+    /// Every attempt on one question, oldest first.
+    pub fn past_attempts(&self, question_id: u32) -> Result<Vec<PastAttempt>> {
+        let question_id = question_id as i64;
+        Ok(self.rt.block_on(
+            sqlx::query_as!(
+                PastAttempt,
+                "SELECT language, started_at, active_secs, outcome, test_runs, hints_used, code
+                 FROM attempts
+                 WHERE question_id = ?
+                 ORDER BY id",
+                question_id
+            )
+            .fetch_all(&self.pool),
+        )?)
+    }
+
     /// Every attempt, oldest first.
     pub fn attempts(&self) -> Result<Vec<AttemptRecord>> {
         Ok(self.rt.block_on(
@@ -369,6 +397,9 @@ mod tests {
         assert!(store.open_attempt(1, "javascript").unwrap().is_none());
         assert_eq!(store.open_attempts().unwrap().len(), 1);
         assert_eq!(store.attempts().unwrap().len(), 3);
+        let past = store.past_attempts(1).unwrap();
+        assert_eq!(past.len(), 3);
+        assert_eq!(past[0].code.as_deref(), Some("def f(): pass"));
 
         let stats = store.question_stats(1).unwrap();
         assert_eq!(stats.attempts, 2);
