@@ -22,9 +22,34 @@ use crate::runner::{Language, RunReport, Which};
 use crate::session::{Done, Outcome, Session};
 use crate::store::Store;
 use crate::ui;
+use crate::ui::report::{ReportView, Tab};
+
+/// Builds the report from everything recorded so far.
+pub fn build_report(store: &Store, bank: &Bank) -> Result<crate::model::Report> {
+    let attempts: Vec<crate::model::Attempt> = store
+        .attempts()?
+        .iter()
+        .filter_map(crate::model::Attempt::from_record)
+        .collect();
+    Ok(crate::model::build(
+        bank,
+        &attempts,
+        jiff::Timestamp::now(),
+        &jiff::tz::TimeZone::system(),
+    ))
+}
+
+/// `dojo report --json`: the report as JSON on stdout.
+pub fn report_json() -> Result<String> {
+    let paths = Paths::detect()?;
+    let store = Store::open(&paths.db)?;
+    let report = build_report(&store, &Bank::embedded())?;
+    Ok(serde_json::to_string_pretty(&report)?)
+}
 
 pub use complete::{Item, MAX_ITEMS};
 pub use transcript::{Entry, Transcript};
+pub use views::ago as views_ago;
 
 const HISTORY_LIMIT: usize = 500;
 
@@ -78,6 +103,8 @@ pub struct App {
     last_autosave: Instant,
     /// Unfinished attempts, most recent first (refreshed when sessions end).
     pub unfinished: Vec<crate::store::OpenAttempt>,
+    /// The fullscreen report, while open.
+    pub report: Option<ReportView>,
     /// Results of the last session, printed to the terminal on exit.
     last_summary: Option<Vec<Done>>,
     quit: bool,
@@ -116,6 +143,7 @@ impl App {
             rx,
             pending_editor: None,
             last_autosave: Instant::now(),
+            report: None,
             unfinished,
             last_summary: None,
             quit: false,
@@ -255,6 +283,10 @@ impl App {
 
     fn on_key(&mut self, key: KeyEvent) {
         if key.kind == KeyEventKind::Release {
+            return;
+        }
+        if self.report.is_some() {
+            self.on_report_key(key);
             return;
         }
         let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
@@ -405,6 +437,50 @@ impl App {
         self.execute(line);
     }
 
+    /// Opens the report, optionally on one tag, company or difficulty.
+    fn cmd_report(&mut self, args: &[&str]) -> Option<Entry> {
+        let filter = args.first().map(|a| a.to_ascii_lowercase());
+        if let Some(f) = &filter
+            && !self.bank.labels().contains(f)
+            && !["easy", "medium", "hard"].contains(&f.as_str())
+        {
+            return Some(views::error(format!(
+                "no tag, company or difficulty `{f}`  ·  /list shows them"
+            )));
+        }
+        match build_report(&self.store, &self.bank) {
+            Ok(report) => {
+                self.report = Some(ReportView::new(report, filter));
+                None
+            }
+            Err(e) => Some(views::error(format!("could not build the report: {e:#}"))),
+        }
+    }
+
+    fn on_report_key(&mut self, key: KeyEvent) {
+        let Some(view) = self.report.as_mut() else {
+            return;
+        };
+        let page = self.body_height.saturating_sub(2).max(1);
+        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+        match key.code {
+            KeyCode::Esc | KeyCode::Char('q') => self.report = None,
+            KeyCode::Char('c') | KeyCode::Char('d') if ctrl => self.report = None,
+            KeyCode::Right | KeyCode::Tab | KeyCode::Char('l') => view.set_tab(view.tab.step(1)),
+            KeyCode::Left | KeyCode::BackTab | KeyCode::Char('h') => {
+                view.set_tab(view.tab.step(-1))
+            }
+            KeyCode::Char(c @ '1'..='5') => view.set_tab(Tab::ALL[c as usize - '1' as usize]),
+            KeyCode::Down | KeyCode::Char('j') => view.scroll += 1,
+            KeyCode::Up | KeyCode::Char('k') => view.scroll = view.scroll.saturating_sub(1),
+            KeyCode::PageDown | KeyCode::Char(' ') => view.scroll += page,
+            KeyCode::PageUp => view.scroll = view.scroll.saturating_sub(page),
+            KeyCode::Home | KeyCode::Char('g') => view.scroll = 0,
+            KeyCode::End | KeyCode::Char('G') => view.scroll = usize::MAX,
+            _ => {}
+        }
+    }
+
     fn on_paste(&mut self, text: &str) {
         let flat = text.replace(['\r', '\n'], " ");
         self.input.insert(&flat);
@@ -452,6 +528,7 @@ impl App {
             "editor" => self.cmd_editor(&args),
             "lang" => self.cmd_lang(&args),
             "config" => Some(views::config(&self.config, &self.paths)),
+            "report" => self.cmd_report(&args),
             "copy" => self.cmd_copy(),
             "clear" => {
                 self.transcript.clear();
@@ -670,9 +747,15 @@ pub fn run(initial: Option<String>) -> Result<()> {
                 match event::read()? {
                     Event::Key(key) => app.on_key(key),
                     Event::Paste(text) => app.on_paste(&text),
-                    Event::Mouse(m) => match m.kind {
-                        MouseEventKind::ScrollUp => app.transcript.scroll_by(3, app.max_scroll()),
-                        MouseEventKind::ScrollDown => {
+                    Event::Mouse(m) => match (m.kind, app.report.as_mut()) {
+                        (MouseEventKind::ScrollUp, Some(view)) => {
+                            view.scroll = view.scroll.saturating_sub(3)
+                        }
+                        (MouseEventKind::ScrollDown, Some(view)) => view.scroll += 3,
+                        (MouseEventKind::ScrollUp, None) => {
+                            app.transcript.scroll_by(3, app.max_scroll())
+                        }
+                        (MouseEventKind::ScrollDown, None) => {
                             app.transcript.scroll_by(-3, app.max_scroll())
                         }
                         _ => {}

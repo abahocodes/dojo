@@ -7,7 +7,7 @@ edition = "2024"
 anyhow = "1.0.104"
 clap = { version = "4.6.7", features = ["derive"] }
 directories = "6.0.0"
-jiff = "0.2.38"
+jiff = { version = "0.2.38", features = ["serde"] }
 nucleo-matcher = "0.3.1"
 pulldown-cmark = "0.13.4"
 ratatui = "0.30.2"

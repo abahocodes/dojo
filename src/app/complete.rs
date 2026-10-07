@@ -262,9 +262,7 @@ mod tests {
         assert!(!idle.contains(&"/test".to_string()));
         assert_eq!(idle[0], "/solve");
         // Removed and unbuilt commands are never suggested.
-        for gone in [
-            "/resume", "/end", "/giveup", "/history", "/random", "/report",
-        ] {
+        for gone in ["/resume", "/end", "/giveup", "/history", "/random", "/past"] {
             assert!(!idle.contains(&gone.to_string()), "{gone} suggested");
             assert!(!all.contains(&gone.to_string()), "{gone} suggested");
         }

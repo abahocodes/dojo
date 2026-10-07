@@ -1,6 +1,7 @@
 mod app;
 mod config;
 mod lang;
+mod model;
 mod questions;
 mod runner;
 mod scaffold;
@@ -56,6 +57,14 @@ enum Cmd {
     Solve {
         #[arg(required = true, allow_hyphen_values = true)]
         args: Vec<String>,
+    },
+    /// Open the report, or print it as JSON with --json.
+    Report {
+        /// Print the report as JSON instead of opening dojo.
+        #[arg(long)]
+        json: bool,
+        /// Focus on one tag, company or difficulty.
+        label: Option<String>,
     },
     /// Open dojo and show a problem.
     Show {
@@ -121,6 +130,18 @@ fn run() -> Result<ExitCode> {
         }
         Some(Cmd::Solve { args }) => {
             app::run(Some(format!("/solve {}", args.join(" "))))?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Cmd::Report { json: true, .. }) => {
+            println!("{}", app::report_json()?);
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Cmd::Report { json: false, label }) => {
+            let line = match label {
+                Some(l) => format!("/report {l}"),
+                None => "/report".into(),
+            };
+            app::run(Some(line))?;
             Ok(ExitCode::SUCCESS)
         }
         Some(Cmd::Show { question }) => {

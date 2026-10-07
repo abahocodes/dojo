@@ -3,6 +3,7 @@
 
 pub mod clipboard;
 pub mod markdown;
+pub mod report;
 pub mod terminal;
 pub mod text;
 pub mod theme;
@@ -33,6 +34,15 @@ pub fn draw(f: &mut Frame, app: &mut App) {
     .areas(f.area());
 
     draw_header(f, app, header);
+    if app.report.is_some() {
+        let area = Rect {
+            height: body.height + input.height,
+            ..body
+        };
+        draw_report(f, app, area);
+        draw_report_status(f, status);
+        return;
+    }
     draw_transcript(f, app, body);
     draw_input(f, app, input);
     draw_status(f, app, status);
@@ -101,6 +111,70 @@ fn draw_transcript(f: &mut Frame, app: &mut App, area: Rect) {
         f.render_widget(Clear, r);
         f.render_widget(Paragraph::new(Span::styled(label, t.selected())), r);
     }
+}
+
+fn draw_report(f: &mut Frame, app: &mut App, area: Rect) {
+    let t = theme();
+    let Some(view) = app.report.as_mut() else {
+        return;
+    };
+    let [bar, _, body] = Layout::vertical([
+        Constraint::Length(1),
+        Constraint::Length(1),
+        Constraint::Fill(1),
+    ])
+    .areas(area);
+    f.render_widget(
+        Paragraph::new(report::tab_bar(view)),
+        bar.inner(Margin::new(1, 0)),
+    );
+
+    let text = body.inner(Margin::new(1, 0));
+    let text = Rect {
+        width: text.width.saturating_sub(1),
+        ..text
+    };
+    let height = text.height as usize;
+    let total = view.lines(text.width as usize).len();
+    let max = total.saturating_sub(height);
+    view.scroll = view.scroll.min(max);
+    let start = view.scroll;
+    let visible = view.lines(text.width as usize)[start..(start + height).min(total)].to_vec();
+    f.render_widget(Paragraph::new(visible), text);
+    app.body_height = height;
+    if max > 0 {
+        let mut state = ScrollbarState::new(max).position(start);
+        f.render_stateful_widget(
+            Scrollbar::new(ScrollbarOrientation::VerticalRight)
+                .begin_symbol(None)
+                .end_symbol(None)
+                .track_symbol(Some("│"))
+                .thumb_symbol("┃")
+                .track_style(t.border())
+                .thumb_style(t.dim()),
+            body,
+            &mut state,
+        );
+    }
+}
+
+fn draw_report_status(f: &mut Frame, area: Rect) {
+    let t = theme();
+    let keys = [
+        ("←/→", "tabs"),
+        ("1-5", "jump"),
+        ("↑/↓ PgUp/PgDn", "scroll"),
+        ("Esc", "close"),
+    ];
+    let mut spans = vec![Span::raw(" ")];
+    for (i, (k, what)) in keys.iter().enumerate() {
+        if i > 0 {
+            spans.push(Span::styled("  ·  ", t.border()));
+        }
+        spans.push(Span::styled(*k, t.accent()));
+        spans.push(Span::styled(format!(" {what}"), t.dim()));
+    }
+    f.render_widget(Paragraph::new(Line::from(spans)), area);
 }
 
 fn draw_input(f: &mut Frame, app: &App, area: Rect) {

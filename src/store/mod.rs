@@ -60,6 +60,18 @@ pub struct OpenAttempt {
     pub code: Option<String>,
 }
 
+/// Every attempt, for the report.
+#[derive(Debug, Clone)]
+pub struct AttemptRecord {
+    pub session_id: i64,
+    pub question_id: i64,
+    pub started_at: String,
+    pub active_secs: i64,
+    pub outcome: Option<String>,
+    pub failed_runs: i64,
+    pub hints_used: i64,
+}
+
 struct Id {
     id: i64,
 }
@@ -262,6 +274,20 @@ impl Store {
         )?)
     }
 
+    /// Every attempt, oldest first.
+    pub fn attempts(&self) -> Result<Vec<AttemptRecord>> {
+        Ok(self.rt.block_on(
+            sqlx::query_as!(
+                AttemptRecord,
+                "SELECT session_id, question_id, started_at, active_secs, outcome,
+                        failed_runs, hints_used
+                 FROM attempts
+                 ORDER BY id"
+            )
+            .fetch_all(&self.pool),
+        )?)
+    }
+
     pub fn question_stats(&self, question_id: u32) -> Result<QuestionStats> {
         let question_id = question_id as i64;
         Ok(self.rt.block_on(
@@ -342,6 +368,7 @@ mod tests {
         );
         assert!(store.open_attempt(1, "javascript").unwrap().is_none());
         assert_eq!(store.open_attempts().unwrap().len(), 1);
+        assert_eq!(store.attempts().unwrap().len(), 3);
 
         let stats = store.question_stats(1).unwrap();
         assert_eq!(stats.attempts, 2);

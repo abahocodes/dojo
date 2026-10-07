@@ -100,11 +100,18 @@ competence model can change without migrations.
 
 ## Competence model
 
-- Attempt grade 0–1: pass base, minus failed runs, hint depth, time over target.
-  Revealed ≈ 0.1, skip/fail = 0.
-- FSRS-style scheduling per question → due reviews.
-- Tag mastery: recency-decayed, difficulty-weighted grade average with a
-  confidence measure by attempt count.
+(`src/model.rs`, pure and unit-tested; computed on demand from attempts.)
+
+- Attempt grade 0–1: a pass starts at 1, minus 0.08 per failed run (max 4),
+  up to 0.4 for hints used, up to 0.25 for time over target; floor 0.35.
+  Revealed = 0.15, fail/skip = 0.
+- Question score: recency-weighted grade average (half-life 30 days; a skip
+  without tests weighs half).
+- Topic mastery: difficulty-weighted mean over attempted questions, with
+  confidence from the number of distinct questions tried. Company readiness:
+  same over all its questions, untried counting as 0.
+- Suggestions: gap topics (< 60%) first, then due reviews (solved, not
+  cleanly, a week+ ago), then never-practiced topics.
 - `/need` score: due review + tag weakness + unseen-in-weak-tag − recently seen,
   ramping difficulty with mastery.
 
@@ -124,7 +131,7 @@ ships in the next release.
 | M1 | Fullscreen shell: layout, transcript, input + autocomplete, status bar, markdown, `/help` `/list` `/show` | done |
 | M2 | Session core: `/solve <id>`, editor launch/suspend, timer, `/test` `/submit` `/hint` `/solution` `/skip`, SQLite recording | done (also multi-question queues, `/next`, `/giveup`, `/pause`, save-triggered tests) |
 | M3 | end-of-session review, `/past`, idle detection | `/solve random` done |
-| M4 | Grading, FSRS, mastery, `/need`, tabbed `/report` | |
+| M4 | Grading, mastery, tabbed `/report`, `dojo report --json`; `/solve need` | report done; `/solve need` next |
 | M5 | More languages (Go, TypeScript, Rust, Java, C++) | Python + JavaScript done |
 | M6 | `/contribute` + repo CI | |
 | M7 | cargo-dist releases, Homebrew tap | |

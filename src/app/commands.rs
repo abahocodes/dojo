@@ -141,9 +141,9 @@ pub const COMMANDS: &[Spec] = &[
     spec(
         "report",
         "[tag | company]",
-        "mastery, gaps and history",
+        "mastery, gaps, history and what to practice next",
         Group::Insight,
-        Some("M4"),
+        None,
     ),
     spec(
         "editor",

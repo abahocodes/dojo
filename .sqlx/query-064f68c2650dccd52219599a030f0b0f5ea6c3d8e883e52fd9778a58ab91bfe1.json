@@ -1,0 +1,98 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT session_id, question_id, started_at, active_secs, outcome,\n                        failed_runs, hints_used\n                 FROM attempts\n                 ORDER BY id",
+  "describe": {
+    "columns": [
+      {
+        "name": "session_id",
+        "ordinal": 0,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "session_id"
+          }
+        }
+      },
+      {
+        "name": "question_id",
+        "ordinal": 1,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "question_id"
+          }
+        }
+      },
+      {
+        "name": "started_at",
+        "ordinal": 2,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "started_at"
+          }
+        }
+      },
+      {
+        "name": "active_secs",
+        "ordinal": 3,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "active_secs"
+          }
+        }
+      },
+      {
+        "name": "outcome",
+        "ordinal": 4,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "outcome"
+          }
+        }
+      },
+      {
+        "name": "failed_runs",
+        "ordinal": 5,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "failed_runs"
+          }
+        }
+      },
+      {
+        "name": "hints_used",
+        "ordinal": 6,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "hints_used"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "064f68c2650dccd52219599a030f0b0f5ea6c3d8e883e52fd9778a58ab91bfe1"
+}
