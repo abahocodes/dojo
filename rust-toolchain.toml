@@ -1,0 +1,4 @@
+# One Rust for everyone (local and CI), so lints can't drift between them.
+[toolchain]
+channel = "1.94.0"
+components = ["rustfmt", "clippy"]

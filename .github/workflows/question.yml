@@ -35,7 +35,8 @@ jobs:
           echo "Validating:$args"
           echo "args=$args" >> "$GITHUB_OUTPUT"
 
-      - uses: dtolnay/rust-toolchain@stable
+      # The toolchain is pinned in rust-toolchain.toml; rustup installs it.
+      - run: rustup toolchain install
       - uses: Swatinem/rust-cache@v2
 
       # Reference solutions and starter code run in every language.
