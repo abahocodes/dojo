@@ -143,7 +143,11 @@ impl Client {
             "format": schema,
             "options": { "num_ctx": OLLAMA_CONTEXT, "temperature": 0.2 },
         });
-        let resp = self.send(|| self.http.post(format!("{}/api/chat", self.base_url)).json(&body))?;
+        let resp = self.send(|| {
+            self.http
+                .post(format!("{}/api/chat", self.base_url))
+                .json(&body)
+        })?;
         if resp["done_reason"] == "length" {
             bail!("the draft ran past the model's output limit; try a smaller question");
         }

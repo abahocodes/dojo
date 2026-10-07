@@ -9,9 +9,8 @@ use std::time::{Duration, Instant};
 use serde_json::Value;
 
 fn on_path(program: &str) -> bool {
-    std::env::var_os("PATH").is_some_and(|path| {
-        std::env::split_paths(&path).any(|dir| dir.join(program).is_file())
-    })
+    std::env::var_os("PATH")
+        .is_some_and(|path| std::env::split_paths(&path).any(|dir| dir.join(program).is_file()))
 }
 
 pub fn installed() -> bool {
@@ -36,7 +35,10 @@ pub fn base_url(configured: &str) -> String {
 /// with the terminal handed over.
 pub fn install_plan() -> Option<(String, String)> {
     if on_path("brew") {
-        return Some(("with Homebrew: brew install ollama".into(), "brew install ollama".into()));
+        return Some((
+            "with Homebrew: brew install ollama".into(),
+            "brew install ollama".into(),
+        ));
     }
     if cfg!(target_os = "linux") && on_path("curl") {
         let cmd = "curl -fsSL https://ollama.com/install.sh | sh";
@@ -54,7 +56,12 @@ fn http() -> reqwest::blocking::Client {
 
 /// Names of the downloaded models, or `None` if the server isn't up.
 pub fn models(base: &str) -> Option<Vec<String>> {
-    let resp: Value = http().get(format!("{base}/api/tags")).send().ok()?.json().ok()?;
+    let resp: Value = http()
+        .get(format!("{base}/api/tags"))
+        .send()
+        .ok()?
+        .json()
+        .ok()?;
     Some(
         resp["models"]
             .as_array()?

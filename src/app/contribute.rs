@@ -299,8 +299,9 @@ impl App {
                 if yes {
                     self.pending_command = Some((with_pause(&command), after));
                 } else {
-                    self.transcript
-                        .push(views::info("ok, skipped  ·  run /contribute again when you're ready"));
+                    self.transcript.push(views::info(
+                        "ok, skipped  ·  run /contribute again when you're ready",
+                    ));
                 }
                 return true;
             }
@@ -538,7 +539,10 @@ impl App {
             )));
         };
         if !github::signed_in(&gh) {
-            self.pending_command = Some((with_pause(&github::login_command(&gh)), AfterCommand::GhLogin));
+            self.pending_command = Some((
+                with_pause(&github::login_command(&gh)),
+                AfterCommand::GhLogin,
+            ));
             return Some(views::info("signing you in to GitHub with gh…"));
         }
 
