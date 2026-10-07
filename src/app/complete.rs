@@ -25,6 +25,8 @@ pub struct Context {
     pub attempt: bool,
     /// A session is running (possibly between questions).
     pub session: bool,
+    /// A drafted question is being reviewed (`/contribute`).
+    pub review: bool,
 }
 
 /// Whether a command does anything useful in this context.
@@ -33,6 +35,7 @@ pub fn applies(name: &str, ctx: Context) -> bool {
         "test" | "submit" | "pause" | "skip" => ctx.attempt,
         "next" => ctx.session && !ctx.attempt,
         "solve" | "random" | "need" => !ctx.attempt,
+        "accept" => ctx.review,
         _ => true,
     }
 }
@@ -232,10 +235,12 @@ mod tests {
     const IDLE: Context = Context {
         attempt: false,
         session: false,
+        review: false,
     };
     const SOLVING: Context = Context {
         attempt: true,
         session: true,
+        review: false,
     };
 
     #[test]
@@ -264,12 +269,7 @@ mod tests {
         assert_eq!(idle[0], "/solve");
         // Removed and unbuilt commands are never suggested.
         for gone in [
-            "/resume",
-            "/end",
-            "/giveup",
-            "/history",
-            "/random",
-            "/contribute",
+            "/resume", "/end", "/giveup", "/history", "/random", "/accept",
         ] {
             assert!(!idle.contains(&gone.to_string()), "{gone} suggested");
             assert!(!all.contains(&gone.to_string()), "{gone} suggested");

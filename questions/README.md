@@ -58,6 +58,7 @@ NNNN-slug/
 ```
 dojo scaffold questions/NNNN-slug    # draft boilerplate from the signature, register it in meta.json
 dojo validate                        # organization, schema, tests, reference solutions, boilerplate
+dojo validate --question NNNN-slug   # just one question (what CI runs on question PRs)
 cargo test                           # the same checks, one test per question (asset_0001_two_sum, ...)
 dojo schema                          # regenerate schema/*.json after changing the types
 ```
@@ -65,3 +66,6 @@ dojo schema                          # regenerate schema/*.json after changing t
 `dojo validate` runs every reference solution against every case and checks
 that every boilerplate loads, defines the function and does not already pass.
 It needs `python3` and `node` installed.
+
+The easiest way to add a question is `dojo contribute`: describe it, review
+the draft dojo builds and validates, then `/accept` to open the PR.

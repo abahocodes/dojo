@@ -1,5 +1,6 @@
 mod app;
 mod config;
+mod contribute;
 mod lang;
 mod model;
 mod project;
@@ -36,6 +37,9 @@ enum Cmd {
         /// Skip running reference solutions.
         #[arg(long)]
         no_run: bool,
+        /// Only check these question folders (e.g. 0018-word-ladder).
+        #[arg(long = "question", value_name = "FOLDER")]
+        questions: Vec<String>,
     },
     /// Write JSON Schemas for meta.json and tests.json.
     Schema {
@@ -59,6 +63,8 @@ enum Cmd {
         #[arg(required = true, allow_hyphen_values = true)]
         args: Vec<String>,
     },
+    /// Open dojo and draft a new question to contribute.
+    Contribute,
     /// Open the report, or print it as JSON with --json.
     Report {
         /// Print the report as JSON instead of opening dojo.
@@ -93,8 +99,12 @@ fn main() -> ExitCode {
 fn run() -> Result<ExitCode> {
     let cli = Cli::parse();
     match cli.command {
-        Some(Cmd::Validate { dir, no_run }) => {
-            let ok = validate::run(&dir, !no_run)?;
+        Some(Cmd::Validate {
+            dir,
+            no_run,
+            questions,
+        }) => {
+            let ok = validate::run(&dir, &questions, !no_run)?;
             Ok(if ok {
                 ExitCode::SUCCESS
             } else {
@@ -131,6 +141,10 @@ fn run() -> Result<ExitCode> {
         }
         Some(Cmd::Solve { args }) => {
             app::run(Some(format!("/solve {}", args.join(" "))))?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Cmd::Contribute) => {
+            app::run(Some("/contribute".into()))?;
             Ok(ExitCode::SUCCESS)
         }
         Some(Cmd::Report { json: true, .. }) => {

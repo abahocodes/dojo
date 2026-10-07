@@ -46,6 +46,18 @@ impl Input {
         line
     }
 
+    /// Takes the line without recording it in history (API keys).
+    pub fn take_secret(&mut self) -> String {
+        self.cursor = 0;
+        self.hist_pos = None;
+        std::mem::take(&mut self.text)
+    }
+
+    /// Display width of the text, for masking.
+    pub fn char_count(&self) -> usize {
+        self.text.chars().count()
+    }
+
     pub fn insert(&mut self, s: &str) {
         self.text.insert_str(self.cursor, s);
         self.cursor += s.len();

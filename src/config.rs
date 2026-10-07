@@ -60,6 +60,27 @@ pub struct Config {
     pub workspace: Option<PathBuf>,
     /// Re-run visible tests whenever the solution file is saved.
     pub auto_test: bool,
+    /// `/contribute` settings.
+    pub contribute: ContributeConfig,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ContributeConfig {
+    /// `claude` or `openai`.
+    pub provider: String,
+    pub claude_model: String,
+    pub openai_model: String,
+}
+
+impl Default for ContributeConfig {
+    fn default() -> Self {
+        ContributeConfig {
+            provider: "claude".into(),
+            claude_model: "claude-opus-5-5".into(),
+            openai_model: "gpt-5".into(),
+        }
+    }
 }
 
 impl Default for Config {
@@ -69,6 +90,7 @@ impl Default for Config {
             language: "python".into(),
             workspace: None,
             auto_test: true,
+            contribute: ContributeConfig::default(),
         }
     }
 }

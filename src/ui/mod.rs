@@ -187,8 +187,14 @@ fn draw_input(f: &mut Frame, app: &App, area: Rect) {
 
     let prompt = "› ";
     let avail = (inner.width as usize).saturating_sub(prompt.width() + 1);
-    let text = app.input.text();
-    let cursor = app.input.cursor_col();
+    // API keys are masked.
+    let masked;
+    let (text, cursor) = if app.secret_for.is_some() {
+        masked = "•".repeat(app.input.char_count());
+        (masked.as_str(), app.input.char_count())
+    } else {
+        (app.input.text(), app.input.cursor_col())
+    };
     // Scroll horizontally so the cursor stays visible.
     let skip_cols = cursor.saturating_sub(avail);
     let mut shown = String::new();

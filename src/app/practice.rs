@@ -438,7 +438,7 @@ impl App {
         let command = editor_command(&template, &a.file, &a.dir, line);
         self.record("editor_open", json!({ "command": template }));
         if is_terminal_editor(&template) {
-            self.pending_editor = Some(command);
+            self.pending_command = Some((command, super::AfterCommand::Editor));
             None
         } else {
             match session::launch_gui(&command) {

@@ -117,11 +117,30 @@ competence model can change without migrations.
 
 ## Contribute
 
-Token in OS keychain (env vars override) → wizard (idea, constraints, examples,
-difficulty, tags, companies) → LLM drafts the full package → local validation
-(schema, reference solution passes all tests, dedupe) → user edits in their editor →
-originality attestation → PR via `gh` or GitHub device flow → repo CI re-validates →
-ships in the next release.
+`/contribute` (or `dojo contribute`): describe a question → dojo drafts it
+with Claude (`claude-opus-5-5` by default) or OpenAI using the contributor's
+API key (OS keychain; `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` override) →
+writes the asset folder, runs an optional stress-case generator, computes
+expected outputs by running the Python reference solution, and runs the full
+validator; problems go back to the model (up to 3 rounds). The draft shows in
+the window; typing a change revises it (append-only conversation), `/accept`
+opens the PR via `gh` (offering to install it with brew/apt/dnf/pacman/zypper
+or from GitHub releases into `~/.local/bin`, and running `gh auth login` if
+needed): fork (or clone when you own the repo) → branch from upstream →
+renumber to the next free id → commit → push → `gh pr create`. Drafts live in
+`~/.local/state/dojo/contrib/<id>/` and resume after a restart.
+
+Nothing is submitted unless it passes locally: `/accept` refuses a draft
+with problems, re-validates the folder as it is on disk (it may have been
+edited by hand), and validates the renumbered folder again inside the repo
+checkout against the current bank before committing.
+
+Two separate workflows:
+- `ci.yml`, for dojo itself (any change outside `questions/`): fmt, clippy,
+  all tests (one per question) and `dojo validate`, on Linux and macOS.
+- `question.yml`, for contributed questions (PRs touching `questions/`):
+  builds dojo and runs `dojo validate --question <folder>` on only the
+  folders the PR adds or changes, plus the id/slug uniqueness check.
 
 ## Milestones
 
@@ -133,5 +152,5 @@ ships in the next release.
 | M3 | end-of-session review, idle detection | `/solve random`, `/past` done |
 | M4 | Grading, mastery, tabbed `/report`, `dojo report --json`, `/solve need` | done |
 | M5 | More languages (Go, TypeScript, Rust, Java, C++) | Python + JavaScript done |
-| M6 | `/contribute` + repo CI | |
+| M6 | `/contribute` + repo CI | done (PR flow untested until the GitHub repo exists) |
 | M7 | cargo-dist releases, Homebrew tap | |

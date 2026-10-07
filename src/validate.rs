@@ -85,10 +85,22 @@ pub fn check_bank(root: &Path) -> Result<Vec<String>> {
     Ok(problems)
 }
 
-/// `dojo validate`. Returns `true` when every question is valid.
-pub fn run(root: &Path, run_code: bool) -> Result<bool> {
+/// `dojo validate`. Checks `only` (question folder names) when given, else
+/// every question; the bank-wide id/slug check always runs. Returns `true`
+/// when everything checked is valid.
+pub fn run(root: &Path, only: &[String], run_code: bool) -> Result<bool> {
     let paint = Paint(std::io::stdout().is_terminal() && std::env::var_os("NO_COLOR").is_none());
-    let dirs = question_dirs(root)?;
+    let all = question_dirs(root)?;
+    let dirs: Vec<String> = if only.is_empty() {
+        all
+    } else {
+        for name in only {
+            if !all.contains(name) {
+                anyhow::bail!("no question folder `{name}` in {}", root.display());
+            }
+        }
+        only.to_vec()
+    };
     let mut failed = 0;
 
     for dir in &dirs {

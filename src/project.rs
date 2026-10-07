@@ -4,6 +4,9 @@
 /// `None` makes `/donate` say donations aren't set up.
 pub const DONATE_URL: Option<&str> = Some("https://github.com/sponsors/abahocodes");
 
+/// The GitHub repository contributions are opened against (`owner/name`).
+pub const REPO: &str = "abahocodes/dojo";
+
 /// Opens a URL in the default browser without blocking.
 pub fn open_url(url: &str) -> std::io::Result<()> {
     let program = if cfg!(target_os = "macos") {

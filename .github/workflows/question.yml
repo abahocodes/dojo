@@ -1,0 +1,54 @@
+# Checks contributed questions: only the question folders a PR adds or
+# changes are validated (schema, organization, tests, reference solutions in
+# every language, boilerplate), plus the bank-wide id/slug uniqueness check.
+# Separate from ci.yml, which tests dojo itself.
+#
+# Runs on `pull_request` (not `pull_request_target`), so code from forks runs
+# with a read-only token and no secrets.
+name: question
+
+on:
+  pull_request:
+    paths: ["questions/**"]
+
+env:
+  CARGO_TERM_COLOR: always
+  SQLX_OFFLINE: "true"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find changed questions
+        id: changed
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          args=""
+          for dir in $(git diff --name-only "$base" HEAD -- questions/ | awk -F/ 'NF > 2 { print $2 }' | sort -u); do
+            # Removed folders have nothing left to validate.
+            if [ -d "questions/$dir" ]; then args="$args --question $dir"; fi
+          done
+          echo "Validating:$args"
+          echo "args=$args" >> "$GITHUB_OUTPUT"
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      # Reference solutions and starter code run in every language.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build dojo
+        run: cargo build --release --quiet
+
+      - name: Validate changed questions
+        if: steps.changed.outputs.args != ''
+        run: ./target/release/dojo validate ${{ steps.changed.outputs.args }}

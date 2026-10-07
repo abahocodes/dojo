@@ -266,6 +266,28 @@ fn run_harness(
     }
 }
 
+/// Runs a Python snippet that prints one JSON document, with a time limit.
+/// Used for question authoring (stress-case generators), never for user code.
+pub fn python_json(code: &str, limit: Duration) -> Result<Value> {
+    let dir = tempfile::tempdir()?;
+    let script = dir.path().join("generate.py");
+    std::fs::write(&script, code)?;
+    let program = interpreter(Language::Python);
+    let out = exec(
+        Command::new(&program).arg(&script),
+        limit,
+        &AtomicBool::new(false),
+    )
+    .map_err(|e| anyhow!("could not start {program} ({e})"))?;
+    if out.timed_out {
+        bail!("took longer than {}s", limit.as_secs());
+    }
+    if !out.success {
+        bail!("{}", out.stderr.trim());
+    }
+    serde_json::from_str(out.stdout.trim()).context("did not print valid JSON")
+}
+
 /// Output of a finished child process.
 struct Exec {
     success: bool,

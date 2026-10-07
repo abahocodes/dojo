@@ -1,0 +1,52 @@
+# CI for dojo itself: the full suite. Changes that only touch questions/
+# are checked by question.yml instead.
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+    paths-ignore: ["questions/**"]
+  pull_request:
+    paths-ignore: ["questions/**"]
+
+env:
+  CARGO_TERM_COLOR: always
+  # SQL is checked against the committed .sqlx/ cache; no database needed.
+  SQLX_OFFLINE: "true"
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      # Reference solutions and starter code run in both languages.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Lint
+        run: cargo clippy --all-targets -- -D warnings
+
+      # Includes one test per question folder (validate::asset_tests::asset_*).
+      - name: Test
+        run: cargo test
+
+      - name: Validate questions
+        run: cargo run --quiet -- validate

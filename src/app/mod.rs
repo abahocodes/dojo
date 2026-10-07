@@ -2,6 +2,7 @@
 
 mod commands;
 mod complete;
+mod contribute;
 mod input;
 mod practice;
 mod transcript;
@@ -61,8 +62,16 @@ pub struct Prompt {
     pub tips: Vec<(String, String)>,
 }
 
+/// What to do after a command that took over the terminal finishes.
+pub enum AfterCommand {
+    Editor,
+    GhInstall,
+    GhLogin,
+}
+
 /// Messages from background work.
 pub enum Msg {
+    Contrib(contribute::ContribMsg),
     Tests {
         attempt_id: i64,
         /// Matches `App::running`; results of cancelled runs are dropped.
@@ -96,9 +105,14 @@ pub struct App {
     cancel: Option<std::sync::Arc<std::sync::atomic::AtomicBool>>,
     tx: Sender<Msg>,
     rx: Receiver<Msg>,
-    /// Terminal editor command waiting for the main loop to hand it the
-    /// terminal.
-    pending_editor: Option<String>,
+    /// A command waiting for the main loop to hand it the terminal (a
+    /// terminal editor, installing gh, signing in to GitHub).
+    pending_command: Option<(String, AfterCommand)>,
+    /// `/contribute` while active.
+    pub contrib: Option<contribute::Contrib>,
+    /// Masked input for an API key, for this provider.
+    pub secret_for: Option<crate::contribute::llm::Provider>,
+    job_seq: u64,
     /// When the open attempt's clock was last saved.
     last_autosave: Instant,
     /// Unfinished attempts, most recent first (refreshed when sessions end).
@@ -141,7 +155,10 @@ impl App {
             cancel: None,
             tx,
             rx,
-            pending_editor: None,
+            pending_command: None,
+            contrib: None,
+            secret_for: None,
+            job_seq: 0,
             last_autosave: Instant::now(),
             report: None,
             unfinished,
@@ -160,6 +177,10 @@ impl App {
     pub fn prompt(&self) -> Prompt {
         let tip = |key: &str, text: &str| (key.to_string(), text.to_string());
         let enter = |cmd: &str, label: String| Some((cmd.to_string(), label));
+
+        if let Some(tips) = self.contrib_prompt() {
+            return Prompt { enter: None, tips };
+        }
 
         if self.running.is_some() {
             return Prompt {
@@ -260,6 +281,7 @@ impl App {
         let ctx = complete::Context {
             attempt: self.session.as_ref().is_some_and(|s| s.attempt.is_some()),
             session: self.session.is_some(),
+            review: self.contrib_reviewing(),
         };
         self.completions = complete::complete(&self.bank, self.input.text(), ctx);
         self.selected = 0;
@@ -302,6 +324,10 @@ impl App {
             KeyCode::Char('c') if ctrl => {
                 if self.running.is_some() {
                     self.cancel_tests();
+                } else if self.secret_for.take().is_some() {
+                    self.input.set("");
+                    self.transcript.push(views::info("key entry cancelled"));
+                } else if self.cancel_contrib() {
                 } else if !self.input.text().is_empty() {
                     self.input.set("");
                     self.edited();
@@ -392,6 +418,11 @@ impl App {
             KeyCode::Tab if self.popup_open() => {
                 self.accept_completion();
             }
+            KeyCode::Esc if self.secret_for.is_some() => {
+                self.secret_for = None;
+                self.input.set("");
+                self.transcript.push(views::info("key entry cancelled"));
+            }
             KeyCode::Esc => {
                 if self.popup_open() {
                     self.dismissed = true;
@@ -418,6 +449,16 @@ impl App {
                     _ => return,
                 }
             }
+        }
+        if self.secret_for.is_some() {
+            // Never echoed, never kept in history.
+            let key = self.input.take_secret();
+            self.completions.clear();
+            self.transcript.push(views::input(
+                &"•".repeat(key.trim().chars().count().min(24)),
+            ));
+            self.on_secret(key);
+            return;
         }
         let line = self.input.take();
         self.completions.clear();
@@ -556,6 +597,9 @@ impl App {
 
     pub fn execute(&mut self, line: &str) {
         let Some(rest) = line.strip_prefix('/') else {
+            if self.contrib_text(line) {
+                return;
+            }
             self.transcript.push(views::info(
                 "Commands start with /  ·  try /help, or /show <id> to read a problem",
             ));
@@ -596,6 +640,8 @@ impl App {
             "lang" => self.cmd_lang(&args),
             "config" => Some(views::config(&self.config, &self.paths)),
             "report" => self.cmd_report(&args),
+            "contribute" => self.cmd_contribute(&args),
+            "accept" => self.cmd_accept(),
             "past" => self.cmd_past(&args),
             "donate" => Some(self.cmd_donate()),
             "copy" => self.cmd_copy(),
@@ -783,14 +829,18 @@ pub fn run(initial: Option<String>) -> Result<()> {
 
     let result = (|| -> Result<()> {
         while !app.quit {
-            if let Some(command) = app.pending_editor.take() {
+            if let Some((command, after)) = app.pending_command.take() {
                 ui::terminal::suspend()?;
                 let result = crate::session::launch_terminal(&command);
                 ui::terminal::resume(&mut term)?;
-                app.editor_closed(result);
+                match after {
+                    AfterCommand::Editor => app.editor_closed(result),
+                    other => app.after_gh(other, result.unwrap_or(false)),
+                }
             }
             while let Ok(msg) = app.rx.try_recv() {
                 match msg {
+                    Msg::Contrib(m) => app.on_contrib(m),
                     Msg::Tests {
                         attempt_id,
                         run,
@@ -831,7 +881,7 @@ pub fn run(initial: Option<String>) -> Result<()> {
                     },
                     _ => {}
                 }
-                if app.quit || app.pending_editor.is_some() || !event::poll(Duration::ZERO)? {
+                if app.quit || app.pending_command.is_some() || !event::poll(Duration::ZERO)? {
                     break;
                 }
             }

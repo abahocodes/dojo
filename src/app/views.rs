@@ -976,3 +976,173 @@ pub fn donate(url: &str, opened: bool) -> Entry {
         ]),
     ])
 }
+
+// ---- /contribute ------------------------------------------------------------
+
+pub fn contrib_intro(provider: &str, model: &str) -> Entry {
+    let t = theme();
+    entry(vec![
+        Para::plain("Contribute a question", t.heading()),
+        Para::plain(
+            "Describe the question you'd like to add: the problem, and anything about inputs, difficulty or companies that ask it. dojo drafts the whole question (statement, hints, explanation, starter code and reference solutions in Python and JavaScript, tests), runs the solutions to compute the expected outputs, and validates it.",
+            t.text(),
+        ),
+        Para::blank(),
+        Para::new(vec![
+            Span::styled("Then ", t.dim()),
+            Span::styled("/accept", t.accent()),
+            Span::styled(
+                " opens a pull request, or type what to change and dojo redrafts.",
+                t.dim(),
+            ),
+        ]),
+        Para::plain(
+            format!(
+                "Drafting uses {provider} ({model}) with your API key; your description is sent to {provider}."
+            ),
+            t.dim(),
+        ),
+    ])
+}
+
+pub fn contrib_review(
+    d: &crate::contribute::draft::Draft,
+    b: &crate::contribute::draft::Built,
+    model: &str,
+    rounds: u32,
+    usage: crate::contribute::llm::Usage,
+) -> Entry {
+    let t = theme();
+    let ok = b.problems.is_empty();
+    let mut paras = vec![Para::new(vec![
+        Span::styled(
+            if ok { "✓ " } else { "✗ " },
+            if ok { t.ok() } else { t.err() },
+        ),
+        Span::styled(
+            if ok {
+                "Draft ready"
+            } else {
+                "Draft has problems"
+            },
+            t.bold(),
+        ),
+        Span::styled(
+            match rounds {
+                0 => "  ·  re-checked".to_string(),
+                1 => format!("  ·  {model}"),
+                n => format!("  ·  {model}, {n} rounds"),
+            },
+            t.dim(),
+        ),
+    ])];
+    paras.push(Para::blank());
+    paras.push(Para::new(vec![Span::styled(d.title.clone(), t.heading())]));
+    paras.push(Para::new(vec![
+        Span::styled(d.difficulty.to_string(), t.difficulty(d.difficulty)),
+        Span::styled(format!("  ·  {} min  ·  ", d.target_minutes), t.dim()),
+        Span::styled(
+            d.tags
+                .iter()
+                .map(|x| format!("#{x}"))
+                .collect::<Vec<_>>()
+                .join(" "),
+            t.accent(),
+        ),
+    ]));
+    if !d.companies.is_empty() {
+        paras.push(Para::plain(
+            format!("asked at {}", d.companies.join(", ")),
+            t.dim(),
+        ));
+    }
+    paras.push(Para::new(vec![
+        Span::styled("signature  ", t.dim()),
+        Span::styled(super::contribute::signature(d), t.code()),
+    ]));
+    paras.push(Para::plain("─".repeat(48), t.border()));
+    paras.extend(markdown::render(&d.statement));
+    paras.push(Para::plain("─".repeat(48), t.border()));
+
+    let check = |good: bool, text: String| {
+        Para::new(vec![
+            Span::styled(
+                if good { "✓ " } else { "✗ " },
+                if good { t.ok() } else { t.err() },
+            ),
+            Span::raw(text),
+        ])
+        .indent(2)
+    };
+    paras.push(Para::plain("Checks", t.bold()));
+    paras.push(check(
+        true,
+        format!(
+            "{} tests: {} visible, {} hidden{}  ·  expected outputs computed from the Python solution",
+            b.visible + b.hidden,
+            b.visible,
+            b.hidden,
+            if b.generated > 0 {
+                format!(" ({} generated)", b.generated)
+            } else {
+                String::new()
+            }
+        ),
+    ));
+    if ok {
+        paras.push(check(
+            true,
+            "Python and JavaScript solutions pass every test".into(),
+        ));
+        paras.push(check(
+            true,
+            "starter code loads in both languages and doesn't pass".into(),
+        ));
+        paras.push(check(
+            true,
+            format!("{} hints, explanation, statement", d.hints.len()),
+        ));
+    } else {
+        for p in &b.problems {
+            let mut lines = p.lines();
+            paras.push(check(false, lines.next().unwrap_or_default().to_string()));
+            for l in lines.take(6) {
+                paras.push(Para::plain(l.to_string(), t.dim()).code().indent(6));
+            }
+        }
+    }
+    paras.push(Para::blank());
+    paras.push(Para::new(vec![
+        Span::styled("files  ", t.dim()),
+        Span::raw(tilde(&b.dir)),
+    ]));
+    paras.push(Para::plain(
+        format!(
+            "tokens so far  {:.1}k in · {:.1}k out",
+            usage.input_tokens as f64 / 1000.0,
+            usage.output_tokens as f64 / 1000.0
+        ),
+        t.dim(),
+    ));
+    entry(paras)
+}
+
+pub fn contrib_submitted(url: &str) -> Entry {
+    let t = theme();
+    entry(vec![
+        Para::new(vec![
+            Span::styled("✓ ", t.ok()),
+            Span::styled("Pull request opened", t.bold()),
+        ]),
+        Para::new(vec![Span::styled(
+            url.to_string(),
+            t.accent().add_modifier(ratatui::style::Modifier::UNDERLINED),
+        )])
+        .indent(2),
+        Para::plain(
+            "CI re-runs every check; once merged, the question ships in the next dojo release. Thank you!",
+            t.dim(),
+        )
+        .indent(2),
+    ])
+}
