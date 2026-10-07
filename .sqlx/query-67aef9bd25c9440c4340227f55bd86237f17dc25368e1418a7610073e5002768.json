@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE attempts\n                 SET active_secs = ?, test_runs = ?, failed_runs = ?, hints_used = ?,\n                     solution_viewed = ?, outcome = ?, code = COALESCE(?, code), ended_at = ?\n                 WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 9
+    },
+    "nullable": []
+  },
+  "hash": "67aef9bd25c9440c4340227f55bd86237f17dc25368e1418a7610073e5002768"
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 14,
+  "slug": "coin-change",
+  "title": "Coin Change",
+  "difficulty": "medium",
+  "tags": [
+    "dynamic-programming"
+  ],
+  "companies": [
+    "amazon",
+    "google",
+    "microsoft",
+    "bloomberg"
+  ],
+  "target_minutes": 25,
+  "signature": {
+    "function": "coin_change",
+    "params": [
+      {
+        "name": "coins",
+        "type": "int[]"
+      },
+      {
+        "name": "amount",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

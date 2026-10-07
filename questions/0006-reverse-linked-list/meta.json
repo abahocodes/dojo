@@ -1,0 +1,42 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 6,
+  "slug": "reverse-linked-list",
+  "title": "Reverse a Linked List",
+  "difficulty": "easy",
+  "tags": [
+    "linked-list"
+  ],
+  "companies": [
+    "amazon",
+    "microsoft",
+    "apple",
+    "meta",
+    "google"
+  ],
+  "target_minutes": 10,
+  "signature": {
+    "function": "reverse_list",
+    "params": [
+      {
+        "name": "head",
+        "type": "ListNode"
+      }
+    ],
+    "returns": "ListNode"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

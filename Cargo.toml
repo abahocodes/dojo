@@ -1,0 +1,30 @@
+[package]
+name = "dojo"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.104"
+clap = { version = "4.6.7", features = ["derive"] }
+directories = "6.0.0"
+jiff = "0.2.38"
+nucleo-matcher = "0.3.1"
+pulldown-cmark = "0.13.4"
+ratatui = "0.30.2"
+rust-embed = "8.13.0"
+schemars = "1.2.2"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = { version = "1.0.151", features = ["preserve_order"] }
+sqlx = { version = "0.9.0", default-features = false, features = ["sqlite", "runtime-tokio", "macros", "migrate"] }
+tempfile = "3.27.0"
+thiserror = "2.0.21"
+tokio = { version = "1.53.2", features = ["rt"] }
+toml = "1.1.6"
+unicode-width = "0.2.2"
+
+# Build-time code (proc macros like sqlx-macros) is not stripped in release.
+# On macOS 27 (ld-27037), stripping debuginfo from the sqlx-macros dylib leaves
+# a misaligned LINKEDIT and rustc can't load it ("mis-aligned LINKEDIT string
+# pool"). Affects compile-time artifacts only; the dojo binary is unchanged.
+[profile.release.build-override]
+strip = false

@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 9,
+  "slug": "product-of-array-except-self",
+  "title": "Product of All Other Elements",
+  "difficulty": "medium",
+  "tags": [
+    "arrays",
+    "prefix-sum"
+  ],
+  "companies": [
+    "amazon",
+    "meta",
+    "microsoft",
+    "apple",
+    "asana"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "product_except_self",
+    "params": [
+      {
+        "name": "nums",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

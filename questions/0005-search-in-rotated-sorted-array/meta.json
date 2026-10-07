@@ -1,0 +1,47 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 5,
+  "slug": "search-in-rotated-sorted-array",
+  "title": "Search a Rotated Sorted Array",
+  "difficulty": "medium",
+  "tags": [
+    "binary-search",
+    "arrays"
+  ],
+  "companies": [
+    "amazon",
+    "meta",
+    "microsoft",
+    "linkedin",
+    "google"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "search",
+    "params": [
+      {
+        "name": "nums",
+        "type": "int[]"
+      },
+      {
+        "name": "target",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT line AS \"line!\" FROM input_history GROUP BY line ORDER BY MAX(id) DESC LIMIT ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "line!",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "input_history",
+            "name": "line"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "1cb9ce0f956fcec04b325d8db709f9ad3e29d5409f406eff119559672ee4ba4b"
+}

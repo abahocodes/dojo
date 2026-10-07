@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TestsFile",
+  "description": "`tests.json`: the question's test cases.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "writeOnly": true
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Case"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "cases"
+  ],
+  "$defs": {
+    "Case": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "description": "Argument values keyed by param name, encoded as JSON (`ListNode` as an\narray, `TreeNode` as a level-order array with nulls).",
+          "type": "object",
+          "additionalProperties": true
+        },
+        "output": {
+          "description": "Expected return value, encoded the same way."
+        },
+        "hidden": {
+          "description": "Hidden cases only run on `/submit`.",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "input",
+        "output"
+      ]
+    }
+  }
+}

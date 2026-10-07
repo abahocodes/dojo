@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Meta",
+  "description": "`meta.json`: everything about a question except its prose and tests.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "description": "Editor hint pointing at `schema/meta.schema.json`; ignored by dojo.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "writeOnly": true
+    },
+    "id": {
+      "description": "Unique, stable question number. The directory is `NNNN-slug`.",
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 1
+    },
+    "slug": {
+      "description": "kebab-case, unique.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string"
+    },
+    "difficulty": {
+      "$ref": "#/$defs/Difficulty"
+    },
+    "tags": {
+      "description": "Topics (`arrays`, `dfs`, ...), lowercase kebab-case.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "companies": {
+      "description": "Companies known to ask this kind of question, lowercase kebab-case.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "target_minutes": {
+      "description": "Time a well-prepared candidate should need.",
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 1
+    },
+    "signature": {
+      "$ref": "#/$defs/Signature"
+    },
+    "compare": {
+      "$ref": "#/$defs/Compare",
+      "default": "exact"
+    },
+    "statement": {
+      "description": "Problem statement (Markdown), relative to this folder.",
+      "type": "string"
+    },
+    "hints": {
+      "description": "Hints (Markdown, one `## ` section per hint), relative to this folder.",
+      "type": "string"
+    },
+    "explanation": {
+      "description": "Explained solution (Markdown), relative to this folder.",
+      "type": "string"
+    },
+    "tests": {
+      "description": "Test cases (`tests.schema.json`), relative to this folder.",
+      "type": "string"
+    },
+    "languages": {
+      "description": "Per-language files. A question supports exactly the languages listed.",
+      "type": "object",
+      "properties": {
+        "python": {
+          "$ref": "#/$defs/LanguageFiles"
+        },
+        "javascript": {
+          "$ref": "#/$defs/LanguageFiles"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "slug",
+    "title",
+    "difficulty",
+    "tags",
+    "target_minutes",
+    "signature",
+    "statement",
+    "hints",
+    "explanation",
+    "tests",
+    "languages"
+  ],
+  "$defs": {
+    "Difficulty": {
+      "type": "string",
+      "enum": [
+        "easy",
+        "medium",
+        "hard"
+      ]
+    },
+    "Signature": {
+      "type": "object",
+      "properties": {
+        "function": {
+          "description": "snake_case function name (`two_sum`); JavaScript uses camelCase (`twoSum`).",
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]*$"
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Param"
+          }
+        },
+        "returns": {
+          "$ref": "#/$defs/Type"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "function",
+        "params",
+        "returns"
+      ]
+    },
+    "Param": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "snake_case; converted to each language's convention.",
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_]*$"
+        },
+        "type": {
+          "$ref": "#/$defs/Type"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "type"
+      ]
+    },
+    "Type": {
+      "description": "int, float, bool, string, ListNode, TreeNode, or any of those followed by one or more []",
+      "type": "string",
+      "pattern": "^(int|float|bool|string|ListNode|TreeNode)(\\[\\])*$"
+    },
+    "Compare": {
+      "description": "How a returned value is compared against the expected output.",
+      "oneOf": [
+        {
+          "description": "Values must be identical.",
+          "type": "string",
+          "const": "exact"
+        },
+        {
+          "description": "Top-level list order does not matter.",
+          "type": "string",
+          "const": "unordered"
+        },
+        {
+          "description": "List order does not matter at any depth.",
+          "type": "string",
+          "const": "unordered_deep"
+        },
+        {
+          "description": "Numbers compared with a 1e-6 tolerance.",
+          "type": "string",
+          "const": "float"
+        }
+      ]
+    },
+    "LanguageFiles": {
+      "description": "One language's files, relative to the question folder.",
+      "type": "object",
+      "properties": {
+        "boilerplate": {
+          "description": "What the user starts from; copied as-is into their working file.",
+          "type": "string"
+        },
+        "solution": {
+          "description": "Reference solution; must pass every test.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "boilerplate",
+        "solution"
+      ]
+    }
+  }
+}

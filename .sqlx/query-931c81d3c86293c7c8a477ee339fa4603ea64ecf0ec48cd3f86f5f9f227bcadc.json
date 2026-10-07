@@ -1,0 +1,134 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id AS \"id!\", question_id, language, started_at, active_secs,\n                          test_runs, failed_runs, hints_used,\n                          solution_viewed AS \"solution_viewed: bool\", code\n                   FROM attempts\n                   WHERE outcome IS NULL AND question_id = ? AND language = ?\n                   ORDER BY id DESC\n                   LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "name": "question_id",
+        "ordinal": 1,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "question_id"
+          }
+        }
+      },
+      {
+        "name": "language",
+        "ordinal": 2,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "language"
+          }
+        }
+      },
+      {
+        "name": "started_at",
+        "ordinal": 3,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "started_at"
+          }
+        }
+      },
+      {
+        "name": "active_secs",
+        "ordinal": 4,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "active_secs"
+          }
+        }
+      },
+      {
+        "name": "test_runs",
+        "ordinal": 5,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "test_runs"
+          }
+        }
+      },
+      {
+        "name": "failed_runs",
+        "ordinal": 6,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "failed_runs"
+          }
+        }
+      },
+      {
+        "name": "hints_used",
+        "ordinal": 7,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "hints_used"
+          }
+        }
+      },
+      {
+        "name": "solution_viewed: bool",
+        "ordinal": 8,
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "solution_viewed"
+          }
+        }
+      },
+      {
+        "name": "code",
+        "ordinal": 9,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "attempts",
+            "name": "code"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "931c81d3c86293c7c8a477ee339fa4603ea64ecf0ec48cd3f86f5f9f227bcadc"
+}

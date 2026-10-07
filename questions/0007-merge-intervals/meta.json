@@ -1,0 +1,45 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 7,
+  "slug": "merge-intervals",
+  "title": "Merge Overlapping Intervals",
+  "difficulty": "medium",
+  "tags": [
+    "intervals",
+    "sorting",
+    "arrays"
+  ],
+  "companies": [
+    "meta",
+    "google",
+    "amazon",
+    "microsoft",
+    "bloomberg",
+    "salesforce"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "merge",
+    "params": [
+      {
+        "name": "intervals",
+        "type": "int[][]"
+      }
+    ],
+    "returns": "int[][]"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

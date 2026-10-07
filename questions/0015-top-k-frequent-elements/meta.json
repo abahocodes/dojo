@@ -1,0 +1,48 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 15,
+  "slug": "top-k-frequent-elements",
+  "title": "Top K Frequent Elements",
+  "difficulty": "medium",
+  "tags": [
+    "heap",
+    "hash-map",
+    "bucket-sort"
+  ],
+  "companies": [
+    "amazon",
+    "meta",
+    "google",
+    "microsoft"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "top_k_frequent",
+    "params": [
+      {
+        "name": "nums",
+        "type": "int[]"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "compare": "unordered",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
