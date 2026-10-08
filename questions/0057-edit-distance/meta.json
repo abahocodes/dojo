@@ -1,0 +1,46 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 57,
+  "slug": "edit-distance",
+  "title": "Edit Distance",
+  "difficulty": "hard",
+  "tags": [
+    "dynamic-programming",
+    "strings"
+  ],
+  "companies": [
+    "google",
+    "amazon",
+    "microsoft",
+    "bloomberg"
+  ],
+  "target_minutes": 35,
+  "signature": {
+    "function": "edit_distance",
+    "params": [
+      {
+        "name": "word1",
+        "type": "string"
+      },
+      {
+        "name": "word2",
+        "type": "string"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
