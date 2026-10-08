@@ -1,0 +1,47 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 68,
+  "slug": "kth-smallest-element-in-a-bst",
+  "title": "Kth Smallest Element in a BST",
+  "difficulty": "medium",
+  "tags": [
+    "trees",
+    "binary-search-tree",
+    "dfs"
+  ],
+  "companies": [
+    "amazon",
+    "meta",
+    "google",
+    "uber"
+  ],
+  "target_minutes": 15,
+  "signature": {
+    "function": "kth_smallest",
+    "params": [
+      {
+        "name": "root",
+        "type": "TreeNode"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

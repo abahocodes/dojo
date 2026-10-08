@@ -1,0 +1,42 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 71,
+  "slug": "diameter-of-binary-tree",
+  "title": "Diameter of a Binary Tree",
+  "difficulty": "easy",
+  "tags": [
+    "trees",
+    "dfs"
+  ],
+  "companies": [
+    "meta",
+    "google",
+    "amazon",
+    "microsoft"
+  ],
+  "target_minutes": 15,
+  "signature": {
+    "function": "diameter_of_binary_tree",
+    "params": [
+      {
+        "name": "root",
+        "type": "TreeNode"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

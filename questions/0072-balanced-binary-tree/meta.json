@@ -1,0 +1,42 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 72,
+  "slug": "balanced-binary-tree",
+  "title": "Balanced Binary Tree",
+  "difficulty": "easy",
+  "tags": [
+    "trees",
+    "dfs"
+  ],
+  "companies": [
+    "amazon",
+    "google",
+    "bloomberg",
+    "meta"
+  ],
+  "target_minutes": 15,
+  "signature": {
+    "function": "is_balanced",
+    "params": [
+      {
+        "name": "root",
+        "type": "TreeNode"
+      }
+    ],
+    "returns": "bool"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

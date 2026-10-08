@@ -1,0 +1,47 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 70,
+  "slug": "construct-binary-tree-from-preorder-and-inorder",
+  "title": "Construct Binary Tree from Preorder and Inorder Traversal",
+  "difficulty": "medium",
+  "tags": [
+    "trees",
+    "divide-and-conquer",
+    "hash-map"
+  ],
+  "companies": [
+    "amazon",
+    "microsoft",
+    "google",
+    "bloomberg"
+  ],
+  "target_minutes": 25,
+  "signature": {
+    "function": "build_tree",
+    "params": [
+      {
+        "name": "preorder",
+        "type": "int[]"
+      },
+      {
+        "name": "inorder",
+        "type": "int[]"
+      }
+    ],
+    "returns": "TreeNode"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
