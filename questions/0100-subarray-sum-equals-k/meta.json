@@ -1,0 +1,47 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 100,
+  "slug": "subarray-sum-equals-k",
+  "title": "Subarray Sum Equals K",
+  "difficulty": "medium",
+  "tags": [
+    "arrays",
+    "hash-map",
+    "prefix-sum"
+  ],
+  "companies": [
+    "meta",
+    "google",
+    "amazon",
+    "microsoft"
+  ],
+  "target_minutes": 25,
+  "signature": {
+    "function": "subarray_sum",
+    "params": [
+      {
+        "name": "nums",
+        "type": "int[]"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
