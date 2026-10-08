@@ -93,8 +93,9 @@ pub struct Client {
 }
 
 /// Context window requested from Ollama. Its default is small enough to
-/// silently cut off the system prompt and worked example.
-const OLLAMA_CONTEXT: u32 = 32_768;
+/// silently cut off the system prompt and worked example. Sized for the
+/// prompt, a six-language draft and a revision or two of conversation.
+const OLLAMA_CONTEXT: u32 = 40_960;
 
 /// Claude models that accept the server-side refusal fallback.
 const FALLBACK_MODELS: &[&str] = &[
@@ -209,7 +210,9 @@ impl Client {
     fn claude(&self, system: &str, messages: &[Value], schema: &Value) -> Result<Turn> {
         let mut body = json!({
             "model": self.model,
-            "max_tokens": 32000,
+            // Room for thinking plus a reference solution in six languages
+            // (billed per token used, not per token allowed).
+            "max_tokens": 48000,
             // Stable prefix: cached across the drafting rounds.
             "system": [{ "type": "text", "text": system, "cache_control": { "type": "ephemeral" } }],
             "messages": messages,
