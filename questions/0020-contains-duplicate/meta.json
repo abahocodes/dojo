@@ -1,0 +1,42 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 20,
+  "slug": "contains-duplicate",
+  "title": "Contains Duplicate",
+  "difficulty": "easy",
+  "tags": [
+    "arrays",
+    "hash-set"
+  ],
+  "companies": [
+    "amazon",
+    "apple",
+    "microsoft"
+  ],
+  "target_minutes": 10,
+  "signature": {
+    "function": "contains_duplicate",
+    "params": [
+      {
+        "name": "nums",
+        "type": "int[]"
+      }
+    ],
+    "returns": "bool"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
