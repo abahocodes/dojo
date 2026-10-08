@@ -1,0 +1,49 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 28,
+  "slug": "minimum-window-substring",
+  "title": "Minimum Window Substring",
+  "difficulty": "hard",
+  "tags": [
+    "sliding-window",
+    "strings",
+    "hash-map"
+  ],
+  "companies": [
+    "meta",
+    "amazon",
+    "google",
+    "linkedin",
+    "uber"
+  ],
+  "target_minutes": 35,
+  "signature": {
+    "function": "min_window",
+    "params": [
+      {
+        "name": "s",
+        "type": "string"
+      },
+      {
+        "name": "t",
+        "type": "string"
+      }
+    ],
+    "returns": "string"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

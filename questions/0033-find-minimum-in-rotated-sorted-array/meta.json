@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 33,
+  "slug": "find-minimum-in-rotated-sorted-array",
+  "title": "Find Minimum in Rotated Sorted Array",
+  "difficulty": "medium",
+  "tags": [
+    "binary-search",
+    "arrays"
+  ],
+  "companies": [
+    "amazon",
+    "microsoft",
+    "meta",
+    "bloomberg"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "find_min",
+    "params": [
+      {
+        "name": "nums",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

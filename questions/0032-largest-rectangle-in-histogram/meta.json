@@ -1,0 +1,44 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 32,
+  "slug": "largest-rectangle-in-histogram",
+  "title": "Largest Rectangle in Histogram",
+  "difficulty": "hard",
+  "tags": [
+    "monotonic-stack",
+    "stack",
+    "arrays"
+  ],
+  "companies": [
+    "amazon",
+    "google",
+    "microsoft",
+    "meta"
+  ],
+  "target_minutes": 35,
+  "signature": {
+    "function": "largest_rectangle_area",
+    "params": [
+      {
+        "name": "heights",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
