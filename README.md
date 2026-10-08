@@ -10,7 +10,7 @@ mastered, then tells you what to practice next.
 
 [![CI](https://github.com/abahocodes/dojo/actions/workflows/ci.yml/badge.svg)](https://github.com/abahocodes/dojo/actions/workflows/ci.yml)
 ![macOS and Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-informational)
-![Python and JavaScript](https://img.shields.io/badge/solve%20in-Python%20%7C%20JavaScript-blueviolet)
+![Six languages](https://img.shields.io/badge/solve%20in-Python%20%7C%20JavaScript%20%7C%20TypeScript%20%7C%20Java%20%7C%20C%2B%2B%20%7C%20Go-blueviolet)
 [![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Sponsor](https://img.shields.io/badge/sponsor-%E2%99%A5-ea4aaa)](https://github.com/sponsors/abahocodes)
 
@@ -55,7 +55,9 @@ git clone https://github.com/abahocodes/dojo && cd dojo
 SQLX_OFFLINE=true cargo install --path .
 ```
 
-You also need **Python 3.10+** or **Node.js 18+**, whichever you solve in.
+You also need the toolchain for the language you solve in: **Python 3.10+**,
+**Node.js 18+** (JavaScript) or **22.13+** (TypeScript), a **JDK 17+**, a
+**C++17 compiler** (Xcode command line tools or g++), or **Go 1.21+**.
 
 ## Quick start
 
@@ -88,7 +90,7 @@ does it.
 ## Browse the bank
 
 Each question has a statement, three hints, an explained solution, and visible
-and hidden tests, in Python and JavaScript. Questions are tagged by topic,
+and hidden tests, in Python, JavaScript, TypeScript, Java, C++ and Go. Questions are tagged by topic,
 company and difficulty, and `/list` filters on any of them.
 
 <img src="docs/images/list.png" alt="/list dynamic-programming showing 13 questions with their difficulty and tags" width="820">
@@ -178,7 +180,7 @@ Every question PR is checked in CI:
 
 ```toml
 editor = "nvim {file}"       # {file} and {dir} are filled in; falls back to $VISUAL, then $EDITOR
-language = "python"          # or "javascript"
+language = "python"          # javascript, typescript, java, cpp or go
 auto_test = true             # run visible tests on every save
 idle_pause_minutes = 15      # 0 turns it off
 # workspace = "/path/to/practice"   # where solution files live

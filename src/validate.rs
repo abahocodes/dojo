@@ -278,7 +278,7 @@ fn layout(q: &Question) -> Vec<String> {
     for file in &q.unreferenced {
         p.push(format!("{file} is not referenced by meta.json"));
     }
-    for lang in Language::ALL {
+    for lang in Language::REQUIRED {
         if !m.languages.contains_key(lang) {
             p.push(format!(
                 "meta.json has no `languages.{}` entry",

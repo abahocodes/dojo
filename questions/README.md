@@ -40,10 +40,17 @@ NNNN-slug/
 - The folder holds exactly what `meta.json` references (plus `meta.json`):
   no missing files, no stray files, no file referenced twice, no paths
   outside the folder.
-- Every supported language has a `languages` entry. Supported today:
-  `python` (`.py`) and `javascript` (`.js`).
+- Languages: `python` (`.py`), `javascript` (`.js`), `typescript` (`.ts`),
+  `java` (`.java`), `cpp` (`.cpp`) and `go` (`.go`). Python and JavaScript
+  are required; the others are being added to every question.
+  `dojo scaffold <folder> --lang typescript,java,cpp,go` writes starter code
+  from the signature and registers the files.
+- Solutions look like LeetCode's: plain functions in Python, JavaScript,
+  TypeScript and Go; `class Solution { ... }` in Java and C++ (with
+  `java.util.*` / the standard library and `using namespace std;` provided).
 - The signature is language-agnostic. `function` and param names are
-  snake_case; JavaScript uses camelCase (`two_sum` → `twoSum`).
+  snake_case; every language but Python uses camelCase (`two_sum` →
+  `twoSum`).
 - Types: `int`, `long`, `float`, `bool`, `string`, `ListNode`, `TreeNode`,
   plus `[]` suffixes. `int` is 32-bit (Java/C++ `int`); use `long` for values
   beyond ±2^31 (up to ±2^53, which JavaScript represents exactly). Node values
