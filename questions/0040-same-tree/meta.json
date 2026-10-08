@@ -1,0 +1,46 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 40,
+  "slug": "same-tree",
+  "title": "Same Tree",
+  "difficulty": "easy",
+  "tags": [
+    "trees",
+    "dfs"
+  ],
+  "companies": [
+    "amazon",
+    "bloomberg",
+    "microsoft"
+  ],
+  "target_minutes": 10,
+  "signature": {
+    "function": "is_same_tree",
+    "params": [
+      {
+        "name": "p",
+        "type": "TreeNode"
+      },
+      {
+        "name": "q",
+        "type": "TreeNode"
+      }
+    ],
+    "returns": "bool"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

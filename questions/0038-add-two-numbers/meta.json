@@ -1,0 +1,47 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 38,
+  "slug": "add-two-numbers",
+  "title": "Add Two Numbers",
+  "difficulty": "medium",
+  "tags": [
+    "linked-list",
+    "math"
+  ],
+  "companies": [
+    "amazon",
+    "microsoft",
+    "bloomberg",
+    "adobe"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "add_two_numbers",
+    "params": [
+      {
+        "name": "l1",
+        "type": "ListNode"
+      },
+      {
+        "name": "l2",
+        "type": "ListNode"
+      }
+    ],
+    "returns": "ListNode"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

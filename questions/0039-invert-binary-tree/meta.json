@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 39,
+  "slug": "invert-binary-tree",
+  "title": "Invert Binary Tree",
+  "difficulty": "easy",
+  "tags": [
+    "trees",
+    "dfs",
+    "bfs"
+  ],
+  "companies": [
+    "google",
+    "amazon",
+    "meta"
+  ],
+  "target_minutes": 10,
+  "signature": {
+    "function": "invert_tree",
+    "params": [
+      {
+        "name": "root",
+        "type": "TreeNode"
+      }
+    ],
+    "returns": "TreeNode"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
