@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 104,
+  "slug": "rotate-image",
+  "title": "Rotate Image",
+  "difficulty": "medium",
+  "tags": [
+    "arrays",
+    "matrix",
+    "math"
+  ],
+  "companies": [
+    "amazon",
+    "microsoft",
+    "apple",
+    "google"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "rotate",
+    "params": [
+      {
+        "name": "matrix",
+        "type": "int[][]"
+      }
+    ],
+    "returns": "int[][]"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

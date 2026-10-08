@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 106,
+  "slug": "jump-game",
+  "title": "Jump Game",
+  "difficulty": "medium",
+  "tags": [
+    "arrays",
+    "greedy",
+    "dynamic-programming"
+  ],
+  "companies": [
+    "amazon",
+    "microsoft",
+    "meta",
+    "google"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "can_jump",
+    "params": [
+      {
+        "name": "nums",
+        "type": "int[]"
+      }
+    ],
+    "returns": "bool"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
