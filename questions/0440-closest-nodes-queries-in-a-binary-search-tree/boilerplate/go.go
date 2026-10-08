@@ -1,0 +1,14 @@
+// 440. Closest Nodes Queries in a Binary Search Tree (medium)
+// /show to reread the problem · /test runs visible tests · /submit when done
+package main
+
+// Provided by dojo:
+// type TreeNode struct {
+//     Val   int
+//     Left  *TreeNode
+//     Right *TreeNode
+// }
+
+func closestNodes(root *TreeNode, queries []int) [][]int {
+	return nil
+}
