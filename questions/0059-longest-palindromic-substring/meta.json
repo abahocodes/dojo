@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 59,
+  "slug": "longest-palindromic-substring",
+  "title": "Longest Palindromic Substring",
+  "difficulty": "medium",
+  "tags": [
+    "dynamic-programming",
+    "strings",
+    "two-pointers"
+  ],
+  "companies": [
+    "amazon",
+    "microsoft",
+    "google",
+    "adobe"
+  ],
+  "target_minutes": 25,
+  "signature": {
+    "function": "longest_palindrome",
+    "params": [
+      {
+        "name": "s",
+        "type": "string"
+      }
+    ],
+    "returns": "string"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
