@@ -1,0 +1,4 @@
+# Steps dist runs before each release build (see dist-workspace.toml).
+- name: Check SQL against the committed .sqlx cache
+  run: echo "SQLX_OFFLINE=true" >> "$GITHUB_ENV"
+  shell: bash
