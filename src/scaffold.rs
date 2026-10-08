@@ -26,8 +26,11 @@ pub fn boilerplate(meta: &Meta, lang: Language) -> String {
         Language::JavaScript => javascript(meta),
         Language::TypeScript => typescript(meta),
         Language::Go => crate::runner::compiled::go::boilerplate(&meta.signature, &header(meta)),
+        Language::Java => {
+            crate::runner::compiled::java::boilerplate(&meta.signature, &header(meta))
+        }
         // Filled in as each compiled language lands.
-        Language::Java | Language::Cpp => String::new(),
+        Language::Cpp => String::new(),
     }
 }
 

@@ -37,6 +37,11 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: "22"
+      # Java solutions are compiled with javac and run on the same JDK.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
 
       - name: Format
         run: cargo fmt --check

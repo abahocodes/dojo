@@ -20,6 +20,7 @@ use crate::lang::Language;
 use crate::questions::Signature;
 
 pub mod go;
+pub mod java;
 
 /// Longest a compile may take (the first Go build also compiles the parts
 /// of its standard library the driver uses).
@@ -60,6 +61,7 @@ pub fn build(
     let source = std::fs::read_to_string(solution)?;
     let mut plan = match lang {
         Language::Go => go::plan(signature, &source, dir),
+        Language::Java => java::plan(signature, &source, dir),
         _ => anyhow::bail!("{} isn't a compiled language", lang.label()),
     };
     for (name, body) in &plan.sources {
@@ -99,20 +101,29 @@ pub fn build(
 fn compile_error(output: &str, dir: &Path, plan: &Plan, function: &str) -> String {
     let dir = dir.display().to_string();
     let mut driver_errors = false;
+    // Inside a driver error's continuation lines (javac echoes the code
+    // line, a caret and `symbol:`/`location:` lines after each error).
+    let mut in_driver_error = false;
     let mut lines = Vec::new();
     for line in output.lines() {
         let line = line
             .replace(&format!("{dir}/"), "")
             .replace(&dir, "")
             .replace("./", "");
-        if line.trim().is_empty() || line.starts_with("# ") {
-            continue; // Go's "# command-line-arguments" header
+        if line.trim().is_empty() || line.starts_with("# ") || is_summary(&line) {
+            continue; // Go's "# command-line-arguments" header, javac's counts and notes
         }
         if line.contains(&plan.driver_file) {
             driver_errors = true;
+            in_driver_error = true;
             continue;
         }
-        lines.push(line);
+        if line.contains(&plan.solution_file) {
+            in_driver_error = false;
+        }
+        if !in_driver_error {
+            lines.push(line);
+        }
     }
     let mut msg = String::from("compile error\n");
     if lines.len() > MAX_ERROR_LINES {
@@ -131,6 +142,20 @@ fn compile_error(output: &str, dir: &Path, plan: &Plan, function: &str) -> Strin
         ));
     }
     msg.trim_end().to_string()
+}
+
+/// javac's closing lines: `2 errors`, `1 warning`, and `Note: ...` about
+/// unchecked operations.
+fn is_summary(line: &str) -> bool {
+    if line.starts_with("Note: ") {
+        return true;
+    }
+    let mut words = line.split_whitespace();
+    matches!(
+        (words.next(), words.next(), words.next()),
+        (Some(n), Some("error" | "errors" | "warning" | "warnings"), None)
+            if n.chars().all(|c| c.is_ascii_digit())
+    )
 }
 
 #[cfg(test)]
@@ -162,6 +187,36 @@ mod tests {
             msg,
             "compile error\nsolution.go:5:2: undefined: foo\n\
              dojo couldn't call `twoSum` from solution.go: check its name, parameters and return type match the starter code"
+        );
+    }
+
+    #[test]
+    fn javac_driver_errors_drop_their_detail_lines() {
+        let plan = Plan {
+            solution_file: "solution.java".into(),
+            driver_file: "DojoMain.java".into(),
+            ..plan()
+        };
+        let out = "DojoMain.java:5: error: cannot find symbol\n\
+                   \x20           return new Solution().negate(a0);\n\
+                   \x20                                ^\n\
+                   \x20 symbol:   method negate(boolean)\n\
+                   \x20 location: class Solution\n\
+                   solution.java:3: error: ';' expected\n\
+                   \x20       int x = 1\n\
+                   \x20                ^\n\
+                   Note: solution.java uses unchecked or unsafe operations.\n\
+                   2 errors\n";
+        let msg = compile_error()
+            .output(out)
+            .dir(Path::new("/tmp/x"))
+            .plan(&plan)
+            .function("negate")
+            .call();
+        assert_eq!(
+            msg,
+            "compile error\nsolution.java:3: error: ';' expected\n        int x = 1\n                 ^\n\
+             dojo couldn't call `negate` from solution.java: check its name, parameters and return type match the starter code"
         );
     }
 

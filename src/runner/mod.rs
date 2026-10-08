@@ -1093,6 +1093,10 @@ mod language_tests {
                         Language::Go,
                         "package main\n\nfunc scale(values []int, factor int) []int {\n\tout := make([]int, len(values))\n\tfor i, v := range values {\n\t\tout[i] = v * factor\n\t}\n\treturn out\n}\n",
                     ),
+                    (
+                        Language::Java,
+                        "class Solution {\n    public int[] scale(int[] values, int factor) {\n        int[] out = new int[values.length];\n        for (int i = 0; i < values.length; i++) {\n            out[i] = values[i] * factor;\n        }\n        return out;\n    }\n}\n",
+                    ),
                 ],
             },
             // nested lists
@@ -1126,6 +1130,10 @@ mod language_tests {
                         Language::Go,
                         "package main\n\nfunc transpose(grid [][]int) [][]int {\n\tif len(grid) == 0 {\n\t\treturn nil\n\t}\n\tout := make([][]int, len(grid[0]))\n\tfor c := range out {\n\t\tout[c] = make([]int, len(grid))\n\t\tfor r := range grid {\n\t\t\tout[c][r] = grid[r][c]\n\t\t}\n\t}\n\treturn out\n}\n",
                     ),
+                    (
+                        Language::Java,
+                        "class Solution {\n    public int[][] transpose(int[][] grid) {\n        if (grid.length == 0) {\n            return new int[0][];\n        }\n        int[][] out = new int[grid[0].length][grid.length];\n        for (int r = 0; r < grid.length; r++) {\n            for (int c = 0; c < grid[0].length; c++) {\n                out[c][r] = grid[r][c];\n            }\n        }\n        return out;\n    }\n}\n",
+                    ),
                 ],
             },
             "bool" => Fixture {
@@ -1152,6 +1160,10 @@ mod language_tests {
                     (
                         Language::Go,
                         "package main\n\nfunc negate(flag bool) bool { return !flag }\n",
+                    ),
+                    (
+                        Language::Java,
+                        "class Solution {\n    public boolean negate(boolean flag) {\n        return !flag;\n    }\n}\n",
                     ),
                 ],
             },
@@ -1180,6 +1192,10 @@ mod language_tests {
                     (
                         Language::Go,
                         "package main\n\nfunc halve(x float64) float64 { return x / 2 }\n",
+                    ),
+                    (
+                        Language::Java,
+                        "class Solution {\n    public double halve(double x) {\n        return x / 2;\n    }\n}\n",
                     ),
                 ],
             },
@@ -1212,6 +1228,11 @@ mod language_tests {
                         Language::Go,
                         "package main\n\nimport \"unicode/utf8\"\n\nfunc lengths(words []string) []int {\n\tout := []int{}\n\tfor _, w := range words {\n\t\tout = append(out, utf8.RuneCountInString(w))\n\t}\n\treturn out\n}\n",
                     ),
+                    // List and ArrayList: java.util is imported, as on LeetCode.
+                    (
+                        Language::Java,
+                        "class Solution {\n    public int[] lengths(String[] words) {\n        List<Integer> out = new ArrayList<>();\n        for (String w : words) {\n            out.add(w.codePointCount(0, w.length()));\n        }\n        return out.stream().mapToInt(Integer::intValue).toArray();\n    }\n}\n",
+                    ),
                 ],
             },
             "list_node" => Fixture {
@@ -1242,6 +1263,10 @@ mod language_tests {
                     (
                         Language::Go,
                         "package main\n\nfunc reverse(head *ListNode) *ListNode {\n\tvar prev *ListNode\n\tfor head != nil {\n\t\thead.Next, prev, head = prev, head, head.Next\n\t}\n\treturn prev\n}\n",
+                    ),
+                    (
+                        Language::Java,
+                        "class Solution {\n    public ListNode reverse(ListNode head) {\n        ListNode prev = null;\n        while (head != null) {\n            ListNode next = head.next;\n            head.next = prev;\n            prev = head;\n            head = next;\n        }\n        return prev;\n    }\n}\n",
                     ),
                 ],
             },
@@ -1275,6 +1300,10 @@ mod language_tests {
                         Language::Go,
                         "package main\n\nfunc mirror(root *TreeNode) *TreeNode {\n\tif root != nil {\n\t\troot.Left, root.Right = mirror(root.Right), mirror(root.Left)\n\t}\n\treturn root\n}\n",
                     ),
+                    (
+                        Language::Java,
+                        "class Solution {\n    public TreeNode mirror(TreeNode root) {\n        if (root != null) {\n            TreeNode left = mirror(root.right);\n            root.right = mirror(root.left);\n            root.left = left;\n        }\n        return root;\n    }\n}\n",
+                    ),
                 ],
             },
             // 64-bit values (Java long, C++ long long)
@@ -1307,6 +1336,10 @@ mod language_tests {
                         Language::Go,
                         "package main\n\nfunc total(values []int) int {\n\tsum := 0\n\tfor _, v := range values {\n\t\tsum += v\n\t}\n\treturn sum\n}\n",
                     ),
+                    (
+                        Language::Java,
+                        "class Solution {\n    public long total(long[] values) {\n        long sum = 0;\n        for (long v : values) {\n            sum += v;\n        }\n        return sum;\n    }\n}\n",
+                    ),
                 ],
             },
             other => panic!("no fixture {other}"),
@@ -1333,7 +1366,8 @@ mod language_tests {
             Language::Python,
             Language::JavaScript,
             Language::TypeScript,
-            Language::Go
+            Language::Go,
+            Language::Java
         )]
         lang: Language,
         #[values(
@@ -1374,6 +1408,10 @@ mod language_tests {
         Language::Go,
         "package main\n\nfunc reverse(head *ListNode) *ListNode { return head }\n"
     )]
+    #[case::java(
+        Language::Java,
+        "class Solution {\n    public ListNode reverse(ListNode head) {\n        return head;\n    }\n}\n"
+    )]
     fn wrong_answers_fail_with_what_they_returned(#[case] lang: Language, #[case] code: &str) {
         let f = fixture("list_node");
         let report = run_fixture(&f, lang, code, Which::Visible);
@@ -1389,7 +1427,8 @@ mod language_tests {
             Language::Python,
             Language::JavaScript,
             Language::TypeScript,
-            Language::Go
+            Language::Go,
+            Language::Java
         )]
         lang: Language,
     ) {
@@ -1407,6 +1446,10 @@ mod language_tests {
     #[case::javascript(Language::JavaScript, "function somethingElse() {}\n")]
     #[case::typescript(Language::TypeScript, "function somethingElse(): void {}\n")]
     #[case::go(Language::Go, "package main\n\nfunc somethingElse() {}\n")]
+    #[case::java(
+        Language::Java,
+        "class Solution {\n    public void somethingElse() {}\n}\n"
+    )]
     fn missing_function_is_reported(#[case] lang: Language, #[case] code: &str) {
         let f = fixture("bool");
         let report = run_fixture(&f, lang, code, Which::Visible);
@@ -1461,6 +1504,66 @@ mod language_tests {
         let f = fixture("bool");
         let code = "package main\n\nimport \"fmt\"\n\nfunc negate(flag bool) bool {\n\tfmt.Println(\"seen\", flag)\n\treturn !flag\n}\n";
         let report = run_fixture(&f, Language::Go, code, Which::Visible);
+        assert_eq!(report.cases[0].stdout.as_deref(), Some("seen true"));
+        assert_eq!(report.cases[1].stdout.as_deref(), Some("seen false"));
+    }
+
+    /// Compile errors point at the solution's own lines.
+    #[test]
+    fn java_compile_errors_are_reported() {
+        let f = fixture("bool");
+        let code = "class Solution {\n    public boolean negate(boolean flag) {\n        return flag +\n    }\n}\n";
+        let fatal = run_fixture(&f, Language::Java, code, Which::Visible)
+            .fatal
+            .unwrap_or_default();
+        assert!(
+            fatal.starts_with("compile error\nsolution.java:4: error:"),
+            "{fatal}"
+        );
+        assert!(!fatal.contains("DojoMain"), "{fatal}");
+    }
+
+    /// An exception fails its case with its class, message and the
+    /// solution's frames; the other cases still run.
+    #[test]
+    fn java_exceptions_fail_their_case() {
+        let f = fixture("ints");
+        let code = "class Solution {\n    public int[] scale(int[] values, int factor) {\n        if (factor == 5) {\n            return new int[] {values[10]};\n        }\n        return values;\n    }\n}\n";
+        let report = run_fixture(&f, Language::Java, code, Which::Visible);
+        assert_eq!(report.cases[0].status, Status::Fail);
+        assert_eq!(report.cases[1].status, Status::Error);
+        let error = report.cases[1].error.clone().unwrap_or_default();
+        assert_eq!(
+            error,
+            "java.lang.ArrayIndexOutOfBoundsException: Index 10 out of bounds for length 0\n  at Solution.scale(solution.java:4)"
+        );
+    }
+
+    /// A stack overflow is caught in Java: it fails its case, frames
+    /// collapsed, and the next cases still run.
+    #[test]
+    fn java_stack_overflow_is_reported_on_its_case() {
+        let f = fixture("bool");
+        let code = "class Solution {\n    public boolean negate(boolean flag) {\n        return negate(flag);\n    }\n}\n";
+        let report = run_fixture(&f, Language::Java, code, Which::Visible);
+        assert_eq!(report.cases[0].status, Status::Error);
+        let error = report.cases[0].error.clone().unwrap_or_default();
+        assert!(error.starts_with("java.lang.StackOverflowError"), "{error}");
+        assert!(
+            error.contains("at Solution.negate(solution.java:3)"),
+            "{error}"
+        );
+        assert!(error.contains("hint:"), "{error}");
+        assert!(error.lines().count() < 10, "{error}");
+        assert_eq!(report.cases[1].status, Status::Error);
+    }
+
+    /// Prints are captured per case.
+    #[test]
+    fn java_prints_are_captured() {
+        let f = fixture("bool");
+        let code = "class Solution {\n    public boolean negate(boolean flag) {\n        System.out.println(\"seen \" + flag);\n        return !flag;\n    }\n}\n";
+        let report = run_fixture(&f, Language::Java, code, Which::Visible);
         assert_eq!(report.cases[0].stdout.as_deref(), Some("seen true"));
         assert_eq!(report.cases[1].stdout.as_deref(), Some("seen false"));
     }
