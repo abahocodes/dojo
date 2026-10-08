@@ -1,0 +1,48 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 60,
+  "slug": "kth-largest-element-in-an-array",
+  "title": "Kth Largest Element in an Array",
+  "difficulty": "medium",
+  "tags": [
+    "heap",
+    "quickselect",
+    "sorting"
+  ],
+  "companies": [
+    "meta",
+    "amazon",
+    "microsoft",
+    "google"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "find_kth_largest",
+    "params": [
+      {
+        "name": "nums",
+        "type": "int[]"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

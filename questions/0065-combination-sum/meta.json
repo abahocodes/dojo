@@ -1,0 +1,47 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 65,
+  "slug": "combination-sum",
+  "title": "Combination Sum",
+  "difficulty": "medium",
+  "tags": [
+    "backtracking",
+    "arrays"
+  ],
+  "companies": [
+    "amazon",
+    "airbnb",
+    "meta",
+    "uber"
+  ],
+  "target_minutes": 25,
+  "signature": {
+    "function": "combination_sum",
+    "params": [
+      {
+        "name": "candidates",
+        "type": "int[]"
+      },
+      {
+        "name": "target",
+        "type": "int"
+      }
+    ],
+    "returns": "int[][]"
+  },
+  "compare": "unordered_deep",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
