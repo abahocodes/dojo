@@ -790,6 +790,10 @@ mod runaway_tests {
         Language::JavaScript,
         "function twoSum(nums, target) { for (;;) { console.log('spin'); } }\n"
     )]
+    #[case::cpp_loop(
+        Language::Cpp,
+        "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        for (;;) cout << \"spin\" << endl;\n    }\n};\n"
+    )]
     #[case::python_uninterruptible(
         Language::Python,
         "def two_sum(nums, target):\n    return sum(range(10**15))\n"
@@ -1093,6 +1097,10 @@ mod language_tests {
                         Language::Go,
                         "package main\n\nfunc scale(values []int, factor int) []int {\n\tout := make([]int, len(values))\n\tfor i, v := range values {\n\t\tout[i] = v * factor\n\t}\n\treturn out\n}\n",
                     ),
+                    (
+                        Language::Cpp,
+                        "class Solution {\npublic:\n    vector<int> scale(vector<int>& values, int factor) {\n        vector<int> out;\n        for (int v : values) out.push_back(v * factor);\n        return out;\n    }\n};\n",
+                    ),
                 ],
             },
             // nested lists
@@ -1126,6 +1134,10 @@ mod language_tests {
                         Language::Go,
                         "package main\n\nfunc transpose(grid [][]int) [][]int {\n\tif len(grid) == 0 {\n\t\treturn nil\n\t}\n\tout := make([][]int, len(grid[0]))\n\tfor c := range out {\n\t\tout[c] = make([]int, len(grid))\n\t\tfor r := range grid {\n\t\t\tout[c][r] = grid[r][c]\n\t\t}\n\t}\n\treturn out\n}\n",
                     ),
+                    (
+                        Language::Cpp,
+                        "class Solution {\npublic:\n    vector<vector<int>> transpose(vector<vector<int>>& grid) {\n        if (grid.empty()) return {};\n        vector<vector<int>> out(grid[0].size(), vector<int>(grid.size()));\n        for (size_t r = 0; r < grid.size(); r++)\n            for (size_t c = 0; c < grid[0].size(); c++) out[c][r] = grid[r][c];\n        return out;\n    }\n};\n",
+                    ),
                 ],
             },
             "bool" => Fixture {
@@ -1152,6 +1164,10 @@ mod language_tests {
                     (
                         Language::Go,
                         "package main\n\nfunc negate(flag bool) bool { return !flag }\n",
+                    ),
+                    (
+                        Language::Cpp,
+                        "class Solution {\npublic:\n    bool negate(bool flag) { return !flag; }\n};\n",
                     ),
                 ],
             },
@@ -1180,6 +1196,10 @@ mod language_tests {
                     (
                         Language::Go,
                         "package main\n\nfunc halve(x float64) float64 { return x / 2 }\n",
+                    ),
+                    (
+                        Language::Cpp,
+                        "class Solution {\npublic:\n    double halve(double x) { return x / 2; }\n};\n",
                     ),
                 ],
             },
@@ -1212,6 +1232,11 @@ mod language_tests {
                         Language::Go,
                         "package main\n\nimport \"unicode/utf8\"\n\nfunc lengths(words []string) []int {\n\tout := []int{}\n\tfor _, w := range words {\n\t\tout = append(out, utf8.RuneCountInString(w))\n\t}\n\treturn out\n}\n",
                     ),
+                    // Code points: the bytes that aren't UTF-8 continuations.
+                    (
+                        Language::Cpp,
+                        "class Solution {\npublic:\n    vector<int> lengths(vector<string>& words) {\n        vector<int> out;\n        for (const string& w : words) {\n            int n = 0;\n            for (unsigned char c : w) n += (c & 0xC0) != 0x80;\n            out.push_back(n);\n        }\n        return out;\n    }\n};\n",
+                    ),
                 ],
             },
             "list_node" => Fixture {
@@ -1242,6 +1267,10 @@ mod language_tests {
                     (
                         Language::Go,
                         "package main\n\nfunc reverse(head *ListNode) *ListNode {\n\tvar prev *ListNode\n\tfor head != nil {\n\t\thead.Next, prev, head = prev, head, head.Next\n\t}\n\treturn prev\n}\n",
+                    ),
+                    (
+                        Language::Cpp,
+                        "class Solution {\npublic:\n    ListNode* reverse(ListNode* head) {\n        ListNode* prev = nullptr;\n        while (head) {\n            ListNode* next = head->next;\n            head->next = prev;\n            prev = head;\n            head = next;\n        }\n        return prev;\n    }\n};\n",
                     ),
                 ],
             },
@@ -1275,6 +1304,10 @@ mod language_tests {
                         Language::Go,
                         "package main\n\nfunc mirror(root *TreeNode) *TreeNode {\n\tif root != nil {\n\t\troot.Left, root.Right = mirror(root.Right), mirror(root.Left)\n\t}\n\treturn root\n}\n",
                     ),
+                    (
+                        Language::Cpp,
+                        "class Solution {\npublic:\n    TreeNode* mirror(TreeNode* root) {\n        if (root) {\n            TreeNode* left = mirror(root->right);\n            root->right = mirror(root->left);\n            root->left = left;\n        }\n        return root;\n    }\n};\n",
+                    ),
                 ],
             },
             // 64-bit values (Java long, C++ long long)
@@ -1307,6 +1340,10 @@ mod language_tests {
                         Language::Go,
                         "package main\n\nfunc total(values []int) int {\n\tsum := 0\n\tfor _, v := range values {\n\t\tsum += v\n\t}\n\treturn sum\n}\n",
                     ),
+                    (
+                        Language::Cpp,
+                        "class Solution {\npublic:\n    long long total(vector<long long>& values) {\n        long long sum = 0;\n        for (long long v : values) sum += v;\n        return sum;\n    }\n};\n",
+                    ),
                 ],
             },
             other => panic!("no fixture {other}"),
@@ -1333,7 +1370,8 @@ mod language_tests {
             Language::Python,
             Language::JavaScript,
             Language::TypeScript,
-            Language::Go
+            Language::Go,
+            Language::Cpp
         )]
         lang: Language,
         #[values(
@@ -1374,6 +1412,10 @@ mod language_tests {
         Language::Go,
         "package main\n\nfunc reverse(head *ListNode) *ListNode { return head }\n"
     )]
+    #[case::cpp(
+        Language::Cpp,
+        "class Solution {\npublic:\n    ListNode* reverse(ListNode* head) { return head; }\n};\n"
+    )]
     fn wrong_answers_fail_with_what_they_returned(#[case] lang: Language, #[case] code: &str) {
         let f = fixture("list_node");
         let report = run_fixture(&f, lang, code, Which::Visible);
@@ -1389,7 +1431,8 @@ mod language_tests {
             Language::Python,
             Language::JavaScript,
             Language::TypeScript,
-            Language::Go
+            Language::Go,
+            Language::Cpp
         )]
         lang: Language,
     ) {
@@ -1407,6 +1450,10 @@ mod language_tests {
     #[case::javascript(Language::JavaScript, "function somethingElse() {}\n")]
     #[case::typescript(Language::TypeScript, "function somethingElse(): void {}\n")]
     #[case::go(Language::Go, "package main\n\nfunc somethingElse() {}\n")]
+    #[case::cpp(
+        Language::Cpp,
+        "class Solution {\npublic:\n    void somethingElse() {}\n};\n"
+    )]
     fn missing_function_is_reported(#[case] lang: Language, #[case] code: &str) {
         let f = fixture("bool");
         let report = run_fixture(&f, lang, code, Which::Visible);
@@ -1463,5 +1510,157 @@ mod language_tests {
         let report = run_fixture(&f, Language::Go, code, Which::Visible);
         assert_eq!(report.cases[0].stdout.as_deref(), Some("seen true"));
         assert_eq!(report.cases[1].stdout.as_deref(), Some("seen false"));
+    }
+
+    /// The starter code compiles against the driver for every type.
+    #[rstest]
+    fn cpp_boilerplate_compiles(
+        #[values(
+            "ints",
+            "nested",
+            "bool",
+            "float",
+            "strings",
+            "list_node",
+            "tree_node",
+            "long"
+        )]
+        name: &str,
+    ) {
+        let f = fixture(name);
+        let code = compiled::cpp::boilerplate(&f.question.meta.signature, "header");
+        let report = run_fixture(&f, Language::Cpp, &code, Which::Visible);
+        assert!(report.fatal.is_none(), "{:?}\n{code}", report.fatal);
+        assert!(
+            report.cases.iter().all(|c| c.error.is_none()),
+            "{:?}",
+            report.cases
+        );
+    }
+
+    /// Compile errors point at the solution's own lines, not the driver that
+    /// includes it.
+    #[test]
+    fn cpp_compile_errors_are_reported() {
+        let f = fixture("bool");
+        let code = "class Solution {\npublic:\n    bool negate(bool flag) {\n        return flag +;\n    }\n};\n";
+        let fatal = run_fixture(&f, Language::Cpp, code, Which::Visible)
+            .fatal
+            .unwrap_or_default();
+        assert!(
+            fatal.starts_with("compile error\nsolution.cpp:4:"),
+            "{fatal}"
+        );
+        assert!(
+            !fatal.contains("dojo_main") && !fatal.contains("couldn't call"),
+            "{fatal}"
+        );
+    }
+
+    /// A parameter type that doesn't match the starter code is explained,
+    /// without the driver's own diagnostics.
+    #[test]
+    fn cpp_signature_mismatch_is_explained() {
+        let f = fixture("ints");
+        let code = "class Solution {\npublic:\n    vector<int> scale(vector<string>& values, int factor) {\n        return {};\n    }\n};\n";
+        let fatal = run_fixture(&f, Language::Cpp, code, Which::Visible)
+            .fatal
+            .unwrap_or_default();
+        assert!(fatal.contains("couldn't call `scale`"), "{fatal}");
+        assert!(
+            !fatal.contains("dojo_main") && !fatal.contains("dojo_support"),
+            "{fatal}"
+        );
+    }
+
+    /// An exception fails its case with its type and message; the other
+    /// cases still run.
+    #[test]
+    fn cpp_exceptions_fail_their_case() {
+        let f = fixture("ints");
+        let code = "class Solution {\npublic:\n    vector<int> scale(vector<int>& values, int factor) {\n        if (factor == 5) values.at(10);\n        if (factor == -3) throw 7;\n        return values;\n    }\n};\n";
+        let report = run_fixture(&f, Language::Cpp, code, Which::All);
+        assert_eq!(
+            report.cases.iter().map(|c| c.status).collect::<Vec<_>>(),
+            [Status::Fail, Status::Error, Status::Error]
+        );
+        let error = report.cases[1].error.clone().unwrap_or_default();
+        assert!(error.contains("std::out_of_range"), "{error}");
+        let error = report.cases[2].error.clone().unwrap_or_default();
+        assert_eq!(error, "uncaught exception of type int");
+    }
+
+    /// Runaway recursion overflows even the large stack the cases run on:
+    /// the run stops on that case with the reason.
+    #[test]
+    fn cpp_stack_overflow_is_reported_on_its_case() {
+        let f = fixture("bool");
+        let code = "class Solution {\npublic:\n    int deep(volatile char* prev) {\n        volatile char frame[64];\n        frame[0] = *prev;\n        return deep(frame) + frame[1];\n    }\n    bool negate(bool flag) {\n        volatile char start = 0;\n        return deep(&start) == 0;\n    }\n};\n";
+        let report = run_fixture(&f, Language::Cpp, code, Which::Visible);
+        assert_eq!(report.cases[0].status, Status::Error);
+        let error = report.cases[0].error.clone().unwrap_or_default();
+        assert!(error.contains("stack overflow"), "{error}");
+        assert_eq!(report.cases[1].status, Status::NotRun);
+    }
+
+    /// Deep recursion that fits is fine: a million frames (~100MB) would
+    /// overflow a default 8MB stack.
+    #[test]
+    fn cpp_deep_recursion_works() {
+        let f = fixture("bool");
+        let code = "class Solution {\npublic:\n    int depth(int n, volatile char* prev) {\n        volatile char frame[64];\n        frame[0] = *prev;\n        return n == 0 ? 0 : 1 + depth(n - 1, frame);\n    }\n    bool negate(bool flag) {\n        volatile char start = 0;\n        return depth(1000000, &start) == 1000000 ? !flag : flag;\n    }\n};\n";
+        let report = run_fixture(&f, Language::Cpp, code, Which::Visible);
+        assert_eq!(report.passed(), 2, "{:?}", report.cases);
+    }
+
+    /// A bad pointer crashes the run on its case.
+    #[test]
+    fn cpp_segfault_is_reported_on_its_case() {
+        let f = fixture("bool");
+        let code = "class Solution {\npublic:\n    bool negate(bool flag) {\n        if (!flag) {\n            int* volatile p = nullptr;\n            return *p;\n        }\n        return false;\n    }\n};\n";
+        let report = run_fixture(&f, Language::Cpp, code, Which::Visible);
+        assert_eq!(report.cases[0].status, Status::Pass);
+        assert_eq!(report.cases[1].status, Status::Error);
+        let error = report.cases[1].error.clone().unwrap_or_default();
+        assert!(error.contains("segmentation fault"), "{error}");
+    }
+
+    /// `cout` and `printf` are both captured per case, in order.
+    #[test]
+    fn cpp_prints_are_captured() {
+        let f = fixture("bool");
+        let code = "class Solution {\npublic:\n    bool negate(bool flag) {\n        cout << \"seen \" << flag << endl;\n        printf(\"printf %d\\n\", flag);\n        cout << \"done\";\n        return !flag;\n    }\n};\n";
+        let report = run_fixture(&f, Language::Cpp, code, Which::Visible);
+        assert_eq!(
+            report.cases[0].stdout.as_deref(),
+            Some("seen 1\nprintf 1\ndone")
+        );
+        assert_eq!(
+            report.cases[1].stdout.as_deref(),
+            Some("seen 0\nprintf 0\ndone")
+        );
+    }
+
+    /// Strings come back escaped, with their UTF-8 intact; floats keep a
+    /// decimal point.
+    #[test]
+    fn cpp_values_round_trip() {
+        let q = question(
+            "echo",
+            json!([{ "name": "s", "type": "string" }]),
+            "string",
+            "exact",
+            json!([
+                { "input": { "s": "道場 \"q\" \\ \n\t\u{1}" }, "output": "道場 \"q\" \\ \n\t\u{1}" },
+                { "input": { "s": "😀" }, "output": "😀" }
+            ]),
+        );
+        let f = Fixture {
+            question: q,
+            code: &[],
+        };
+        let code = "class Solution {\npublic:\n    string echo(string& s) { return s; }\n};\n";
+        let report = run_fixture(&f, Language::Cpp, code, Which::All);
+        assert_eq!(report.passed(), 2, "{:?}", report.cases);
     }
 }
