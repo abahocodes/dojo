@@ -131,6 +131,12 @@ pub struct App {
     pub report: Option<ReportView>,
     /// First-run setup, while it runs.
     setup: Option<setup::Setup>,
+    /// After `/quit`: unsolved questions whose explained solutions are still
+    /// to be shown before leaving.
+    /// (questions left, how many there were)
+    review: Option<(Vec<u32>, usize)>,
+    /// Questions whose explained solution was shown since dojo opened.
+    explained: Vec<u32>,
     /// Results of the last session, printed to the terminal on exit.
     last_summary: Option<Vec<Done>>,
     quit: bool,
@@ -181,6 +187,8 @@ impl App {
             away: None,
             report: None,
             setup: None,
+            review: None,
+            explained: Vec::new(),
             unfinished,
             last_summary: None,
             quit: false,
@@ -214,6 +222,27 @@ impl App {
             };
         }
         let Some(s) = &self.session else {
+            if let Some((review, total)) = &self.review {
+                let total = *total;
+                return match review.first().and_then(|id| self.bank.get(*id)) {
+                    Some(q) => Prompt {
+                        enter: enter(
+                            &format!("/solution {}", q.meta.id),
+                            format!(
+                                "explained: #{} {} ({} of {total})",
+                                q.meta.id,
+                                q.meta.title,
+                                total - review.len() + 1
+                            ),
+                        ),
+                        tips: vec![tip("/quit", "leave now")],
+                    },
+                    None => Prompt {
+                        enter: enter("/quit", "all reviewed: close dojo".into()),
+                        tips: vec![tip("/solve <id>", "keep practicing")],
+                    },
+                };
+            }
             if let Some(o) = self.unfinished.first()
                 && let Some(q) = self.bank.get(o.question_id as u32)
             {
@@ -685,11 +714,7 @@ impl App {
                 self.transcript.clear();
                 None
             }
-            "quit" => {
-                self.end_session(false);
-                self.quit = true;
-                None
-            }
+            "quit" => self.cmd_quit(),
             _ => Some(views::error(format!("/{} is not wired up", spec.name))),
         };
         if let Some(entry) = out {
@@ -771,11 +796,44 @@ impl App {
         Some(views::hint(q, n, false))
     }
 
-    fn cmd_solution(&self, args: &[&str]) -> Option<Entry> {
-        Some(match self.resolve(args) {
-            Ok(q) => views::solution(q, self.config.lang()),
-            Err(e) => e,
-        })
+    fn cmd_solution(&mut self, args: &[&str]) -> Option<Entry> {
+        let (id, entry) = match self.resolve(args) {
+            Ok(q) => (q.meta.id, views::solution(q, self.config.lang())),
+            Err(e) => return Some(e),
+        };
+        self.explained_now(id);
+        Some(entry)
+    }
+
+    /// Notes that a question's explained solution was shown.
+    pub(super) fn explained_now(&mut self, id: u32) {
+        if !self.explained.contains(&id) {
+            self.explained.push(id);
+        }
+        if let Some((review, _)) = &mut self.review {
+            review.retain(|r| *r != id);
+        }
+    }
+
+    /// `/quit`: when questions went unsolved, offers their explained
+    /// solutions first (once); `/quit` again leaves.
+    fn cmd_quit(&mut self) -> Option<Entry> {
+        if self.review.is_none() {
+            let unsolved = self
+                .session
+                .as_ref()
+                .map(|s| missed(&s.done, &self.explained))
+                .unwrap_or_default();
+            if !unsolved.is_empty() {
+                self.end_session(true);
+                let offer = views::review_offer(&self.bank, &unsolved);
+                self.review = Some((unsolved.iter().map(|(id, _)| *id).collect(), unsolved.len()));
+                return Some(offer);
+            }
+        }
+        self.end_session(false);
+        self.quit = true;
+        None
     }
 
     fn save_config(&mut self) -> Option<Entry> {
@@ -853,6 +911,25 @@ impl App {
             Err(e) => views::error(format!("copy failed: {e}")),
         })
     }
+}
+
+/// Questions that ended failed or skipped, once each, minus those already
+/// explained.
+fn missed(done: &[Done], explained: &[u32]) -> Vec<(u32, Outcome)> {
+    let mut out: Vec<(u32, Outcome)> = Vec::new();
+    for d in done {
+        let solved_later = done.iter().any(|o| {
+            o.question_id == d.question_id && matches!(o.outcome, Outcome::Pass | Outcome::Revealed)
+        });
+        if matches!(d.outcome, Outcome::Fail | Outcome::Skip)
+            && !solved_later
+            && !explained.contains(&d.question_id)
+            && !out.iter().any(|(id, _)| *id == d.question_id)
+        {
+            out.push((d.question_id, d.outcome));
+        }
+    }
+    out
 }
 
 fn which(program: &str) -> bool {
@@ -964,4 +1041,43 @@ pub fn run(initial: Option<String>) -> Result<()> {
     };
     result?;
     Ok(printed?)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::time::Duration;
+
+    use rstest::rstest;
+
+    use super::*;
+
+    fn done(id: u32, outcome: Outcome) -> Done {
+        Done {
+            question_id: id,
+            outcome,
+            elapsed: Duration::ZERO,
+            hints: 0,
+            runs: 0,
+            failed_runs: 0,
+        }
+    }
+
+    #[rstest]
+    #[case::fails_and_skips(
+        &[(1, Outcome::Pass), (2, Outcome::Fail), (3, Outcome::Skip), (4, Outcome::Revealed)],
+        &[],
+        &[(2, Outcome::Fail), (3, Outcome::Skip)]
+    )]
+    #[case::unfinished_isnt_spoiled(&[(5, Outcome::Unfinished)], &[], &[])]
+    #[case::already_explained(&[(2, Outcome::Fail), (3, Outcome::Skip)], &[2], &[(3, Outcome::Skip)])]
+    #[case::solved_on_a_retry(&[(2, Outcome::Fail), (2, Outcome::Pass)], &[], &[])]
+    #[case::once_each(&[(2, Outcome::Skip), (2, Outcome::Fail)], &[], &[(2, Outcome::Skip)])]
+    fn picks_what_to_review(
+        #[case] session: &[(u32, Outcome)],
+        #[case] explained: &[u32],
+        #[case] expected: &[(u32, Outcome)],
+    ) {
+        let session: Vec<Done> = session.iter().map(|(id, o)| done(*id, *o)).collect();
+        assert_eq!(missed(&session, explained), expected);
+    }
 }

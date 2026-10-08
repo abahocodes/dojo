@@ -207,6 +207,7 @@ impl App {
                         return Some(views::error(format!("could not start session: {e:#}")));
                     }
                 };
+                self.review = None;
                 self.session = Some(
                     Session::builder()
                         .id(id)
@@ -372,6 +373,7 @@ impl App {
                     Ok(id) => id,
                     Err(e) => return Some(views::error(format!("could not start session: {e:#}"))),
                 };
+                self.review = None;
                 self.session = Some(
                     Session::builder()
                         .id(id)
@@ -754,6 +756,7 @@ impl App {
         let q = self.current_question()?.clone();
         let lang = self.config.lang();
         let Some(a) = self.session.as_mut()?.attempt.as_mut() else {
+            self.explained_now(q.meta.id);
             return Some(views::solution(&q, lang));
         };
         if !a.solution_armed {
@@ -763,6 +766,7 @@ impl App {
             ));
         }
         a.solution_viewed = true;
+        self.explained_now(q.meta.id);
         self.record("solution_viewed", serde_json::Value::Null);
         self.save_attempt(None, None);
         Some(views::solution(&q, a_lang(&self.session).unwrap_or(lang)))
