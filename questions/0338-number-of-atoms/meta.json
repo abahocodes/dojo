@@ -1,0 +1,58 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 338,
+  "slug": "number-of-atoms",
+  "title": "Number of Atoms",
+  "difficulty": "hard",
+  "tags": [
+    "stack",
+    "strings",
+    "hash-map",
+    "parsing"
+  ],
+  "companies": [
+    "google",
+    "amazon"
+  ],
+  "target_minutes": 40,
+  "signature": {
+    "function": "count_of_atoms",
+    "params": [
+      {
+        "name": "formula",
+        "type": "string"
+      }
+    ],
+    "returns": "string"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 481,
+  "slug": "kth-smallest-prime-fraction",
+  "title": "K-th Smallest Prime Fraction",
+  "difficulty": "medium",
+  "tags": [
+    "heap",
+    "binary-search",
+    "math"
+  ],
+  "companies": [
+    "amazon",
+    "google"
+  ],
+  "target_minutes": 30,
+  "signature": {
+    "function": "kth_smallest_prime_fraction",
+    "params": [
+      {
+        "name": "arr",
+        "type": "int[]"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}

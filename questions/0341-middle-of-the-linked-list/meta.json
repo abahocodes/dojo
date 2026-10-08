@@ -1,0 +1,57 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 341,
+  "slug": "middle-of-the-linked-list",
+  "title": "Middle of the Linked List",
+  "difficulty": "easy",
+  "tags": [
+    "linked-list",
+    "two-pointers"
+  ],
+  "companies": [
+    "amazon",
+    "microsoft",
+    "apple"
+  ],
+  "target_minutes": 12,
+  "signature": {
+    "function": "middle_node",
+    "params": [
+      {
+        "name": "head",
+        "type": "ListNode"
+      }
+    ],
+    "returns": "ListNode"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}

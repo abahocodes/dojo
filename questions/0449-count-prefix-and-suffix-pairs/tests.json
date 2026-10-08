@@ -1,0 +1,25 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"words": ["ab", "abab", "aba", "ab"]}, "output": 2},
+    {"input": {"words": ["xy", "xyx", "yx", "x"]}, "output": 0},
+    {"input": {"words": ["abc", "cab"]}, "output": 0},
+    {"input": {"words": ["a"]}, "output": 0, "hidden": true},
+    {"input": {"words": ["a", "a"]}, "output": 1, "hidden": true},
+    {"input": {"words": ["aaaaaaaaaa", "a"]}, "output": 0, "hidden": true},
+    {"input": {"words": ["a", "aa", "aaa", "aaaa", "aaaaa"]}, "output": 10, "hidden": true},
+    {"input": {"words": ["aba", "ababa", "aba", "a", "ababababa"]}, "output": 6, "hidden": true},
+    {"input": {"words": ["b", "ba", "bb", "b", "bb", "aabbb", "abb", "bbaba", "b", "abab", "aaa", "bab", "aabbb", "bbabb", "bbaab", "babab", "babab", "aabab", "aab", "babb", "aaaba", "ab"]}, "output": 31, "hidden": true},
+    {"input": {"words": ["aaa", "bbb", "bb", "bba", "aaba", "a", "aaaab", "ba", "abaab", "ba", "baa", "b", "bbb", "aaaa", "bbbb", "baab", "bbba", "abaaa", "abba", "a", "aa", "a", "abab", "abbaa", "aabb", "b", "bbb", "b", "aa", "ab", "bbab", "a", "bbbbb", "bb", "a", "bbbaa", "bab", "a", "ab", "bba", "bba", "a", "aa", "abb", "aaa", "ba", "baa", "bbb", "bbb"]}, "output": 113, "hidden": true},
+    {"input": {"words": ["aa", "aa", "aba", "b", "bbb", "ba", "ab", "bbb", "a", "babba", "aaaba", "a", "bbba", "a", "abb", "aaa", "baa", "babb", "baa", "bbaab", "abaab", "aaaa", "a", "aabbb", "a", "abaa", "babb", "baaa", "b", "bb", "b", "bab", "aba", "aabab", "ab", "ba", "aa", "bbaba", "aa", "abaa", "babb", "b", "a", "abaa", "baa", "a", "aaba"]}, "output": 111, "hidden": true},
+    {"input": {"words": ["baaa", "aab", "aab", "ba", "a", "aa", "aaa", "aba", "aa", "aa", "a", "aa", "ba", "aabab", "baab", "bbbb", "abaa", "bbab", "b", "a", "bbb", "a", "baaa"]}, "output": 26, "hidden": true},
+    {"input": {"words": ["b", "bb", "b", "aa", "abab", "abaa", "baba", "abbbb", "aa", "ab", "a", "b", "abbaa", "ababb", "bbaab", "aa", "a", "bbba", "aaa", "aabb", "abb", "bbbbb", "bbbba", "bb", "bba", "a", "ba", "bb", "aaab", "bb", "aa", "babb", "a", "aaa", "a", "bbbbb", "bb", "bab", "abaa", "ba", "bbbaa", "abbab", "aba", "aabb", "bbba", "abbbb", "b"]}, "output": 101, "hidden": true},
+    {"input": {"words": ["bab", "abaa", "a", "babba", "aaa", "bbaa", "bbb", "abbba", "aaaa", "abbaa", "bb", "baa", "b", "aab", "abba", "baba", "a", "aaa", "aaabb", "aba", "baba", "b", "a", "ba", "bbb", "bbab", "bab", "aba"]}, "output": 29, "hidden": true},
+    {"input": {"words": ["aaa", "abbab", "aabaa", "baa", "baa", "bbba", "baaa", "baab", "abaaa", "abaaa", "bbaba", "b", "bbbb", "aab", "ab", "bbb", "b", "ab", "abb"]}, "output": 6, "hidden": true},
+    {"input": {"words": ["bb", "babaa", "a", "b", "ba", "babbb", "bbb", "baa", "a", "ba", "abb", "ab", "bb", "babb", "b", "ab", "abb", "bbaaa", "aba", "ab", "baa", "a", "baba", "bab", "bbab", "aaab", "bbbb", "bba", "abaaa", "aaaa", "ba", "bb", "bbbbb", "ba", "aaa", "abaaa", "aaaa", "bbbbb", "a"]}, "output": 74, "hidden": true},
+    {"input": {"words": ["a", "bbabb", "b", "bb", "ba", "a", "abab", "bbb", "aa", "ababb", "aab", "abb"]}, "output": 6, "hidden": true},
+    {"input": {"words": ["ababa", "bb", "b", "aaa", "abaab", "bba", "aa", "ba", "abbba", "aaab", "bb", "ba", "b", "baa", "b", "bb", "bb", "abaa", "b", "bb", "bab", "aba", "baa", "abab", "aaa", "a", "bbba", "aba", "aaabb", "a", "bbbba", "bb", "bbbba", "bb", "bbbbb", "b"]}, "output": 73, "hidden": true},
+    {"input": {"words": ["aa", "aaaaaaa", "aaaaa", "aaaaa", "aaaaaaaaa", "aa", "aaaaaaa", "aaaaaaaaa", "aaaaaaa", "aaa", "aa", "aaaaa", "aaaaaaaa", "aaaaa", "a", "aaa", "aaa", "aaaaaaaaa", "aaaaaaa", "aaaaaaa", "aaaaaa", "aaaaaaaa", "aaaaaaa", "aaaaaaaaa", "aa", "aaaaaaaaa", "a", "aaaaaa", "aaaaaaaaa", "aaaaaaaaa", "aaa", "aaaaaa", "aaaaaaaaa", "aaaaaaaaaa", "aaaaa", "aaaaaaa", "aaaaa", "aaaaaaaaaa", "a", "aaaaa", "a", "aaaaaa", "aaaaaaaa", "aaaaaaaaaa", "aa", "aaaa", "aaaaaaaa", "aaaaaaa", "aaaaaaa", "aaaaa"]}, "output": 722, "hidden": true},
+    {"input": {"words": ["ababababa", "ababababab", "aba", "ababababa", "ababababab", "abab", "ababab", "a", "abababa", "aba", "aba", "abababa", "ababababa", "ab", "ababab", "ab", "a", "ababababab", "ababababa", "ababababab", "a", "ab", "abababab", "ababababab", "ab", "abababab", "ababababa", "ab", "ababa", "ababababab", "ababababab", "ababa", "abab", "abab", "aba", "abababab", "abababa", "a", "abababa", "a", "abababa", "aba", "ababa", "ababab", "abababa", "abab", "a", "ababab", "ababababab", "abab"]}, "output": 329, "hidden": true}
+  ]
+}

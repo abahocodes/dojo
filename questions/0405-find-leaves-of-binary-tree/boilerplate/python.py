@@ -1,0 +1,12 @@
+# 405. Find Leaves of Binary Tree (medium)
+# /show to reread the problem · /test runs visible tests · /submit when done
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def find_leaves(root: TreeNode | None) -> list[list[int]]:
+    pass

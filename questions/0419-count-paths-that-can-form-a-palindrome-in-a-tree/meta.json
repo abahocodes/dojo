@@ -1,0 +1,62 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 419,
+  "slug": "count-paths-that-can-form-a-palindrome-in-a-tree",
+  "title": "Count Paths That Can Form a Palindrome in a Tree",
+  "difficulty": "hard",
+  "tags": [
+    "trees",
+    "dfs",
+    "bit-manipulation",
+    "hash-map"
+  ],
+  "companies": [
+    "google",
+    "amazon"
+  ],
+  "target_minutes": 40,
+  "signature": {
+    "function": "count_palindrome_paths",
+    "params": [
+      {
+        "name": "parent",
+        "type": "int[]"
+      },
+      {
+        "name": "s",
+        "type": "string"
+      }
+    ],
+    "returns": "long"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}
