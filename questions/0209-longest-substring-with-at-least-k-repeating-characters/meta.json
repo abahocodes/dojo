@@ -1,0 +1,62 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 209,
+  "slug": "longest-substring-with-at-least-k-repeating-characters",
+  "title": "Longest Substring with At Least K Repeating Characters",
+  "difficulty": "medium",
+  "tags": [
+    "strings",
+    "sliding-window",
+    "divide-and-conquer"
+  ],
+  "companies": [
+    "meta",
+    "amazon",
+    "google"
+  ],
+  "target_minutes": 25,
+  "signature": {
+    "function": "longest_substring_k_repeating",
+    "params": [
+      {
+        "name": "s",
+        "type": "string"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}
