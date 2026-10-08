@@ -42,6 +42,11 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+      # Not every runner image ships Go. C++ uses the runner's compiler.
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+          cache: false
 
       - name: Format
         run: cargo fmt --check

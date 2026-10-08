@@ -214,6 +214,10 @@ func dojoRun(call func(input map[string]json.RawMessage) any) {
 	specPath, resultsPath := os.Args[1], os.Args[2]
 	progressPath := resultsPath + ".progress"
 	dojoProgress(progressPath, "load")
+	// Runaway recursion overflows in well under dojo's step limit (the 1GB
+	// default can take longer on slow machines); real solutions need far
+	// less.
+	debug.SetMaxStack(256 << 20)
 	data, err := os.ReadFile(specPath)
 	if err != nil {
 		panic(err)

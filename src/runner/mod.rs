@@ -1650,10 +1650,9 @@ mod language_tests {
         let fatal = run_fixture(&f, Language::Cpp, code, Which::Visible)
             .fatal
             .unwrap_or_default();
-        assert!(
-            fatal.starts_with("compile error\nsolution.cpp:4:"),
-            "{fatal}"
-        );
+        // GCC first names the function the error is in.
+        assert!(fatal.starts_with("compile error\nsolution.cpp"), "{fatal}");
+        assert!(fatal.contains("solution.cpp:4:"), "{fatal}");
         assert!(
             !fatal.contains("dojo_main") && !fatal.contains("couldn't call"),
             "{fatal}"
