@@ -1,0 +1,58 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 50,
+  "slug": "cheapest-flights-within-k-stops",
+  "title": "Cheapest Flights Within K Stops",
+  "difficulty": "medium",
+  "tags": [
+    "graphs",
+    "shortest-path",
+    "dynamic-programming"
+  ],
+  "companies": [
+    "amazon",
+    "airbnb",
+    "google"
+  ],
+  "target_minutes": 30,
+  "signature": {
+    "function": "find_cheapest_price",
+    "params": [
+      {
+        "name": "n",
+        "type": "int"
+      },
+      {
+        "name": "flights",
+        "type": "int[][]"
+      },
+      {
+        "name": "src",
+        "type": "int"
+      },
+      {
+        "name": "dst",
+        "type": "int"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
