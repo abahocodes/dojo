@@ -222,7 +222,7 @@ The contributor may ask for changes, or dojo may report validation problems. Eac
 }
 
 /// A built draft: the asset folder plus what validation found.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, bon::Builder)]
 pub struct Built {
     /// The question folder (`<root>/questions/<NNNN-slug>`).
     pub dir: PathBuf,
@@ -235,6 +235,7 @@ pub struct Built {
 /// Writes the asset folder for `draft` under `root`, computes expected
 /// outputs, and validates. Problems are returned, not raised, so they can be
 /// shown and sent back to the model.
+#[bon::builder]
 pub fn build(draft: &Draft, root: &Path, id: u32, bank: &Bank) -> Result<Built> {
     let questions = root.join(QUESTIONS);
     let _ = std::fs::remove_dir_all(&questions);
@@ -283,15 +284,22 @@ pub fn build(draft: &Draft, root: &Path, id: u32, bank: &Bank) -> Result<Built> 
     }
     let generated = cases.len() - literal;
 
-    write_files(draft, &dir, id, &cases)?;
+    write_files()
+        .draft(draft)
+        .dir(&dir)
+        .id(id)
+        .cases(&cases)
+        .call()?;
     let visible = cases.iter().filter(|c| c["hidden"] == false).count();
     let hidden = cases.len() - visible;
-    let built = |problems| Built {
-        dir: dir.clone(),
-        problems,
-        visible,
-        hidden,
-        generated,
+    let built = |problems| {
+        Built::builder()
+            .dir(dir.clone())
+            .problems(problems)
+            .visible(visible)
+            .hidden(hidden)
+            .generated(generated)
+            .build()
     };
 
     // Expected outputs come from running the Python reference solution.
@@ -302,12 +310,12 @@ pub fn build(draft: &Draft, root: &Path, id: u32, bank: &Bank) -> Result<Built> 
             return Ok(built(problems));
         }
     };
-    let report = runner::run(
-        &q,
-        Language::Python,
-        &dir.join("solutions/python.py"),
-        Which::All,
-    )?;
+    let report = runner::run()
+        .question(&q)
+        .lang(Language::Python)
+        .solution(&dir.join("solutions/python.py"))
+        .which(Which::All)
+        .call()?;
     if let Some(fatal) = report.fatal {
         problems.push(format!("the Python solution failed to run:\n{fatal}"));
         return Ok(built(problems));
@@ -366,6 +374,7 @@ fn duplicates(draft: &Draft, bank: &Bank) -> Vec<String> {
         .collect()
 }
 
+#[bon::builder]
 fn write_files(draft: &Draft, dir: &Path, id: u32, cases: &[Value]) -> Result<()> {
     let meta = json!({
         "$schema": "../../schema/meta.schema.json",
@@ -469,7 +478,13 @@ mod tests {
             "def generate():\n    return [{'n': 44}, {'n': 45}]\n".into();
 
         let root = tempfile::tempdir().unwrap();
-        let built = build(&draft, root.path(), 18, &bank).unwrap();
+        let built = build()
+            .draft(&draft)
+            .root(root.path())
+            .id(18)
+            .bank(&bank)
+            .call()
+            .unwrap();
         assert!(built.problems.is_empty(), "{:#?}", built.problems);
         assert!(built.dir.ends_with("0018-count-staircase-climbs"));
         assert_eq!(built.generated, 2);
@@ -486,7 +501,13 @@ mod tests {
         let mut draft = Draft::from_question(bank.get(13).unwrap());
         draft.javascript_solution = "function climbStairs(n) { return n; }".into();
         let root = tempfile::tempdir().unwrap();
-        let built = build(&draft, root.path(), 18, &bank).unwrap();
+        let built = build()
+            .draft(&draft)
+            .root(root.path())
+            .id(18)
+            .bank(&bank)
+            .call()
+            .unwrap();
         let all = built.problems.join("\n");
         assert!(
             all.contains("too close to an existing question: #13"),
@@ -502,7 +523,13 @@ mod tests {
         draft.javascript_boilerplate = draft
             .javascript_boilerplate
             .replace("climbStairs", "xStairs");
-        let built = build(&draft, root.path(), 18, &bank).unwrap();
+        let built = build()
+            .draft(&draft)
+            .root(root.path())
+            .id(18)
+            .bank(&bank)
+            .call()
+            .unwrap();
         let all = built.problems.join("\n");
         assert!(all.contains("solutions/javascript.js fails case"), "{all}");
     }

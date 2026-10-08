@@ -171,7 +171,7 @@ pub struct Hint {
     pub body: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, bon::Builder)]
 pub struct Question {
     /// Directory name inside `questions/`, e.g. `0001-two-sum`.
     pub dir: String,
@@ -380,17 +380,17 @@ fn load_question(dir: &str, files: &BTreeMap<String, Vec<u8>>) -> Result<Questio
         .cloned()
         .collect();
 
-    Ok(Question {
-        dir: dir.to_string(),
-        meta,
-        statement,
-        hints,
-        explanation,
-        cases: tests.cases,
-        boilerplate,
-        solutions,
-        unreferenced,
-    })
+    Ok(Question::builder()
+        .dir(dir.to_string())
+        .meta(meta)
+        .statement(statement)
+        .hints(hints)
+        .explanation(explanation)
+        .cases(tests.cases)
+        .boilerplate(boilerplate)
+        .solutions(solutions)
+        .unreferenced(unreferenced)
+        .build())
 }
 
 /// Splits `hints.md` on `## ` headings. Each heading starts a new hint.

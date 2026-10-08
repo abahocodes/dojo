@@ -109,6 +109,19 @@ function formatError(err, file) {
     .trimEnd();
 }
 
+// The error, plus a hint for the usual runaway cases.
+function explain(err, file) {
+  let text = formatError(err, file);
+  const message = String((err && err.message) || err);
+  if (/Maximum call stack size exceeded/.test(message)) {
+    text +=
+      '\nhint: recursion went too deep: a missing base case, or recursion too deep for this input (try an explicit stack)';
+  } else if (/heap out of memory|Invalid array length|Array buffer allocation failed/.test(message)) {
+    text += '\nhint: ran out of memory: a structure growing without bound?';
+  }
+  return text;
+}
+
 function main() {
   const [solutionPath, specPath, resultsPath] = process.argv.slice(2);
   const spec = JSON.parse(fs.readFileSync(specPath, 'utf8'));
@@ -116,8 +129,29 @@ function main() {
   const file = path.basename(solutionPath);
   const timeout = Math.round(spec.timeout_secs * 1000);
 
+  const progressPath = `${resultsPath}.progress`;
+  // dojo watches this file and stops a step that stalls or crashes.
+  const progress = (step) => fs.writeFileSync(progressPath, String(step));
+
+  // Printed text is kept up to STDOUT_CAP; a print inside an infinite loop
+  // can't exhaust memory.
   let printed = [];
-  const capture = (...args) => printed.push(util.format(...args));
+  let printedSize = 0;
+  let dropped = false;
+  const capture = (...args) => {
+    if (printedSize >= STDOUT_CAP) {
+      dropped = true;
+      return;
+    }
+    const line = util.format(...args);
+    printed.push(line.slice(0, STDOUT_CAP - printedSize));
+    printedSize += line.length + 1;
+    if (printedSize > STDOUT_CAP) dropped = true;
+  };
+  const printedText = () => {
+    const out = printed.join('\n');
+    return dropped ? `${out}\n… (more output not shown)` : out;
+  };
   const module = { exports: {} };
   const context = vm.createContext({
     console: { log: capture, info: capture, warn: capture, error: capture, debug: capture },
@@ -128,6 +162,7 @@ function main() {
   });
 
   let fn;
+  progress('load');
   try {
     const code = fs.readFileSync(solutionPath, 'utf8');
     new vm.Script(code, { filename: file }).runInContext(context, { timeout });
@@ -139,20 +174,34 @@ function main() {
     if (!fn && typeof exported === 'function') fn = exported;
     if (!fn && exported && typeof exported[spec.function] === 'function') fn = exported[spec.function];
   } catch (e) {
-    write({ fatal: formatError(e, file), load_stdout: printed.join('\n').slice(0, STDOUT_CAP) });
+    const fatal =
+      e && e.code === 'ERR_SCRIPT_EXECUTION_TIMEOUT'
+        ? `loading ${file} took over ${spec.timeout_secs}s: is there a loop at the top level of the file?`
+        : explain(e, file);
+    write({ fatal, load_stdout: printedText() });
     return;
   }
   // Top-level console output is shown too ("printed while loading").
-  const loadStdout = printed.join('\n').slice(0, STDOUT_CAP);
+  const loadStdout = printedText();
   if (!fn) {
     write({ fatal: `function \`${spec.function}\` not found in ${file}`, load_stdout: loadStdout });
     return;
   }
 
   const results = [];
+  let stopped = false;
   for (const c of spec.cases) {
     const r = { index: c.index };
+    if (stopped) {
+      // After a timeout the rest would most likely time out too.
+      r.status = 'not_run';
+      results.push(r);
+      continue;
+    }
+    progress(c.index);
     printed = [];
+    printedSize = 0;
+    dropped = false;
     const start = process.hrtime.bigint();
     try {
       context.__dojo_fn = fn;
@@ -163,16 +212,20 @@ function main() {
     } catch (e) {
       if (e && e.code === 'ERR_SCRIPT_EXECUTION_TIMEOUT') {
         r.status = 'timeout';
+        stopped = true;
       } else {
         r.status = 'error';
-        r.error = formatError(e, file);
+        r.error = explain(e, file);
       }
     }
     r.ms = Math.round(Number(process.hrtime.bigint() - start) / 1e4) / 100;
-    const out = printed.join('\n');
-    if (out) r.stdout = out.slice(0, STDOUT_CAP);
+    const out = printedText();
+    if (out) r.stdout = out;
     results.push(r);
+    // Partial results survive a crash on a later case.
+    write({ results, load_stdout: loadStdout });
   }
+  progress('done');
   write({ results, load_stdout: loadStdout });
 }
 

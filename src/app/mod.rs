@@ -32,12 +32,12 @@ pub fn build_report(store: &Store, bank: &Bank) -> Result<crate::model::Report> 
         .iter()
         .filter_map(crate::model::Attempt::from_record)
         .collect();
-    Ok(crate::model::build(
-        bank,
-        &attempts,
-        jiff::Timestamp::now(),
-        &jiff::tz::TimeZone::system(),
-    ))
+    Ok(crate::model::build()
+        .bank(bank)
+        .attempts(&attempts)
+        .now(jiff::Timestamp::now())
+        .tz(&jiff::tz::TimeZone::system())
+        .call())
 }
 
 /// `dojo report --json`: the report as JSON on stdout.

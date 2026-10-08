@@ -79,6 +79,7 @@ pub fn draft_id(bank: &Bank) -> u32 {
 }
 
 /// What a request produced.
+#[derive(bon::Builder)]
 pub struct Outcome {
     pub messages: Vec<Value>,
     pub draft: Draft,
@@ -90,6 +91,7 @@ pub struct Outcome {
 /// Asks the model for the question, builds and validates it, and sends
 /// problems back for fixing, up to `MAX_ROUNDS` times. `messages` must end
 /// with the user's request. The returned conversation includes every turn.
+#[bon::builder]
 pub fn draft(
     client: &Client,
     mut messages: Vec<Value>,
@@ -124,15 +126,20 @@ pub fn draft(
         };
 
         progress("running the solutions and validating".into());
-        let built = draft::build(&parsed, root, id, &bank)?;
+        let built = draft::build()
+            .draft(&parsed)
+            .root(root)
+            .id(id)
+            .bank(&bank)
+            .call()?;
         if built.problems.is_empty() || round == MAX_ROUNDS {
-            return Ok(Outcome {
-                messages,
-                draft: parsed,
-                built,
-                usage,
-                rounds: round,
-            });
+            return Ok(Outcome::builder()
+                .messages(messages)
+                .draft(parsed)
+                .built(built)
+                .usage(usage)
+                .rounds(round)
+                .build());
         }
         messages.push(Client::user(&format!(
             "dojo built and validated your question and found problems:\n{}\n\nFix them and return the complete corrected question.",
@@ -150,7 +157,12 @@ pub fn draft(
 /// Rebuilds a saved draft without the model (resuming a workspace).
 pub fn rebuild(draft: &Draft, root: &Path) -> Result<Built> {
     let bank = Bank::embedded();
-    draft::build(draft, root, draft_id(&bank), &bank)
+    draft::build()
+        .draft(draft)
+        .root(root)
+        .id(draft_id(&bank))
+        .bank(&bank)
+        .call()
 }
 
 /// The first message: the contributor's description.

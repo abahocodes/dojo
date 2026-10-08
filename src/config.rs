@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::lang::Language;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, bon::Builder)]
 pub struct Paths {
     pub config_file: PathBuf,
     pub db: PathBuf,
@@ -26,11 +26,11 @@ impl Paths {
             .home_dir()
             .to_path_buf();
         if let Some(root) = std::env::var_os("DOJO_HOME").map(PathBuf::from) {
-            return Ok(Paths {
-                config_file: root.join("config.toml"),
-                db: root.join("dojo.db"),
-                default_workspace: root.join("state/work"),
-            });
+            return Ok(Paths::builder()
+                .config_file(root.join("config.toml"))
+                .db(root.join("dojo.db"))
+                .default_workspace(root.join("state/work"))
+                .build());
         }
         let xdg = |var: &str, fallback: &str| {
             std::env::var_os(var)
@@ -38,11 +38,11 @@ impl Paths {
                 .filter(|p| p.is_absolute())
                 .unwrap_or_else(|| home.join(fallback))
         };
-        Ok(Paths {
-            config_file: xdg("XDG_CONFIG_HOME", ".config").join("dojo/config.toml"),
-            db: xdg("XDG_DATA_HOME", ".local/share").join("dojo/dojo.db"),
-            default_workspace: xdg("XDG_STATE_HOME", ".local/state").join("dojo/work"),
-        })
+        Ok(Paths::builder()
+            .config_file(xdg("XDG_CONFIG_HOME", ".config").join("dojo/config.toml"))
+            .db(xdg("XDG_DATA_HOME", ".local/share").join("dojo/dojo.db"))
+            .default_workspace(xdg("XDG_STATE_HOME", ".local/state").join("dojo/work"))
+            .build())
     }
 }
 

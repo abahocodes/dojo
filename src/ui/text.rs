@@ -193,6 +193,8 @@ pub fn fit(s: &str, width: usize) -> String {
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
     use super::*;
 
     fn render(p: Para, width: usize) -> Vec<String> {
@@ -202,36 +204,30 @@ mod tests {
             .collect()
     }
 
-    #[test]
-    fn wraps_words_with_hanging_indent() {
-        let p = Para::plain("the quick brown fox jumps over", Style::new())
-            .with_prefix(vec![Span::raw("• ")], vec![Span::raw("  ")]);
-        assert_eq!(
-            render(p, 12),
-            vec!["• the quick", "  brown fox", "  jumps over"]
-        );
+    fn bullet(text: &str) -> Para {
+        Para::plain(text, Style::new()).with_prefix(vec![Span::raw("• ")], vec![Span::raw("  ")])
     }
 
-    #[test]
-    fn hard_breaks_long_words_and_code() {
-        assert_eq!(
-            render(Para::plain("abcdefghij", Style::new()), 8),
-            vec!["abcdefgh", "ij"]
-        );
-        assert_eq!(
-            render(Para::plain("ab cd ef gh ij", Style::new()).code(), 8),
-            vec!["ab cd ef", " gh ij"]
-        );
+    #[rstest]
+    #[case::hanging_indent(bullet("the quick brown fox jumps over"), 12, &["• the quick", "  brown fox", "  jumps over"])]
+    #[case::fits_on_one_line(bullet("short"), 12, &["• short"])]
+    #[case::long_word_hard_breaks(Para::plain("abcdefghij", Style::new()), 8, &["abcdefgh", "ij"])]
+    #[case::code_keeps_spaces(Para::plain("ab cd ef gh ij", Style::new()).code(), 8, &["ab cd ef", " gh ij"])]
+    #[case::no_trailing_space(Para::plain("aaaa bbbb", Style::new()), 5, &["aaaa", "bbbb"])]
+    #[case::blank(Para::blank(), 10, &[""])]
+    #[case::wide_chars(Para::plain("道場道場道場", Style::new()), 8, &["道場道場", "道場"])]
+    #[case::indented(Para::plain("one two three", Style::new()).indent(2), 9, &["  one two", "  three"])]
+    fn wraps(#[case] para: Para, #[case] width: usize, #[case] expected: &[&str]) {
+        assert_eq!(render(para, width), expected);
     }
 
-    #[test]
-    fn keeps_empty_lines() {
-        assert_eq!(render(Para::blank(), 10), vec![""]);
-    }
-
-    #[test]
-    fn fits() {
-        assert_eq!(fit("hello", 7), "hello  ");
-        assert_eq!(fit("hello world", 7), "hello …");
+    #[rstest]
+    #[case("hello", 7, "hello  ")]
+    #[case("hello", 5, "hello")]
+    #[case("hello world", 7, "hello …")]
+    #[case("", 3, "   ")]
+    #[case("道場dojo", 5, "道場…")]
+    fn fits(#[case] input: &str, #[case] width: usize, #[case] expected: &str) {
+        assert_eq!(fit(input, width), expected);
     }
 }

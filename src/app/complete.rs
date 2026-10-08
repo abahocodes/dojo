@@ -8,11 +8,12 @@ use crate::runner::Language;
 
 pub const MAX_ITEMS: usize = 8;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, bon::Builder)]
 pub struct Item {
     /// Full input line after accepting.
     pub replacement: String,
     pub label: String,
+    #[builder(default)]
     pub detail: String,
     /// Accepting with Enter also submits the line.
     pub submit: bool,
@@ -73,7 +74,12 @@ pub fn complete(bank: &Bank, line: &str, ctx: Context) -> Vec<Item> {
     match rest.split_once(' ') {
         None => commands(rest, ctx),
         Some((name, args)) => match find(name) {
-            Some(spec) if takes_args(spec, ctx) => arguments(bank, spec, line, args),
+            Some(spec) if takes_args(spec, ctx) => arguments()
+                .bank(bank)
+                .spec(spec)
+                .line(line)
+                .args(args)
+                .call(),
             _ => vec![],
         },
     }
@@ -103,23 +109,24 @@ fn commands(prefix: &str, ctx: Context) -> Vec<Item> {
         .take(MAX_ITEMS)
         .map(|c| {
             let args = takes_args(c, ctx);
-            Item {
-                replacement: if args {
+            Item::builder()
+                .replacement(if args {
                     format!("/{} ", c.name)
                 } else {
                     format!("/{}", c.name)
-                },
-                label: format!("/{}", c.name),
-                detail: match c.soon {
+                })
+                .label(format!("/{}", c.name))
+                .detail(match c.soon {
                     Some(m) => format!("{} · {m}", c.about),
                     None => c.about.to_string(),
-                },
-                submit: !args,
-            }
+                })
+                .submit(!args)
+                .build()
         })
         .collect()
 }
 
+#[bon::builder]
 fn arguments(bank: &Bank, spec: &Spec, line: &str, args: &str) -> Vec<Item> {
     // Complete the token under the (end-of-line) cursor.
     let (head, token) = match line.rfind(' ') {
@@ -155,11 +162,13 @@ fn arguments(bank: &Bank, spec: &Spec, line: &str, args: &str) -> Vec<Item> {
                 .into_iter()
                 .filter(|v| v.as_str() != token)
                 .take(MAX_ITEMS)
-                .map(|v| Item {
-                    replacement: replace(v, false),
-                    label: v.clone(),
-                    detail: label_detail(bank, v),
-                    submit: false,
+                .map(|v| {
+                    Item::builder()
+                        .replacement(replace(v, false))
+                        .label(v.clone())
+                        .detail(label_detail(bank, v))
+                        .submit(false)
+                        .build()
                 })
                 .collect()
         }
@@ -182,11 +191,12 @@ fn simple(values: Vec<&&str>, replace: &dyn Fn(&str, bool) -> String) -> Vec<Ite
     values
         .into_iter()
         .take(MAX_ITEMS)
-        .map(|v| Item {
-            replacement: replace(v, true),
-            label: v.to_string(),
-            detail: String::new(),
-            submit: true,
+        .map(|v| {
+            Item::builder()
+                .replacement(replace(v, true))
+                .label(v.to_string())
+                .submit(true)
+                .build()
         })
         .collect()
 }
@@ -205,12 +215,12 @@ fn questions(bank: &Bank, token: &str, make: impl Fn(u32) -> (String, bool)) -> 
         .take(MAX_ITEMS)
         .map(|q| {
             let (replacement, submit) = make(q.meta.id);
-            Item {
-                replacement,
-                label: format!("{:>3}  {}", q.meta.id, q.meta.title),
-                detail: format!("{} · {}", q.meta.difficulty, q.meta.tags.join(" ")),
-                submit,
-            }
+            Item::builder()
+                .replacement(replacement)
+                .label(format!("{:>3}  {}", q.meta.id, q.meta.title))
+                .detail(format!("{} · {}", q.meta.difficulty, q.meta.tags.join(" ")))
+                .submit(submit)
+                .build()
         })
         .collect()
 }
@@ -230,6 +240,8 @@ fn label_detail(bank: &Bank, label: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
     use super::*;
 
     const IDLE: Context = Context {
@@ -242,62 +254,106 @@ mod tests {
         session: true,
         review: false,
     };
+    const BETWEEN: Context = Context {
+        attempt: false,
+        session: true,
+        review: false,
+    };
+    const REVIEWING: Context = Context {
+        attempt: false,
+        session: false,
+        review: true,
+    };
 
-    #[test]
-    fn suggestions_follow_context() {
-        let bank = Bank::embedded();
-        // Mid-question: /hint runs on Enter, no question ids offered.
-        let items = complete(&bank, "/hi", SOLVING);
-        assert_eq!(items[0].replacement, "/hint");
-        assert!(items[0].submit);
-        assert!(complete(&bank, "/hint ", SOLVING).is_empty());
-        // Outside a session it needs a question.
-        assert_eq!(complete(&bank, "/hi", IDLE)[0].replacement, "/hint ");
-        assert!(!complete(&bank, "/hint ", IDLE).is_empty());
-        // Irrelevant commands are hidden; relevant ones lead.
-        let all: Vec<String> = complete(&bank, "/", SOLVING)
+    fn labels(line: &str, ctx: Context) -> Vec<String> {
+        complete(&Bank::embedded(), line, ctx)
             .into_iter()
             .map(|i| i.label)
-            .collect();
-        assert_eq!(all[0], "/test");
-        assert!(!all.contains(&"/solve".to_string()));
-        let idle: Vec<String> = complete(&bank, "/", IDLE)
-            .into_iter()
-            .map(|i| i.label)
-            .collect();
-        assert!(!idle.contains(&"/test".to_string()));
-        assert_eq!(idle[0], "/solve");
-        // Removed and unbuilt commands are never suggested.
-        for gone in [
-            "/resume", "/end", "/giveup", "/history", "/random", "/accept",
-        ] {
-            assert!(!idle.contains(&gone.to_string()), "{gone} suggested");
-            assert!(!all.contains(&gone.to_string()), "{gone} suggested");
-        }
+            .collect()
     }
 
-    #[test]
-    fn completes_command_names() {
-        let bank = Bank::embedded();
-        let items = complete(&bank, "/sh", IDLE);
-        assert_eq!(items[0].label, "/show");
-        assert_eq!(items[0].replacement, "/show ");
-        assert!(!items[0].submit);
-        let items = complete(&bank, "/cle", IDLE);
-        assert_eq!(items[0].replacement, "/clear");
-        assert!(items[0].submit);
+    #[rstest]
+    #[case::show_takes_args("/sh", IDLE, "/show ", false)]
+    #[case::clear_runs("/cle", IDLE, "/clear", true)]
+    #[case::hint_needs_question_idle("/hi", IDLE, "/hint ", false)]
+    #[case::hint_runs_mid_question("/hi", SOLVING, "/hint", true)]
+    #[case::solution_runs_mid_question("/sol", SOLVING, "/solution", true)]
+    #[case::edit_runs("/ed", IDLE, "/edit", true)]
+    #[case::test_mid_question("/te", SOLVING, "/test", true)]
+    #[case::next_between("/ne", BETWEEN, "/next", true)]
+    #[case::accept_when_reviewing("/acc", REVIEWING, "/accept", true)]
+    #[case::alias("/exi", IDLE, "/quit", true)]
+    fn completes_commands(
+        #[case] line: &str,
+        #[case] ctx: Context,
+        #[case] replacement: &str,
+        #[case] submit: bool,
+    ) {
+        let items = complete(&Bank::embedded(), line, ctx);
+        assert_eq!(items[0].replacement, replacement);
+        assert_eq!(items[0].submit, submit);
     }
 
-    #[test]
-    fn completes_question_ids() {
-        let bank = Bank::embedded();
-        let items = complete(&bank, "/show 1", IDLE);
-        assert!(items.iter().any(|i| i.replacement == "/show 1"));
+    #[rstest]
+    #[case::first_mid_question(SOLVING, "/test")]
+    #[case::first_idle(IDLE, "/solve")]
+    #[case::first_between(BETWEEN, "/next")]
+    fn most_relevant_first(#[case] ctx: Context, #[case] first: &str) {
+        assert_eq!(labels("/", ctx)[0], first);
+    }
+
+    #[rstest]
+    #[case(SOLVING, "/solve")]
+    #[case(SOLVING, "/next")]
+    #[case(IDLE, "/test")]
+    #[case(IDLE, "/submit")]
+    #[case(IDLE, "/skip")]
+    #[case(IDLE, "/accept")]
+    #[case(BETWEEN, "/test")]
+    fn hides_what_does_not_apply(#[case] ctx: Context, #[case] hidden: &str) {
+        assert!(!labels("/", ctx).contains(&hidden.to_string()));
+    }
+
+    #[rstest]
+    fn never_suggests_removed_commands(
+        #[values(IDLE, SOLVING, BETWEEN, REVIEWING)] ctx: Context,
+        #[values("/resume", "/end", "/giveup", "/history", "/random", "/reset")] gone: &str,
+    ) {
+        assert!(!labels("/", ctx).contains(&gone.to_string()));
+    }
+
+    #[rstest]
+    #[case::hint_mid_question("/hint ", SOLVING, true)]
+    #[case::solution_mid_question("/solution ", SOLVING, true)]
+    #[case::plain_text("hello", IDLE, true)]
+    #[case::unknown_command("/nope ", IDLE, true)]
+    #[case::show_lists_questions("/show ", IDLE, false)]
+    #[case::hint_idle_lists_questions("/hint ", IDLE, false)]
+    fn argument_suggestions(#[case] line: &str, #[case] ctx: Context, #[case] empty: bool) {
+        assert_eq!(complete(&Bank::embedded(), line, ctx).is_empty(), empty);
+    }
+
+    #[rstest]
+    #[case("/show 1", "/show 1")]
+    #[case("/show 13", "/show 13")]
+    #[case("/past 6", "/past 6")]
+    fn completes_question_ids(#[case] line: &str, #[case] expected: &str) {
+        let items = complete(&Bank::embedded(), line, IDLE);
+        assert!(items.iter().any(|i| i.replacement == expected));
         assert!(items.iter().all(|i| i.submit));
     }
 
-    #[test]
-    fn ignores_plain_text() {
-        assert!(complete(&Bank::embedded(), "hello", IDLE).is_empty());
+    #[rstest]
+    #[case("/solve ", "need")]
+    #[case("/solve ", "random")]
+    #[case("/list gra", "graphs")]
+    #[case("/editor nv", "nvim")]
+    #[case("/lang ja", "javascript")]
+    fn suggests_arguments(#[case] line: &str, #[case] label: &str) {
+        assert!(
+            labels(line, IDLE).contains(&label.to_string()),
+            "{:?}",
+            labels(line, IDLE)
+        );
     }
 }

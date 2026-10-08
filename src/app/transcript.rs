@@ -5,6 +5,7 @@ use ratatui::text::Line;
 
 use crate::ui::text::{Para, layout};
 
+#[derive(bon::Builder)]
 pub struct Entry {
     pub paras: Vec<Para>,
     /// Plain-text version for `/copy`. Empty for entries not worth copying.

@@ -125,26 +125,68 @@ fn short(v: &Value) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use serde_json::json;
+    use rstest::rstest;
+    use serde_json::{Value, json};
 
-    #[test]
-    fn parses_nested_lists() {
-        assert_eq!(
-            Type::parse("int[][]").unwrap(),
-            Type::List(Box::new(Type::List(Box::new(Type::Int))))
-        );
-        assert_eq!(Type::parse("int[][]").unwrap().to_string(), "int[][]");
-        assert!(Type::parse("map").is_err());
+    use super::*;
+
+    fn list(t: Type) -> Type {
+        Type::List(Box::new(t))
     }
 
-    #[test]
-    fn checks_values() {
-        let t = Type::parse("int[]").unwrap();
-        assert!(t.check(&json!([1, 2, 3])).is_ok());
-        assert!(t.check(&json!([1, "x"])).is_err());
-        assert!(Type::TreeNode.check(&json!([1, null, 2])).is_ok());
-        assert!(Type::ListNode.check(&json!([1, null])).is_err());
-        assert!(Type::Float.check(&json!(1)).is_ok());
+    #[rstest]
+    #[case("int", Type::Int)]
+    #[case("float", Type::Float)]
+    #[case("bool", Type::Bool)]
+    #[case("string", Type::String)]
+    #[case("ListNode", Type::ListNode)]
+    #[case("TreeNode", Type::TreeNode)]
+    #[case("int[]", list(Type::Int))]
+    #[case("int[][]", list(list(Type::Int)))]
+    #[case(" string[] ", list(Type::String))]
+    #[case("TreeNode[]", list(Type::TreeNode))]
+    fn parses_and_round_trips(#[case] input: &str, #[case] expected: Type) {
+        let parsed = Type::parse(input).unwrap();
+        assert_eq!(parsed, expected);
+        assert_eq!(parsed.to_string(), input.trim());
+    }
+
+    #[rstest]
+    #[case("map")]
+    #[case("Int")]
+    #[case("[]")]
+    #[case("")]
+    fn rejects_unknown_types(#[case] input: &str) {
+        assert!(Type::parse(input).is_err());
+    }
+
+    #[rstest]
+    #[case("int", json!(3), true)]
+    #[case("int", json!(3.5), false)]
+    #[case("float", json!(1), true)]
+    #[case("float", json!(1.5), true)]
+    #[case("bool", json!(true), true)]
+    #[case("bool", json!(1), false)]
+    #[case("string", json!("x"), true)]
+    #[case("int[]", json!([1, 2, 3]), true)]
+    #[case("int[]", json!([1, "x"]), false)]
+    #[case("int[]", json!([]), true)]
+    #[case("int[][]", json!([[1], [2, 3]]), true)]
+    #[case("int[][]", json!([1, 2]), false)]
+    #[case("ListNode", json!([1, 2]), true)]
+    #[case("ListNode", json!([1, null]), false)]
+    #[case("TreeNode", json!([1, null, 2]), true)]
+    #[case("TreeNode", json!([]), true)]
+    #[case("TreeNode", json!({"val": 1}), false)]
+    fn checks_values(#[case] ty: &str, #[case] value: Value, #[case] valid: bool) {
+        assert_eq!(Type::parse(ty).unwrap().check(&value).is_ok(), valid);
+    }
+
+    #[rstest]
+    #[case("ListNode[]", Type::ListNode, true)]
+    #[case("int[][]", Type::Int, true)]
+    #[case("int[]", Type::TreeNode, false)]
+    fn finds_nested_types(#[case] ty: &str, #[case] inner: Type, #[case] uses: bool) {
+        assert_eq!(Type::parse(ty).unwrap().uses(&inner), uses);
     }
 }

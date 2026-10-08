@@ -260,6 +260,8 @@ pub fn plain(paras: &[Para]) -> String {
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
     use super::*;
 
     fn text(md: &str) -> Vec<String> {
@@ -272,26 +274,20 @@ mod tests {
             .collect()
     }
 
-    #[test]
-    fn renders_blocks() {
-        let md = "# Title\n\nSome `code` here.\n\n- one\n- two\n\n```\na = 1\n```\n";
-        assert_eq!(
-            text(md),
-            vec![
-                "Title",
-                "",
-                "Some code here.",
-                "",
-                "• one",
-                "• two",
-                "",
-                "  │ a = 1",
-            ]
-        );
-    }
-
-    #[test]
-    fn numbers_ordered_lists() {
-        assert_eq!(text("1. a\n2. b\n"), vec!["1. a", "2. b"]);
+    #[rstest]
+    #[case::blocks(
+        "# Title\n\nSome `code` here.\n\n- one\n- two\n\n```\na = 1\n```\n",
+        &["Title", "", "Some code here.", "", "• one", "• two", "", "  │ a = 1"]
+    )]
+    #[case::ordered_list("1. a\n2. b\n", &["1. a", "2. b"])]
+    #[case::ordered_from_three("3. c\n4. d\n", &["3. c", "4. d"])]
+    #[case::soft_break_joins("one\ntwo\n", &["one two"])]
+    #[case::emphasis_is_plain("*a* and **b**\n", &["a and b"])]
+    #[case::quote("> said\n", &["│ said"])]
+    #[case::nested_list("- a\n  - b\n", &["• a", "   • b"])]
+    #[case::collapses_blank_lines("a\n\n\n\nb\n", &["a", "", "b"])]
+    #[case::empty("", &[])]
+    fn renders(#[case] md: &str, #[case] expected: &[&str]) {
+        assert_eq!(text(md), expected);
     }
 }

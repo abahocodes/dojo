@@ -107,14 +107,44 @@ pub fn camel(snake: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
     use super::*;
 
-    #[test]
-    fn names() {
-        assert_eq!(camel("two_sum"), "twoSum");
-        assert_eq!(camel("product_except_self"), "productExceptSelf");
-        assert_eq!(camel("trap"), "trap");
-        assert_eq!(Language::parse("js"), Some(Language::JavaScript));
-        assert_eq!(Language::JavaScript.asset_file(), "javascript.js");
+    #[rstest]
+    #[case("two_sum", "twoSum")]
+    #[case("product_except_self", "productExceptSelf")]
+    #[case("trap", "trap")]
+    #[case("_private", "private")]
+    #[case("a_b_c", "aBC")]
+    fn camel_cases(#[case] snake: &str, #[case] expected: &str) {
+        assert_eq!(camel(snake), expected);
+    }
+
+    #[rstest]
+    #[case("python", Some(Language::Python))]
+    #[case("py", Some(Language::Python))]
+    #[case("Python3", Some(Language::Python))]
+    #[case("js", Some(Language::JavaScript))]
+    #[case("node", Some(Language::JavaScript))]
+    #[case("JavaScript", Some(Language::JavaScript))]
+    #[case("go", None)]
+    #[case("", None)]
+    fn parses(#[case] input: &str, #[case] expected: Option<Language>) {
+        assert_eq!(Language::parse(input), expected);
+    }
+
+    #[rstest]
+    #[case(Language::Python, "python.py", "solution.py", "two_sum")]
+    #[case(Language::JavaScript, "javascript.js", "solution.js", "twoSum")]
+    fn file_and_function_names(
+        #[case] lang: Language,
+        #[case] asset: &str,
+        #[case] solution: &str,
+        #[case] function: &str,
+    ) {
+        assert_eq!(lang.asset_file(), asset);
+        assert_eq!(lang.solution_file(), solution);
+        assert_eq!(lang.function_name("two_sum"), function);
     }
 }

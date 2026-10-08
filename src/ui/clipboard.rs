@@ -76,10 +76,16 @@ fn base64(data: &[u8]) -> String {
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn encodes_base64() {
-        assert_eq!(super::base64(b"dojo"), "ZG9qbw==");
-        assert_eq!(super::base64(b"abc"), "YWJj");
-        assert_eq!(super::base64(b""), "");
+    use rstest::rstest;
+
+    #[rstest]
+    #[case(b"", "")]
+    #[case(b"f", "Zg==")]
+    #[case(b"fo", "Zm8=")]
+    #[case(b"foo", "Zm9v")]
+    #[case(b"dojo", "ZG9qbw==")]
+    #[case(b"\xff\x00\x10", "/wAQ")]
+    fn encodes_base64(#[case] input: &[u8], #[case] expected: &str) {
+        assert_eq!(super::base64(input), expected);
     }
 }

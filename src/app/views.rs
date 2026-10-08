@@ -16,23 +16,23 @@ use crate::ui::theme::theme;
 
 fn entry(paras: Vec<Para>) -> Entry {
     let copy = markdown::plain(&paras);
-    Entry {
-        paras,
-        copy,
-        input: false,
-    }
+    Entry::builder()
+        .paras(paras)
+        .copy(copy)
+        .input(false)
+        .build()
 }
 
 pub fn input(line: &str) -> Entry {
     let t = theme();
-    Entry {
-        paras: vec![Para::new(vec![
+    Entry::builder()
+        .paras(vec![Para::new(vec![
             Span::styled("› ", t.accent_bold()),
             Span::styled(line.to_string(), t.bold()),
-        ])],
-        copy: String::new(),
-        input: true,
-    }
+        ])])
+        .copy(String::new())
+        .input(true)
+        .build()
 }
 
 pub fn info(msg: impl Into<String>) -> Entry {
@@ -141,11 +141,11 @@ pub fn welcome(bank: &Bank, config: &Config, unfinished: &[OpenAttempt]) -> Entr
         Span::raw(config.language.clone()),
         Span::styled("  ·  change with /editor and /lang", t.dim()),
     ]));
-    Entry {
-        paras,
-        copy: String::new(),
-        input: false,
-    }
+    Entry::builder()
+        .paras(paras)
+        .copy(String::new())
+        .input(false)
+        .build()
 }
 
 /// Title line, labels and the full statement.
@@ -453,13 +453,15 @@ pub enum Resume {
     },
 }
 
+#[bon::builder]
 pub fn session_question(
-    q: &Question,
+    question: &Question,
     position: (usize, usize),
     file: &std::path::Path,
     stats: &QuestionStats,
     resume: &Resume,
 ) -> Entry {
+    let q = question;
     let t = theme();
     let m = &q.meta;
     let mut title = vec![
@@ -549,6 +551,9 @@ fn case_input(q: &Question, index: usize) -> String {
         .join("  ·  ")
 }
 
+/// Lines of an error shown before eliding the middle.
+const ERROR_LINES: usize = 16;
+
 /// Lines of printed output shown per case before eliding.
 const PRINT_LINES: usize = 12;
 
@@ -628,7 +633,13 @@ pub fn test_report(q: &Question, report: &RunReport) -> Entry {
         .filter(|c| c.status != Status::Pass)
         .count();
     let mut shown_failures = 0;
-    for c in &report.cases {
+    let not_run = report
+        .cases
+        .iter()
+        .filter(|c| c.status == Status::NotRun)
+        .count();
+    let failures = failures - not_run;
+    for c in report.cases.iter().filter(|c| c.status != Status::NotRun) {
         let pass = c.status == Status::Pass;
         if pass && report.which == Which::All {
             continue;
@@ -644,6 +655,7 @@ pub fn test_report(q: &Question, report: &RunReport) -> Entry {
             Status::Fail => ("✗", t.err()),
             Status::Error => ("!", t.err()),
             Status::Timeout => ("⏱", t.warn()),
+            Status::NotRun => ("·", t.dim()),
         };
         let mut head = vec![
             Span::styled(format!("{icon} "), style),
@@ -686,11 +698,31 @@ pub fn test_report(q: &Question, report: &RunReport) -> Entry {
             }
             Status::Timeout => paras.push(row(
                 "timeout",
-                format!("over {}s", crate::runner::CASE_TIMEOUT.as_secs()),
+                format!(
+                    "over {}s: an infinite loop, or too slow for this input size",
+                    crate::runner::CASE_TIMEOUT.as_secs()
+                ),
                 t.warn(),
             )),
             _ => {
-                for l in c.error.as_deref().unwrap_or("error").lines() {
+                // Long tracebacks (deep recursion) keep their head and tail.
+                let lines: Vec<&str> = c.error.as_deref().unwrap_or("error").lines().collect();
+                let shown: Vec<String> = if lines.len() > ERROR_LINES {
+                    let mut v: Vec<String> = lines[..ERROR_LINES / 2]
+                        .iter()
+                        .map(|l| l.to_string())
+                        .collect();
+                    v.push(format!("… {} more lines …", lines.len() - ERROR_LINES));
+                    v.extend(
+                        lines[lines.len() - ERROR_LINES / 2..]
+                            .iter()
+                            .map(|l| l.to_string()),
+                    );
+                    v
+                } else {
+                    lines.iter().map(|l| l.to_string()).collect()
+                };
+                for l in shown {
                     paras.push(Para::plain(l.to_string(), t.err()).code().with_prefix(
                         vec![Span::raw(" ".repeat(12))],
                         vec![Span::raw(" ".repeat(12))],
@@ -701,6 +733,18 @@ pub fn test_report(q: &Question, report: &RunReport) -> Entry {
         if let Some(out) = c.stdout.as_deref().filter(|s| !s.trim().is_empty()) {
             paras.extend(printed(out, "printed", 12));
         }
+    }
+    if not_run > 0 {
+        paras.push(
+            Para::plain(
+                format!(
+                    "· {not_run} more case{} not run: stopped after the timeout",
+                    if not_run == 1 { "" } else { "s" }
+                ),
+                t.dim(),
+            )
+            .indent(2),
+        );
     }
     if shown_failures > 3 {
         paras.push(Para::plain(format!("… and {} more failing", failures - 3), t.dim()).indent(2));
@@ -1012,13 +1056,15 @@ pub fn contrib_intro(p: crate::contribute::llm::Provider, model: &str) -> Entry 
     ])
 }
 
+#[bon::builder]
 pub fn contrib_review(
-    d: &crate::contribute::draft::Draft,
-    b: &crate::contribute::draft::Built,
+    draft: &crate::contribute::draft::Draft,
+    built: &crate::contribute::draft::Built,
     model: &str,
     rounds: u32,
     usage: crate::contribute::llm::Usage,
 ) -> Entry {
+    let (d, b) = (draft, built);
     let t = theme();
     let ok = b.problems.is_empty();
     let mut paras = vec![Para::new(vec![

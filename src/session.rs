@@ -102,7 +102,7 @@ pub fn clock(d: Duration) -> String {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, bon::Builder)]
 pub struct Attempt {
     pub id: i64,
     pub question_id: u32,
@@ -110,11 +110,16 @@ pub struct Attempt {
     pub dir: PathBuf,
     pub file: PathBuf,
     pub timer: Timer,
+    #[builder(default)]
     pub test_runs: u32,
+    #[builder(default)]
     pub failed_runs: u32,
+    #[builder(default)]
     pub hints_used: usize,
+    #[builder(default)]
     pub solution_viewed: bool,
     /// `/solution` was asked once; asking again reveals it.
+    #[builder(default)]
     pub solution_armed: bool,
     /// (passed, total) of the latest run.
     pub last_run: Option<(usize, usize)>,
@@ -131,7 +136,7 @@ impl Attempt {
 }
 
 /// A finished attempt, kept for the end-of-session summary.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, bon::Builder)]
 pub struct Done {
     pub question_id: u32,
     pub outcome: Outcome,
@@ -141,7 +146,7 @@ pub struct Done {
     pub failed_runs: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, bon::Builder)]
 pub struct Session {
     pub id: i64,
     /// How the current queue was chosen (`id`, `search`) and the query.
@@ -149,8 +154,10 @@ pub struct Session {
     pub query: Option<String>,
     pub queue: Vec<u32>,
     /// Index into `queue` of the current (or next) question.
+    #[builder(default)]
     pub index: usize,
     pub attempt: Option<Attempt>,
+    #[builder(default)]
     pub done: Vec<Done>,
 }
 
@@ -172,13 +179,15 @@ pub fn work_paths(root: &Path, q: &Question, lang: Language) -> (PathBuf, PathBu
 /// Prepares the working file. Code already on disk is kept unless `fresh`;
 /// otherwise it's written from `saved` (code recorded for an open attempt)
 /// or the question's boilerplate. Returns `true` when existing code was kept.
+#[bon::builder]
 pub fn prepare_work(
     root: &Path,
-    q: &Question,
+    question: &Question,
     lang: Language,
     saved: Option<&str>,
     fresh: bool,
 ) -> Result<(PathBuf, PathBuf, bool)> {
+    let q = question;
     let boilerplate = q
         .boilerplate
         .get(&lang)
@@ -214,6 +223,7 @@ fn quote(path: &Path) -> String {
 /// `{dir}` the file is appended. When the template has no `{line}`, the line
 /// is added for editors that take one (`nvim +12 f`, `code -g f:12`,
 /// `hx f:12`); other editors just open the file.
+#[bon::builder]
 pub fn editor_command(template: &str, file: &Path, dir: &Path, line: usize) -> String {
     let mut t = template.trim().to_string();
     if !t.contains("{file}") && !t.contains("{dir}") {
@@ -320,50 +330,88 @@ pub fn launch_terminal(command: &str) -> Result<bool> {
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
     use super::*;
 
-    #[test]
-    fn classifies_editors() {
-        assert!(is_terminal_editor("nvim {file}"));
-        assert!(is_terminal_editor("/usr/bin/vim"));
-        assert!(is_terminal_editor("emacs -nw {file}"));
-        assert!(!is_terminal_editor("emacs {file}"));
-        assert!(!is_terminal_editor("code {file}"));
-        assert!(!is_terminal_editor("zed"));
+    #[rstest]
+    #[case("nvim {file}", true)]
+    #[case("/usr/bin/vim", true)]
+    #[case("vi", true)]
+    #[case("hx {file}:{line}", true)]
+    #[case("nano", true)]
+    #[case("emacs -nw {file}", true)]
+    #[case("emacsclient -t", true)]
+    #[case("emacs {file}", false)]
+    #[case("code {file}", false)]
+    #[case("zed", false)]
+    #[case("subl -w", false)]
+    fn classifies_editors(#[case] command: &str, #[case] terminal: bool) {
+        assert_eq!(is_terminal_editor(command), terminal);
     }
 
-    #[test]
-    fn expands_editor_templates() {
-        let f = Path::new("/w/it's/solution.py");
-        let d = Path::new("/w/it's");
-        assert_eq!(
-            editor_command("code {dir} {file}", f, d, 3),
-            r"code '/w/it'\''s' -g '/w/it'\''s/solution.py':3"
-        );
-        assert_eq!(
-            editor_command("nvim", f, d, 7),
-            r"nvim +7 '/w/it'\''s/solution.py'"
-        );
-        let g = Path::new("/w/s.py");
-        assert_eq!(editor_command("nvim {file}", g, d, 7), "nvim +7 '/w/s.py'");
-        assert_eq!(editor_command("hx {file}", g, d, 2), "hx '/w/s.py':2");
-        assert_eq!(
-            editor_command("myedit --line {line} {file}", g, d, 4),
-            "myedit --line 4 '/w/s.py'"
-        );
-        assert_eq!(editor_command("gedit", g, d, 4), "gedit '/w/s.py'");
+    #[rstest]
+    #[case(
+        "code {dir} {file}",
+        "/w/it's/solution.py",
+        3,
+        r"code '/w/it'\''s' -g '/w/it'\''s/solution.py':3"
+    )]
+    #[case("nvim", "/w/it's/solution.py", 7, r"nvim +7 '/w/it'\''s/solution.py'")]
+    #[case("nvim {file}", "/w/s.py", 7, "nvim +7 '/w/s.py'")]
+    #[case("vim", "/w/s.py", 1, "vim +1 '/w/s.py'")]
+    #[case("emacs -nw {file}", "/w/s.py", 9, "emacs -nw +9 '/w/s.py'")]
+    #[case("hx {file}", "/w/s.py", 2, "hx '/w/s.py':2")]
+    #[case("zed", "/w/s.py", 5, "zed '/w/s.py':5")]
+    #[case("cursor {file}", "/w/s.py", 5, "cursor -g '/w/s.py':5")]
+    #[case(
+        "myedit --line {line} {file}",
+        "/w/s.py",
+        4,
+        "myedit --line 4 '/w/s.py'"
+    )]
+    #[case("gedit", "/w/s.py", 4, "gedit '/w/s.py'")]
+    #[case("nvim", "/w/s.py", 0, "nvim +1 '/w/s.py'")]
+    fn expands_editor_templates(
+        #[case] template: &str,
+        #[case] file: &str,
+        #[case] line: usize,
+        #[case] expected: &str,
+    ) {
+        let file = Path::new(file);
+        let command = editor_command()
+            .template(template)
+            .file(file)
+            .dir(file.parent().unwrap())
+            .line(line)
+            .call();
+        assert_eq!(command, expected);
     }
 
-    #[test]
-    fn finds_resume_line() {
-        let py = "# 1. Two Sum\n\ndef two_sum(nums, target):\n    pass\n";
-        assert_eq!(resume_line(py, py), 4); // the `pass`
-        let js = "// x\n\nfunction twoSum(nums, target) {\n\n}\n";
-        assert_eq!(resume_line(js, js), 4); // the empty body
-        let edited = "# 1. Two Sum\n\ndef two_sum(nums, target):\n    seen = {}\n    for i, x in enumerate(nums):\n        pass\n";
-        assert_eq!(resume_line(py, edited), 6);
-        let helper_on_top = "import heapq\n# 1. Two Sum\n\ndef two_sum(nums, target):\n    pass\n";
-        assert_eq!(resume_line(py, helper_on_top), 1);
+    const PY: &str = "# 1. Two Sum\n\ndef two_sum(nums, target):\n    pass\n";
+    const JS: &str = "// x\n\nfunction twoSum(nums, target) {\n\n}\n";
+
+    #[rstest]
+    #[case::untouched_python(PY, PY, 4)]
+    #[case::untouched_javascript(JS, JS, 4)]
+    #[case::edited_body(
+        PY,
+        "# 1. Two Sum\n\ndef two_sum(nums, target):\n    seen = {}\n    for i, x in enumerate(nums):\n        pass\n",
+        6
+    )]
+    #[case::helper_on_top(
+        PY,
+        "import heapq\n# 1. Two Sum\n\ndef two_sum(nums, target):\n    pass\n",
+        1
+    )]
+    #[case::appended_helper(
+        PY,
+        "# 1. Two Sum\n\ndef two_sum(nums, target):\n    pass\n\ndef helper():\n    return 1\n",
+        7
+    )]
+    #[case::emptied(PY, "", 1)]
+    fn finds_resume_line(#[case] boilerplate: &str, #[case] code: &str, #[case] line: usize) {
+        assert_eq!(resume_line(boilerplate, code), line);
     }
 
     #[test]
@@ -379,8 +427,20 @@ mod tests {
     }
 
     #[test]
-    fn formats_clock() {
-        assert_eq!(clock(Duration::from_secs(61)), "01:01");
-        assert_eq!(clock(Duration::from_secs(3725)), "1:02:05");
+    fn timer_resumes_from_banked_time() {
+        let t = Timer::resume_from(Duration::from_secs(310));
+        assert!(t.elapsed() >= Duration::from_secs(310));
+        assert!(!t.paused());
+    }
+
+    #[rstest]
+    #[case(0, "00:00")]
+    #[case(61, "01:01")]
+    #[case(599, "09:59")]
+    #[case(3599, "59:59")]
+    #[case(3600, "1:00:00")]
+    #[case(3725, "1:02:05")]
+    fn formats_clock(#[case] secs: u64, #[case] expected: &str) {
+        assert_eq!(clock(Duration::from_secs(secs)), expected);
     }
 }

@@ -43,16 +43,16 @@ impl App {
         let Some(a) = self.session.as_ref().and_then(|s| s.attempt.as_ref()) else {
             return;
         };
-        let row = AttemptRow {
-            id: a.id,
-            active_secs: a.timer.elapsed().as_secs(),
-            test_runs: a.test_runs,
-            failed_runs: a.failed_runs,
-            hints_used: a.hints_used,
-            solution_viewed: a.solution_viewed,
-            outcome: outcome.map(Outcome::as_str),
-            code,
-        };
+        let row = AttemptRow::builder()
+            .id(a.id)
+            .active_secs(a.timer.elapsed().as_secs())
+            .test_runs(a.test_runs)
+            .failed_runs(a.failed_runs)
+            .hints_used(a.hints_used)
+            .solution_viewed(a.solution_viewed)
+            .maybe_outcome(outcome.map(Outcome::as_str))
+            .maybe_code(code)
+            .build();
         if let Err(e) = self.store.save_attempt(&row) {
             self.notify(format!("could not save attempt: {e:#}"));
         }
@@ -102,20 +102,20 @@ impl App {
                 Ok(r) => r,
                 Err(e) => return Some(views::error(format!("could not read your history: {e:#}"))),
             };
-            let picks: Vec<crate::model::Suggestion> = crate::model::suggest(
-                &report.questions,
-                &report.topics,
-                jiff::Timestamp::now(),
-                usize::MAX,
-            )
-            .into_iter()
-            .filter(|s| {
-                self.bank
-                    .get(s.question_id)
-                    .is_some_and(|q| q.supports(lang))
-            })
-            .take(count)
-            .collect();
+            let picks: Vec<crate::model::Suggestion> = crate::model::suggest()
+                .questions(&report.questions)
+                .topics(&report.topics)
+                .now(jiff::Timestamp::now())
+                .limit(usize::MAX)
+                .call()
+                .into_iter()
+                .filter(|s| {
+                    self.bank
+                        .get(s.question_id)
+                        .is_some_and(|q| q.supports(lang))
+                })
+                .take(count)
+                .collect();
             if picks.is_empty() {
                 return Some(views::info(
                     "nothing to suggest yet  ·  /solve random to start",
@@ -207,15 +207,14 @@ impl App {
                         return Some(views::error(format!("could not start session: {e:#}")));
                     }
                 };
-                self.session = Some(Session {
-                    id,
-                    mode: mode.to_string(),
-                    query,
-                    queue,
-                    index: 0,
-                    attempt: None,
-                    done: vec![],
-                });
+                self.session = Some(
+                    Session::builder()
+                        .id(id)
+                        .mode(mode.to_string())
+                        .maybe_query(query)
+                        .queue(queue)
+                        .build(),
+                );
             }
         }
         self.start_question(lang, None)
@@ -252,7 +251,14 @@ impl App {
         let workspace = self.config.workspace(&self.paths);
         let saved = open.as_ref().and_then(|o| o.code.as_deref());
         let fresh = open.is_none();
-        let (dir, file, _) = match session::prepare_work(&workspace, &q, lang, saved, fresh) {
+        let prepared = session::prepare_work()
+            .root(&workspace)
+            .question(&q)
+            .lang(lang)
+            .maybe_saved(saved)
+            .fresh(fresh)
+            .call();
+        let (dir, file, _) = match prepared {
             Ok(v) => v,
             Err(e) => return Some(views::error(format!("{e:#}"))),
         };
@@ -260,21 +266,21 @@ impl App {
         let (attempt, resume) = match &open {
             // Continue the same attempt: same row, same clock, same counters.
             Some(o) => (
-                Attempt {
-                    id: o.id,
-                    question_id: q.meta.id,
-                    lang,
-                    dir,
-                    file,
-                    timer: Timer::resume_from(Duration::from_secs(o.active_secs.max(0) as u64)),
-                    test_runs: o.test_runs as u32,
-                    failed_runs: o.failed_runs as u32,
-                    hints_used: o.hints_used as usize,
-                    solution_viewed: o.solution_viewed,
-                    solution_armed: o.solution_viewed,
-                    last_run: None,
-                    mtime: None,
-                },
+                Attempt::builder()
+                    .id(o.id)
+                    .question_id(q.meta.id)
+                    .lang(lang)
+                    .dir(dir)
+                    .file(file)
+                    .timer(Timer::resume_from(Duration::from_secs(
+                        o.active_secs.max(0) as u64,
+                    )))
+                    .test_runs(o.test_runs as u32)
+                    .failed_runs(o.failed_runs as u32)
+                    .hints_used(o.hints_used as usize)
+                    .solution_viewed(o.solution_viewed)
+                    .solution_armed(o.solution_viewed)
+                    .build(),
                 views::Resume::Continued {
                     elapsed: Duration::from_secs(o.active_secs.max(0) as u64),
                     started_at: o.started_at.clone(),
@@ -291,27 +297,26 @@ impl App {
                     }
                 };
                 (
-                    Attempt {
-                        id,
-                        question_id: q.meta.id,
-                        lang,
-                        dir,
-                        file,
-                        timer: Timer::start(),
-                        test_runs: 0,
-                        failed_runs: 0,
-                        hints_used: 0,
-                        solution_viewed: false,
-                        solution_armed: false,
-                        last_run: None,
-                        mtime: None,
-                    },
+                    Attempt::builder()
+                        .id(id)
+                        .question_id(q.meta.id)
+                        .lang(lang)
+                        .dir(dir)
+                        .file(file)
+                        .timer(Timer::start())
+                        .build(),
                     views::Resume::Fresh,
                 )
             }
         };
 
-        let entry = views::session_question(&q, position, &attempt.file, &stats, &resume);
+        let entry = views::session_question()
+            .question(&q)
+            .position(position)
+            .file(&attempt.file)
+            .stats(&stats)
+            .resume(&resume)
+            .call();
         if let Some(s) = self.session.as_mut() {
             s.attempt = Some(attempt);
         }
@@ -367,15 +372,13 @@ impl App {
                     Ok(id) => id,
                     Err(e) => return Some(views::error(format!("could not start session: {e:#}"))),
                 };
-                self.session = Some(Session {
-                    id,
-                    mode: "continue".into(),
-                    query: None,
-                    queue: vec![qid],
-                    index: 0,
-                    attempt: None,
-                    done: vec![],
-                });
+                self.session = Some(
+                    Session::builder()
+                        .id(id)
+                        .mode("continue".into())
+                        .queue(vec![qid])
+                        .build(),
+                );
             }
         }
         self.start_question(lang, Some(o))
@@ -390,16 +393,15 @@ impl App {
     /// Records an unfinished attempt from an earlier window as skipped
     /// (`/solve` started that question over).
     fn close_open_attempt(&mut self, o: &crate::store::OpenAttempt) {
-        let row = AttemptRow {
-            id: o.id,
-            active_secs: o.active_secs.max(0) as u64,
-            test_runs: o.test_runs as u32,
-            failed_runs: o.failed_runs as u32,
-            hints_used: o.hints_used as usize,
-            solution_viewed: o.solution_viewed,
-            outcome: Some(skip_outcome(o.test_runs as u32).as_str()),
-            code: None,
-        };
+        let row = AttemptRow::builder()
+            .id(o.id)
+            .active_secs(o.active_secs.max(0) as u64)
+            .test_runs(o.test_runs as u32)
+            .failed_runs(o.failed_runs as u32)
+            .hints_used(o.hints_used as usize)
+            .solution_viewed(o.solution_viewed)
+            .outcome(skip_outcome(o.test_runs as u32).as_str())
+            .build();
         let result = self.store.save_attempt(&row).and_then(|_| {
             self.store.event(
                 o.id,
@@ -435,7 +437,12 @@ impl App {
             .and_then(|q| q.boilerplate.get(&a.lang))
             .map_or(1, |b| session::resume_line(b, &code));
         let (template, _) = self.config.editor();
-        let command = editor_command(&template, &a.file, &a.dir, line);
+        let command = editor_command()
+            .template(&template)
+            .file(&a.file)
+            .dir(&a.dir)
+            .line(line)
+            .call();
         self.record("editor_open", json!({ "command": template }));
         if is_terminal_editor(&template) {
             self.pending_command = Some((command, super::AfterCommand::Editor));
@@ -536,7 +543,13 @@ impl App {
         let cancel = Arc::new(AtomicBool::new(false));
         self.cancel = Some(cancel.clone());
         std::thread::spawn(move || {
-            let result = runner::run_cancellable(&q, lang, &file, which, &cancel)
+            let result = runner::run()
+                .question(&q)
+                .lang(lang)
+                .solution(&file)
+                .which(which)
+                .cancel(&cancel)
+                .call()
                 .map_err(|e| format!("{e:#}"));
             let _ = tx.send(Msg::Tests {
                 attempt_id,
@@ -625,14 +638,14 @@ impl App {
         };
         let code = std::fs::read_to_string(&a.file).ok();
         let work_dir = a.dir.clone();
-        let done = Done {
-            question_id: a.question_id,
-            outcome,
-            elapsed: a.timer.elapsed(),
-            hints: a.hints_used,
-            runs: a.test_runs,
-            failed_runs: a.failed_runs,
-        };
+        let done = Done::builder()
+            .question_id(a.question_id)
+            .outcome(outcome)
+            .elapsed(a.timer.elapsed())
+            .hints(a.hints_used)
+            .runs(a.test_runs)
+            .failed_runs(a.failed_runs)
+            .build();
         self.record("outcome", json!({ "outcome": outcome.as_str() }));
         self.notice = None;
         self.save_attempt(Some(outcome), code.as_deref());
@@ -747,14 +760,16 @@ impl App {
             return;
         };
         if let Some(a) = s.attempt.take() {
-            s.done.push(Done {
-                question_id: a.question_id,
-                outcome: Outcome::Unfinished,
-                elapsed: a.timer.elapsed(),
-                hints: a.hints_used,
-                runs: a.test_runs,
-                failed_runs: a.failed_runs,
-            });
+            s.done.push(
+                Done::builder()
+                    .question_id(a.question_id)
+                    .outcome(Outcome::Unfinished)
+                    .elapsed(a.timer.elapsed())
+                    .hints(a.hints_used)
+                    .runs(a.test_runs)
+                    .failed_runs(a.failed_runs)
+                    .build(),
+            );
         }
     }
 

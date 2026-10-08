@@ -141,8 +141,52 @@ def on_alarm(signum, frame):
     raise CaseTimeout()
 
 
+class CappedOutput(io.TextIOBase):
+    """Collects printed text up to STDOUT_CAP; the rest is dropped as it's
+    printed, so a print inside an infinite loop can't exhaust memory."""
+
+    def __init__(self):
+        self.parts = []
+        self.size = 0
+        self.dropped = False
+
+    def writable(self):
+        return True
+
+    def write(self, s):
+        if self.size < STDOUT_CAP:
+            room = STDOUT_CAP - self.size
+            self.parts.append(s[:room])
+            self.size += min(len(s), room)
+            if len(s) > room:
+                self.dropped = True
+        else:
+            self.dropped = True
+        return len(s)
+
+    def text(self):
+        out = "".join(self.parts)
+        if self.dropped:
+            out += "\n… (more output not shown)"
+        return out
+
+
+def explain(exc, solution_path):
+    """The error, plus a hint for the usual runaway cases."""
+    text = format_error(exc, solution_path)
+    if isinstance(exc, RecursionError):
+        text += (
+            f"\nhint: recursion went deeper than {sys.getrecursionlimit():,} calls: "
+            "a missing base case, or recursion too deep for this input (try an explicit stack)"
+        )
+    elif isinstance(exc, MemoryError):
+        text += "\nhint: ran out of memory: a structure growing without bound?"
+    return text
+
+
 def main():
     solution_path, spec_path, results_path = sys.argv[1:4]
+    progress_path = results_path + ".progress"
     with open(spec_path) as f:
         spec = json.load(f)
 
@@ -150,18 +194,47 @@ def main():
         with open(results_path, "w") as f:
             json.dump(obj, f)
 
+    def progress(step):
+        # dojo watches this file and stops a step that stalls (an
+        # uninterruptible loop in C code, a crash) from the outside.
+        with open(progress_path, "w") as f:
+            f.write(str(step))
+
+    if sys.platform.startswith("linux"):
+        try:
+            import resource
+
+            limit = 2 * 1024**3
+            resource.setrlimit(resource.RLIMIT_AS, (limit, limit))
+        except (ImportError, ValueError, OSError):
+            pass
+
     sys.setrecursionlimit(20_000)
     module_spec = importlib.util.spec_from_file_location("solution", solution_path)
     module = importlib.util.module_from_spec(module_spec)
     module.ListNode = ListNode
     module.TreeNode = TreeNode
+    signal.signal(signal.SIGALRM, on_alarm)
+
     # Prints at the top level of the file are shown too ("printed while loading").
-    loading = io.StringIO()
+    loading = CappedOutput()
+    progress("load")
     try:
         with contextlib.redirect_stdout(loading):
-            module_spec.loader.exec_module(module)
+            signal.setitimer(signal.ITIMER_REAL, spec["timeout_secs"])
+            try:
+                module_spec.loader.exec_module(module)
+            finally:
+                signal.setitimer(signal.ITIMER_REAL, 0)
+    except CaseTimeout:
+        write({
+            "fatal": f"loading {os.path.basename(solution_path)} took over {spec['timeout_secs']:g}s: "
+            "is there a loop at the top level of the file?",
+            "load_stdout": loading.text(),
+        })
+        return
     except BaseException as e:
-        write({"fatal": format_error(e, solution_path), "load_stdout": loading.getvalue()[:STDOUT_CAP]})
+        write({"fatal": explain(e, solution_path), "load_stdout": loading.text()})
         return
 
     fn = getattr(module, spec["function"], None)
@@ -169,11 +242,17 @@ def main():
         write({"fatal": f"function `{spec['function']}` not found in {solution_path}"})
         return
 
-    signal.signal(signal.SIGALRM, on_alarm)
     results = []
+    stopped = False
     for case in spec["cases"]:
         result = {"index": case["index"]}
-        buf = io.StringIO()
+        if stopped:
+            # After a timeout the rest would most likely time out too.
+            result["status"] = "not_run"
+            results.append(result)
+            continue
+        progress(case["index"])
+        buf = CappedOutput()
         start = time.perf_counter()
         try:
             args = [decode(p["type"], case["input"][p["name"]]) for p in spec["params"]]
@@ -189,16 +268,20 @@ def main():
             result["got"] = got
         except CaseTimeout:
             result["status"] = "timeout"
+            stopped = True
         except BaseException as e:
             result["status"] = "error"
-            result["error"] = format_error(e, solution_path)
+            result["error"] = explain(e, solution_path)
         result["ms"] = round((time.perf_counter() - start) * 1000, 2)
-        printed = buf.getvalue()
+        printed = buf.text()
         if printed:
-            result["stdout"] = printed[:STDOUT_CAP]
+            result["stdout"] = printed
         results.append(result)
+        # Partial results survive a crash on a later case.
+        write({"results": results, "load_stdout": loading.text()})
 
-    write({"results": results, "load_stdout": loading.getvalue()[:STDOUT_CAP]})
+    progress("done")
+    write({"results": results, "load_stdout": loading.text()})
 
 
 if __name__ == "__main__":

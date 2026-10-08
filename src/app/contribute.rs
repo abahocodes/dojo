@@ -37,6 +37,7 @@ pub enum Stage {
     },
 }
 
+#[derive(bon::Builder)]
 pub struct Contrib {
     pub ws: Workspace,
     pub state: State,
@@ -44,6 +45,7 @@ pub struct Contrib {
     pub built: Option<Built>,
     pub stage: Stage,
     /// Results from a job other than this one (cancelled) are ignored.
+    #[builder(default)]
     job: u64,
 }
 
@@ -235,17 +237,18 @@ impl App {
                     let result = workflow::rebuild(&draft, &root).map_err(|e| format!("{e:#}"));
                     let _ = tx.send(Msg::Contrib(ContribMsg::Rebuilt { job, result }));
                 });
-                self.contrib = Some(Contrib {
-                    ws,
-                    state,
-                    provider,
-                    built: None,
-                    stage: Stage::Working {
-                        since: Instant::now(),
-                        status: "re-checking your draft".into(),
-                    },
-                    job,
-                });
+                self.contrib = Some(
+                    Contrib::builder()
+                        .ws(ws)
+                        .state(state)
+                        .provider(provider)
+                        .stage(Stage::Working {
+                            since: Instant::now(),
+                            status: "re-checking your draft".into(),
+                        })
+                        .job(job)
+                        .build(),
+                );
                 Some(views::info(
                     "continuing your unfinished draft  ·  /contribute new starts another",
                 ))
@@ -256,18 +259,18 @@ impl App {
                     Err(e) => return Some(views::error(format!("{e:#}"))),
                 };
                 let model = self.model_for(p);
-                self.contrib = Some(Contrib {
-                    ws,
-                    state: State {
-                        provider: p.name().into(),
-                        model: model.clone(),
-                        ..State::default()
-                    },
-                    provider: p,
-                    built: None,
-                    stage: Stage::Describe,
-                    job: 0,
-                });
+                self.contrib = Some(
+                    Contrib::builder()
+                        .ws(ws)
+                        .state(State {
+                            provider: p.name().into(),
+                            model: model.clone(),
+                            ..State::default()
+                        })
+                        .provider(p)
+                        .stage(Stage::Describe)
+                        .build(),
+                );
                 let intro = views::contrib_intro(p, &model);
                 if p == Provider::Ollama
                     && let Some(setup) = self.ollama_gate()
@@ -348,7 +351,13 @@ impl App {
                     .unwrap_or(&[]),
             ),
         });
-        let client = match Client::new(c.provider, c.state.model.clone(), key, base_url) {
+        let client = Client::builder()
+            .provider(c.provider)
+            .model(c.state.model.clone())
+            .key(key)
+            .base_url(base_url)
+            .build();
+        let client = match client {
             Ok(cl) => cl,
             Err(e) => {
                 self.transcript.push(views::error(format!("{e:#}")));
@@ -369,7 +378,12 @@ impl App {
             let progress = move |status: String| {
                 let _ = progress_tx.send(Msg::Contrib(ContribMsg::Progress { job, status }));
             };
-            let result = workflow::draft(&client, messages, &root, &progress)
+            let result = workflow::draft()
+                .client(&client)
+                .messages(messages)
+                .root(&root)
+                .progress(&progress)
+                .call()
                 .map(Box::new)
                 .map_err(|e| format!("{e:#}"));
             let _ = tx.send(Msg::Contrib(ContribMsg::Drafted { job, result }));
@@ -399,17 +413,18 @@ impl App {
                         self.notice =
                             Some((format!("could not save the draft: {e:#}"), Instant::now()));
                     }
-                    let entry = views::contrib_review(
-                        &out.draft,
-                        &out.built,
-                        &c.state.model,
-                        out.rounds,
-                        Usage {
-                            input_tokens: c.state.input_tokens,
-                            output_tokens: c.state.output_tokens,
-                            cache_read_tokens: 0,
-                        },
-                    );
+                    let entry = views::contrib_review()
+                        .draft(&out.draft)
+                        .built(&out.built)
+                        .model(&c.state.model)
+                        .rounds(out.rounds)
+                        .usage(
+                            Usage::builder()
+                                .input_tokens(c.state.input_tokens)
+                                .output_tokens(c.state.output_tokens)
+                                .build(),
+                        )
+                        .call();
                     c.built = Some(out.built);
                     c.stage = Stage::Review;
                     self.transcript.push(entry);
@@ -430,17 +445,20 @@ impl App {
                     let draft = c.state.draft.clone();
                     c.stage = Stage::Review;
                     if let Some(d) = draft {
-                        self.transcript.push(views::contrib_review(
-                            &d,
-                            &built,
-                            &c.state.model,
-                            0,
-                            Usage {
-                                input_tokens: c.state.input_tokens,
-                                output_tokens: c.state.output_tokens,
-                                cache_read_tokens: 0,
-                            },
-                        ));
+                        self.transcript.push(
+                            views::contrib_review()
+                                .draft(&d)
+                                .built(&built)
+                                .model(&c.state.model)
+                                .rounds(0)
+                                .usage(
+                                    Usage::builder()
+                                        .input_tokens(c.state.input_tokens)
+                                        .output_tokens(c.state.output_tokens)
+                                        .build(),
+                                )
+                                .call(),
+                        );
                     }
                     c.built = Some(built);
                 }
@@ -563,12 +581,12 @@ impl App {
                     status: s.to_string(),
                 }));
             };
-            let sub = github::Submission {
-                question_dir: &built.dir,
-                slug: &draft.slug,
-                title: &draft.title,
-                body: workflow::pr_body(&draft, &built, &model),
-            };
+            let sub = github::Submission::builder()
+                .question_dir(&built.dir)
+                .slug(&draft.slug)
+                .title(&draft.title)
+                .body(workflow::pr_body(&draft, &built, &model))
+                .build();
             let result = github::submit(&gh, &sub, &progress).map_err(|e| format!("{e:#}"));
             let _ = tx.send(Msg::Contrib(ContribMsg::Submitted { job, result }));
         });

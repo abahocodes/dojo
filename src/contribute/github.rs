@@ -114,6 +114,7 @@ fn run(cmd: &mut Command, what: &str) -> Result<String> {
 }
 
 /// What the PR contains and says.
+#[derive(bon::Builder)]
 pub struct Submission<'a> {
     /// The validated question folder (`…/questions/NNNN-slug`).
     pub question_dir: &'a Path,
@@ -187,7 +188,10 @@ pub fn submit(gh: &Path, sub: &Submission, progress: &dyn Fn(&str)) -> Result<St
 
     progress("adding the question…");
     let questions = clone.join("questions");
-    let id = next_id(&questions)?;
+    // Ids taken by open question PRs count too, so concurrent contributions
+    // don't collide.
+    let claimed = claimed_ids(gh);
+    let id = next_id(&questions)?.max(claimed.iter().max().map_or(0, |m| m + 1));
     let folder = format!("{id:04}-{}", sub.slug);
     let dest = questions.join(&folder);
     copy_question(sub.question_dir, &dest, id)?;
@@ -256,6 +260,38 @@ pub fn submit(gh: &Path, sub: &Submission, progress: &dyn Fn(&str)) -> Result<St
         ]),
         "gh pr create",
     )
+}
+
+/// Question ids claimed by open PRs (from the folders they add).
+fn claimed_ids(gh: &Path) -> Vec<u32> {
+    run(
+        Command::new(gh).args([
+            "pr",
+            "list",
+            "--repo",
+            REPO,
+            "--state",
+            "open",
+            "--limit",
+            "200",
+            "--json",
+            "files",
+            "--jq",
+            ".[].files[].path",
+        ]),
+        "gh pr list",
+    )
+    .map(|out| ids_in_paths(&out))
+    .unwrap_or_default()
+}
+
+/// Ids of `questions/NNNN-slug/...` folders in a list of paths.
+fn ids_in_paths(paths: &str) -> Vec<u32> {
+    paths
+        .lines()
+        .filter_map(|p| p.strip_prefix("questions/"))
+        .filter_map(|rest| rest.split(['/', '-']).next()?.parse().ok())
+        .collect()
 }
 
 /// One past the highest question id in a `questions/` directory.
@@ -338,7 +374,31 @@ fn walk(dir: &Path) -> Result<Vec<PathBuf>> {
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
     use super::*;
+
+    #[rstest]
+    #[case::none("", &[])]
+    #[case::one_pr("questions/0018-lis/meta.json\nquestions/0018-lis/tests.json", &[18, 18])]
+    #[case::ignores_other_files("src/main.rs\nquestions/README.md\nquestions/0021-x/a.py", &[21])]
+    fn finds_claimed_ids(#[case] paths: &str, #[case] expected: &[u32]) {
+        assert_eq!(ids_in_paths(paths), expected);
+    }
+
+    #[rstest]
+    #[case(
+        "# 18. Word Ladder (hard)\n# hi\n",
+        13,
+        "# 13. Word Ladder (hard)\n# hi\n"
+    )]
+    #[case("// 0. Title (easy)\n", 7, "// 7. Title (easy)\n")]
+    #[case("# 123. X\n# 1. 2.\n", 9, "# 9. X\n# 1. 2.\n")]
+    #[case("no number here\n", 5, "no number here\n")]
+    #[case("", 5, "")]
+    fn renumbers_headers(#[case] code: &str, #[case] id: u32, #[case] expected: &str) {
+        assert_eq!(renumber_header(code, id), expected);
+    }
 
     #[test]
     fn renumbers_a_copied_question() {

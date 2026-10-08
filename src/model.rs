@@ -17,7 +17,7 @@ const HALF_LIFE_DAYS: f64 = 30.0;
 pub const GAP: f64 = 0.6;
 
 /// One recorded attempt, as the model sees it.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, bon::Builder)]
 pub struct Attempt {
     pub session_id: i64,
     pub question_id: u32,
@@ -32,15 +32,17 @@ pub struct Attempt {
 impl Attempt {
     /// From a stored row; `None` if its timestamp doesn't parse.
     pub fn from_record(r: &crate::store::AttemptRecord) -> Option<Attempt> {
-        Some(Attempt {
-            session_id: r.session_id,
-            question_id: u32::try_from(r.question_id).ok()?,
-            started_at: r.started_at.parse().ok()?,
-            active_secs: r.active_secs.max(0) as u64,
-            outcome: r.outcome.clone(),
-            failed_runs: r.failed_runs.max(0) as u32,
-            hints_used: r.hints_used.max(0) as u32,
-        })
+        Some(
+            Attempt::builder()
+                .session_id(r.session_id)
+                .question_id(u32::try_from(r.question_id).ok()?)
+                .started_at(r.started_at.parse().ok()?)
+                .active_secs(r.active_secs.max(0) as u64)
+                .maybe_outcome(r.outcome.clone())
+                .failed_runs(r.failed_runs.max(0) as u32)
+                .hints_used(r.hints_used.max(0) as u32)
+                .build(),
+        )
     }
 
     pub fn solved(&self) -> bool {
@@ -81,7 +83,7 @@ fn age_days(then: Timestamp, now: Timestamp) -> f64 {
     ((now.as_second() - then.as_second()).max(0) as f64) / 86_400.0
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, bon::Builder)]
 pub struct QuestionStat {
     pub id: u32,
     pub title: String,
@@ -100,7 +102,7 @@ pub struct QuestionStat {
     pub last_outcome: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, bon::Builder)]
 pub struct LabelStat {
     pub label: String,
     /// Topics: mean score over attempted questions. Companies: mean over
@@ -112,7 +114,7 @@ pub struct LabelStat {
     pub confidence: u8,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, bon::Builder)]
 pub struct DifficultyStat {
     pub difficulty: Difficulty,
     pub solved: usize,
@@ -121,7 +123,7 @@ pub struct DifficultyStat {
     pub time_ratio: Option<f64>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, bon::Builder)]
 pub struct Overview {
     pub questions: usize,
     pub solved: usize,
@@ -133,14 +135,14 @@ pub struct Overview {
     pub difficulties: Vec<DifficultyStat>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, bon::Builder)]
 pub struct Suggestion {
     pub question_id: u32,
     pub title: String,
     pub reason: String,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, bon::Builder)]
 pub struct SessionAttempt {
     pub question_id: u32,
     pub title: String,
@@ -148,7 +150,7 @@ pub struct SessionAttempt {
     pub active_secs: u64,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, bon::Builder)]
 pub struct SessionStat {
     pub id: i64,
     pub started_at: Timestamp,
@@ -156,7 +158,7 @@ pub struct SessionStat {
     pub attempts: Vec<SessionAttempt>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, bon::Builder)]
 pub struct Report {
     pub generated_at: Timestamp,
     pub overview: Overview,
@@ -174,6 +176,7 @@ pub struct Report {
 
 pub const ACTIVITY_DAYS: i64 = 7 * 18;
 
+#[bon::builder]
 pub fn build(bank: &Bank, attempts: &[Attempt], now: Timestamp, tz: &TimeZone) -> Report {
     let by_question: BTreeMap<u32, Vec<&Attempt>> =
         attempts.iter().fold(BTreeMap::new(), |mut m, a| {
@@ -188,35 +191,51 @@ pub fn build(bank: &Bank, attempts: &[Attempt], now: Timestamp, tz: &TimeZone) -
         .collect();
 
     let finished: Vec<&Attempt> = attempts.iter().filter(|a| a.outcome.is_some()).collect();
-    let overview = Overview {
-        questions: questions.len(),
-        solved: questions.iter().filter(|q| q.solved).count(),
-        attempted: questions.iter().filter(|q| q.attempts > 0).count(),
-        attempts: finished.len(),
-        pass_rate: (!finished.is_empty())
-            .then(|| finished.iter().filter(|a| a.solved()).count() as f64 / finished.len() as f64),
-        practice_secs: attempts.iter().map(|a| a.active_secs).sum(),
-        streak_days: streak(attempts, now, tz),
-        difficulties: [Difficulty::Easy, Difficulty::Medium, Difficulty::Hard]
-            .into_iter()
-            .map(|d| difficulty_stat(d, &questions, &finished, bank))
-            .collect(),
-    };
+    let overview =
+        Overview::builder()
+            .questions(questions.len())
+            .solved(questions.iter().filter(|q| q.solved).count())
+            .attempted(questions.iter().filter(|q| q.attempts > 0).count())
+            .attempts(finished.len())
+            .maybe_pass_rate((!finished.is_empty()).then(|| {
+                finished.iter().filter(|a| a.solved()).count() as f64 / finished.len() as f64
+            }))
+            .practice_secs(attempts.iter().map(|a| a.active_secs).sum())
+            .streak_days(streak(attempts, now, tz))
+            .difficulties(
+                [Difficulty::Easy, Difficulty::Medium, Difficulty::Hard]
+                    .into_iter()
+                    .map(|d| {
+                        difficulty_summary()
+                            .difficulty(d)
+                            .questions(&questions)
+                            .finished(&finished)
+                            .bank(bank)
+                            .call()
+                    })
+                    .collect(),
+            )
+            .build();
 
     let topics = label_stats(&questions, |q| &q.tags, false);
     let companies = label_stats(&questions, |q| &q.companies, true);
-    let suggestions = suggest(&questions, &topics, now, 3);
+    let suggestions = suggest()
+        .questions(&questions)
+        .topics(&topics)
+        .now(now)
+        .limit(3)
+        .call();
 
-    Report {
-        generated_at: now,
-        overview,
-        topics,
-        companies,
-        sessions: sessions(bank, attempts),
-        activity: activity(attempts, now, tz),
-        suggestions,
-        questions,
-    }
+    Report::builder()
+        .generated_at(now)
+        .overview(overview)
+        .topics(topics)
+        .companies(companies)
+        .sessions(sessions(bank, attempts))
+        .activity(activity(attempts, now, tz))
+        .suggestions(suggestions)
+        .questions(questions)
+        .build()
 }
 
 fn question_stat(q: &Question, attempts: Option<&[&Attempt]>, now: Timestamp) -> QuestionStat {
@@ -239,24 +258,26 @@ fn question_stat(q: &Question, attempts: Option<&[&Attempt]>, now: Timestamp) ->
         total += w * grade(a, q);
     }
     let last = finished.iter().max_by_key(|a| a.started_at);
-    QuestionStat {
-        id: q.meta.id,
-        title: q.meta.title.clone(),
-        difficulty: q.meta.difficulty,
-        tags: q.meta.tags.clone(),
-        companies: q.meta.companies.clone(),
-        attempts: finished.len() as u32,
-        solved: finished.iter().any(|a| a.solved()),
-        score: (weight > 0.0).then(|| total / weight),
-        best_secs: finished
-            .iter()
-            .filter(|a| a.outcome.as_deref() == Some("pass"))
-            .map(|a| a.active_secs)
-            .min(),
-        target_secs: q.meta.target_minutes as u64 * 60,
-        last_attempt: last.map(|a| a.started_at),
-        last_outcome: last.and_then(|a| a.outcome.clone()),
-    }
+    QuestionStat::builder()
+        .id(q.meta.id)
+        .title(q.meta.title.clone())
+        .difficulty(q.meta.difficulty)
+        .tags(q.meta.tags.clone())
+        .companies(q.meta.companies.clone())
+        .attempts(finished.len() as u32)
+        .solved(finished.iter().any(|a| a.solved()))
+        .maybe_score((weight > 0.0).then(|| total / weight))
+        .maybe_best_secs(
+            finished
+                .iter()
+                .filter(|a| a.outcome.as_deref() == Some("pass"))
+                .map(|a| a.active_secs)
+                .min(),
+        )
+        .target_secs(q.meta.target_minutes as u64 * 60)
+        .maybe_last_attempt(last.map(|a| a.started_at))
+        .maybe_last_outcome(last.and_then(|a| a.outcome.clone()))
+        .build()
 }
 
 fn label_stats<'a>(
@@ -285,21 +306,21 @@ fn label_stats<'a>(
                     .collect()
             };
             let w: f64 = pool.iter().map(|(_, w)| w).sum();
-            LabelStat {
-                label: label.to_string(),
-                mastery: if w > 0.0 {
+            LabelStat::builder()
+                .label(label.to_string())
+                .mastery(if w > 0.0 {
                     pool.iter().map(|(s, w)| s * w).sum::<f64>() / w
                 } else {
                     0.0
-                },
-                attempted: attempted.len(),
-                total: qs.len(),
-                confidence: match attempted.len() {
+                })
+                .attempted(attempted.len())
+                .total(qs.len())
+                .confidence(match attempted.len() {
                     0 | 1 => 0,
                     2 | 3 => 1,
                     _ => 2,
-                },
-            }
+                })
+                .build()
         })
         .collect();
     // Weakest first; never-practiced labels go last.
@@ -312,12 +333,14 @@ fn label_stats<'a>(
     out
 }
 
-fn difficulty_stat(
-    d: Difficulty,
+#[bon::builder]
+fn difficulty_summary(
+    difficulty: Difficulty,
     questions: &[QuestionStat],
     finished: &[&Attempt],
     bank: &Bank,
 ) -> DifficultyStat {
+    let d = difficulty;
     let ratios: Vec<f64> = finished
         .iter()
         .filter(|a| a.outcome.as_deref() == Some("pass"))
@@ -327,15 +350,19 @@ fn difficulty_stat(
                 .then(|| a.active_secs as f64 / (q.meta.target_minutes as f64 * 60.0).max(1.0))
         })
         .collect();
-    DifficultyStat {
-        difficulty: d,
-        solved: questions
-            .iter()
-            .filter(|q| q.difficulty == d && q.solved)
-            .count(),
-        total: questions.iter().filter(|q| q.difficulty == d).count(),
-        time_ratio: (!ratios.is_empty()).then(|| ratios.iter().sum::<f64>() / ratios.len() as f64),
-    }
+    DifficultyStat::builder()
+        .difficulty(d)
+        .solved(
+            questions
+                .iter()
+                .filter(|q| q.difficulty == d && q.solved)
+                .count(),
+        )
+        .total(questions.iter().filter(|q| q.difficulty == d).count())
+        .maybe_time_ratio(
+            (!ratios.is_empty()).then(|| ratios.iter().sum::<f64>() / ratios.len() as f64),
+        )
+        .build()
 }
 
 fn local_date(t: Timestamp, tz: &TimeZone) -> Date {
@@ -388,22 +415,28 @@ fn sessions(bank: &Bank, attempts: &[Attempt]) -> Vec<SessionStat> {
     }
     let mut out: Vec<SessionStat> = by_session
         .into_iter()
-        .map(|(id, list)| SessionStat {
-            id,
-            started_at: list.iter().map(|a| a.started_at).min().unwrap_or_default(),
-            practice_secs: list.iter().map(|a| a.active_secs).sum(),
-            attempts: list
-                .iter()
-                .map(|a| SessionAttempt {
-                    question_id: a.question_id,
-                    title: bank
-                        .get(a.question_id)
-                        .map(|q| q.meta.title.clone())
-                        .unwrap_or_default(),
-                    outcome: a.outcome.clone(),
-                    active_secs: a.active_secs,
-                })
-                .collect(),
+        .map(|(id, list)| {
+            SessionStat::builder()
+                .id(id)
+                .started_at(list.iter().map(|a| a.started_at).min().unwrap_or_default())
+                .practice_secs(list.iter().map(|a| a.active_secs).sum())
+                .attempts(
+                    list.iter()
+                        .map(|a| {
+                            SessionAttempt::builder()
+                                .question_id(a.question_id)
+                                .title(
+                                    bank.get(a.question_id)
+                                        .map(|q| q.meta.title.clone())
+                                        .unwrap_or_default(),
+                                )
+                                .maybe_outcome(a.outcome.clone())
+                                .active_secs(a.active_secs)
+                                .build()
+                        })
+                        .collect(),
+                )
+                .build()
         })
         .collect();
     out.sort_by_key(|s| std::cmp::Reverse(s.started_at));
@@ -412,6 +445,7 @@ fn sessions(bank: &Bank, attempts: &[Attempt]) -> Vec<SessionStat> {
 
 /// What to practice next: weak topics first, then due reviews, then topics
 /// never practiced. Up to three, each with a reason.
+#[bon::builder]
 pub fn suggest(
     questions: &[QuestionStat],
     topics: &[LabelStat],
@@ -421,11 +455,13 @@ pub fn suggest(
     let mut out: Vec<Suggestion> = Vec::new();
     let push = |q: &QuestionStat, reason: String, out: &mut Vec<Suggestion>| {
         if out.len() < limit && !out.iter().any(|s| s.question_id == q.id) {
-            out.push(Suggestion {
-                question_id: q.id,
-                title: q.title.clone(),
-                reason,
-            });
+            out.push(
+                Suggestion::builder()
+                    .question_id(q.id)
+                    .title(q.title.clone())
+                    .reason(reason)
+                    .build(),
+            );
         }
     };
     fn in_topic<'a>(qs: &'a [QuestionStat], t: &'a str) -> impl Iterator<Item = &'a QuestionStat> {
@@ -492,6 +528,8 @@ pub fn suggest(
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
     use super::*;
 
     fn at(days_ago: i64) -> Timestamp {
@@ -500,29 +538,42 @@ mod tests {
     }
 
     fn attempt(q: u32, days_ago: i64, outcome: &str, secs: u64) -> Attempt {
-        Attempt {
-            session_id: 1,
-            question_id: q,
-            started_at: at(days_ago),
-            active_secs: secs,
-            outcome: Some(outcome.into()),
-            failed_runs: 0,
-            hints_used: 0,
-        }
+        Attempt::builder()
+            .session_id(1)
+            .question_id(q)
+            .started_at(at(days_ago))
+            .active_secs(secs)
+            .outcome(outcome.into())
+            .failed_runs(0)
+            .hints_used(0)
+            .build()
     }
 
-    #[test]
-    fn grades_attempts() {
+    #[rstest]
+    #[case::clean_fast_pass("pass", 300, 0, 0, 1.0)]
+    #[case::at_target("pass", 15 * 60, 0, 0, 1.0)]
+    #[case::double_target("pass", 30 * 60, 0, 0, 0.75)]
+    #[case::way_over_target("pass", 90 * 60, 0, 0, 0.75)]
+    #[case::one_failed_run("pass", 60, 1, 0, 0.92)]
+    #[case::failed_runs_capped("pass", 60, 10, 0, 0.68)]
+    #[case::all_hints("pass", 60, 0, 3, 0.6)]
+    #[case::floor("pass", 30 * 60, 10, 3, 0.35)]
+    #[case::revealed("revealed", 60, 0, 0, 0.15)]
+    #[case::fail("fail", 60, 2, 1, 0.0)]
+    #[case::skip("skip", 10, 0, 0, 0.0)]
+    fn grades(
+        #[case] outcome: &str,
+        #[case] secs: u64,
+        #[case] failed_runs: u32,
+        #[case] hints: u32,
+        #[case] expected: f64,
+    ) {
         let bank = Bank::embedded();
         let q = bank.get(1).unwrap(); // 15 min target, 3 hints
-        assert_eq!(grade(&attempt(1, 0, "pass", 300), q), 1.0);
-        let mut slow = attempt(1, 0, "pass", 30 * 60);
-        assert!((grade(&slow, q) - 0.75).abs() < 1e-9); // double the target
-        slow.hints_used = 3;
-        slow.failed_runs = 10;
-        assert_eq!(grade(&slow, q), 0.35); // floor for a pass
-        assert_eq!(grade(&attempt(1, 0, "revealed", 60), q), 0.15);
-        assert_eq!(grade(&attempt(1, 0, "fail", 60), q), 0.0);
+        let mut a = attempt(1, 0, outcome, secs);
+        a.failed_runs = failed_runs;
+        a.hints_used = hints;
+        assert!((grade(&a, q) - expected).abs() < 1e-9, "{}", grade(&a, q));
     }
 
     #[test]
@@ -535,7 +586,12 @@ mod tests {
             attempt(11, 0, "skip", 30),
             attempt(13, 2, "pass", 200),
         ];
-        let r = build(&bank, &attempts, now, &TimeZone::UTC);
+        let r = build()
+            .bank(&bank)
+            .attempts(&attempts)
+            .now(now)
+            .tz(&TimeZone::UTC)
+            .call();
         assert_eq!(r.overview.solved, 2);
         assert_eq!(r.overview.attempted, 3);
         assert_eq!(r.overview.streak_days, 3);
@@ -550,10 +606,20 @@ mod tests {
         assert_eq!(r.activity.last().unwrap().1, 2);
         assert_eq!(r.sessions.len(), 1);
         // Asking for more than the gaps fills up with untried questions.
-        let many = suggest(&r.questions, &r.topics, now, 10);
+        let many = suggest()
+            .questions(&r.questions)
+            .topics(&r.topics)
+            .now(now)
+            .limit(10)
+            .call();
         assert_eq!(many.len(), 10);
         assert_eq!(many[0].question_id, r.suggestions[0].question_id);
-        let all = suggest(&r.questions, &r.topics, now, 99);
+        let all = suggest()
+            .questions(&r.questions)
+            .topics(&r.topics)
+            .now(now)
+            .limit(99)
+            .call();
         assert_eq!(all.len(), bank.all().len());
     }
 

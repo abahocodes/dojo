@@ -55,10 +55,11 @@ impl Provider {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, bon::Builder)]
 pub struct Usage {
     pub input_tokens: u64,
     pub output_tokens: u64,
+    #[builder(default)]
     pub cache_read_tokens: u64,
 }
 
@@ -72,6 +73,7 @@ impl std::ops::AddAssign for Usage {
 
 /// One model turn: the JSON it produced, and the assistant message to append
 /// to the conversation exactly as returned.
+#[derive(bon::Builder)]
 pub struct Turn {
     pub json: String,
     pub assistant: Value,
@@ -85,6 +87,9 @@ pub struct Client {
     /// Ollama's address (unused for hosted providers).
     base_url: String,
     http: reqwest::blocking::Client,
+    /// Set once Ollama reports the model can't do constrained output: the
+    /// schema then goes in the prompt and the JSON is extracted from text.
+    schema_in_prompt: std::sync::atomic::AtomicBool,
 }
 
 /// Context window requested from Ollama. Its default is small enough to
@@ -99,8 +104,15 @@ const FALLBACK_MODELS: &[&str] = &[
     "claude-sonnet-5-5",
 ];
 
+#[bon::bon]
 impl Client {
-    pub fn new(provider: Provider, model: String, key: String, base_url: String) -> Result<Client> {
+    #[builder]
+    pub fn new(
+        provider: Provider,
+        model: String,
+        #[builder(default)] key: String,
+        #[builder(default)] base_url: String,
+    ) -> Result<Client> {
         let http = reqwest::blocking::Client::builder()
             // Drafting a whole question takes minutes, more on a local model.
             .timeout(Duration::from_secs(if provider == Provider::Ollama {
@@ -115,6 +127,7 @@ impl Client {
             key,
             base_url: base_url.trim_end_matches('/').to_string(),
             http,
+            schema_in_prompt: std::sync::atomic::AtomicBool::new(false),
         })
     }
 
@@ -133,21 +146,43 @@ impl Client {
     }
 
     /// Ollama's native chat API: `format` takes the JSON schema directly.
+    /// Ollama's native chat API. `format` constrains output to the schema;
+    /// models whose engine can't do that (Ollama answers "structured output
+    /// is unavailable") get the schema in the prompt instead, and the JSON is
+    /// extracted from the reply. Bad JSON is caught by the drafting loop.
     fn ollama(&self, system: &str, messages: &[Value], schema: &Value) -> Result<Turn> {
+        use std::sync::atomic::Ordering;
+        let in_prompt = self.schema_in_prompt.load(Ordering::Relaxed);
+        let system = if in_prompt {
+            format!(
+                "{system}\n\n## Output\n\nReply with exactly one JSON object and nothing else (no prose, no code fences), matching this JSON schema:\n\n{}",
+                serde_json::to_string_pretty(schema)?
+            )
+        } else {
+            system.to_string()
+        };
         let mut all = vec![json!({ "role": "system", "content": system })];
         all.extend(messages.iter().cloned());
-        let body = json!({
+        let mut body = json!({
             "model": self.model,
             "messages": all,
             "stream": false,
-            "format": schema,
             "options": { "num_ctx": OLLAMA_CONTEXT, "temperature": 0.2 },
         });
-        let resp = self.send(|| {
+        if !in_prompt {
+            body["format"] = schema.clone();
+        }
+        let resp = match self.send(|| {
             self.http
                 .post(format!("{}/api/chat", self.base_url))
                 .json(&body)
-        })?;
+        }) {
+            Err(e) if !in_prompt && e.to_string().contains("structured output is unavailable") => {
+                self.schema_in_prompt.store(true, Ordering::Relaxed);
+                return self.ollama(&system, messages, schema);
+            }
+            other => other?,
+        };
         if resp["done_reason"] == "length" {
             bail!("the draft ran past the model's output limit; try a smaller question");
         }
@@ -159,15 +194,16 @@ impl Client {
         if text.is_empty() {
             bail!("the model returned nothing; try again, or a different model in /config");
         }
-        Ok(Turn {
-            assistant: json!({ "role": "assistant", "content": text }),
-            json: text,
-            usage: Usage {
-                input_tokens: resp["prompt_eval_count"].as_u64().unwrap_or(0),
-                output_tokens: resp["eval_count"].as_u64().unwrap_or(0),
-                cache_read_tokens: 0,
-            },
-        })
+        Ok(Turn::builder()
+            .assistant(json!({ "role": "assistant", "content": text }))
+            .json(if in_prompt { extract_json(&text) } else { text })
+            .usage(
+                Usage::builder()
+                    .input_tokens(resp["prompt_eval_count"].as_u64().unwrap_or(0))
+                    .output_tokens(resp["eval_count"].as_u64().unwrap_or(0))
+                    .build(),
+            )
+            .build())
     }
 
     fn claude(&self, system: &str, messages: &[Value], schema: &Value) -> Result<Turn> {
@@ -221,16 +257,20 @@ impl Client {
             .filter_map(|b| b["text"].as_str())
             .collect();
         let u = &resp["usage"];
-        Ok(Turn {
-            json: text,
-            assistant: json!({ "role": "assistant", "content": content }),
-            usage: Usage {
-                input_tokens: u["input_tokens"].as_u64().unwrap_or(0)
-                    + u["cache_creation_input_tokens"].as_u64().unwrap_or(0),
-                output_tokens: u["output_tokens"].as_u64().unwrap_or(0),
-                cache_read_tokens: u["cache_read_input_tokens"].as_u64().unwrap_or(0),
-            },
-        })
+        Ok(Turn::builder()
+            .json(text)
+            .assistant(json!({ "role": "assistant", "content": content }))
+            .usage(
+                Usage::builder()
+                    .input_tokens(
+                        u["input_tokens"].as_u64().unwrap_or(0)
+                            + u["cache_creation_input_tokens"].as_u64().unwrap_or(0),
+                    )
+                    .output_tokens(u["output_tokens"].as_u64().unwrap_or(0))
+                    .cache_read_tokens(u["cache_read_input_tokens"].as_u64().unwrap_or(0))
+                    .build(),
+            )
+            .build())
     }
 
     fn openai(&self, system: &str, messages: &[Value], schema: &Value) -> Result<Turn> {
@@ -262,17 +302,21 @@ impl Client {
             .context("response has no content")?
             .to_string();
         let u = &resp["usage"];
-        Ok(Turn {
-            assistant: json!({ "role": "assistant", "content": text }),
-            json: text,
-            usage: Usage {
-                input_tokens: u["prompt_tokens"].as_u64().unwrap_or(0),
-                output_tokens: u["completion_tokens"].as_u64().unwrap_or(0),
-                cache_read_tokens: u["prompt_tokens_details"]["cached_tokens"]
-                    .as_u64()
-                    .unwrap_or(0),
-            },
-        })
+        Ok(Turn::builder()
+            .assistant(json!({ "role": "assistant", "content": text }))
+            .json(text)
+            .usage(
+                Usage::builder()
+                    .input_tokens(u["prompt_tokens"].as_u64().unwrap_or(0))
+                    .output_tokens(u["completion_tokens"].as_u64().unwrap_or(0))
+                    .cache_read_tokens(
+                        u["prompt_tokens_details"]["cached_tokens"]
+                            .as_u64()
+                            .unwrap_or(0),
+                    )
+                    .build(),
+            )
+            .build())
     }
 
     /// Sends with retries on rate limits, overload and server errors.
@@ -335,5 +379,54 @@ impl Client {
             );
         }
         bail!("{} is busy; try again in a minute", self.provider.label())
+    }
+}
+
+/// The JSON object in a free-text reply: drops `<think>` blocks and code
+/// fences, then takes the outermost `{ … }`.
+pub fn extract_json(text: &str) -> String {
+    let mut t = text;
+    if let Some(end) = t.rfind("</think>") {
+        t = &t[end + "</think>".len()..];
+    }
+    match (t.find('{'), t.rfind('}')) {
+        (Some(start), Some(end)) if end > start => t[start..=end].to_string(),
+        _ => t.trim().to_string(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use rstest::rstest;
+
+    use super::*;
+
+    #[rstest]
+    #[case::bare(r#"{"a": 1}"#, r#"{"a": 1}"#)]
+    #[case::fenced("```json\n{\"a\": 1}\n```", r#"{"a": 1}"#)]
+    #[case::prose_around("Here you go:\n{\"a\": {\"b\": 2}}\nDone.", r#"{"a": {"b": 2}}"#)]
+    #[case::thinking("<think>maybe {x}</think>\n{\"a\": 1}", r#"{"a": 1}"#)]
+    #[case::no_object("sorry", "sorry")]
+    fn extracts_json(#[case] text: &str, #[case] expected: &str) {
+        assert_eq!(extract_json(text), expected);
+    }
+
+    #[rstest]
+    #[case("claude", Some(Provider::Claude))]
+    #[case("Anthropic", Some(Provider::Claude))]
+    #[case("openai", Some(Provider::OpenAi))]
+    #[case("ollama", Some(Provider::Ollama))]
+    #[case("local", Some(Provider::Ollama))]
+    #[case("gemini", None)]
+    fn parses_providers(#[case] input: &str, #[case] expected: Option<Provider>) {
+        assert_eq!(Provider::parse(input), expected);
+    }
+
+    #[rstest]
+    #[case(Provider::Claude, true)]
+    #[case(Provider::OpenAi, true)]
+    #[case(Provider::Ollama, false)]
+    fn knows_which_providers_need_keys(#[case] p: Provider, #[case] needs: bool) {
+        assert_eq!(p.needs_key(), needs);
     }
 }

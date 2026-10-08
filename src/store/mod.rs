@@ -25,6 +25,7 @@ pub struct Store {
 }
 
 /// Attempt counters persisted after every change, so a crash loses nothing.
+#[derive(bon::Builder)]
 pub struct AttemptRow<'a> {
     pub id: i64,
     pub active_secs: u64,
@@ -359,16 +360,14 @@ mod tests {
         store
             .event(a, "test_run", serde_json::json!({"passed": 1, "total": 3}))
             .unwrap();
-        let mut row = AttemptRow {
-            id: a,
-            active_secs: 300,
-            test_runs: 2,
-            failed_runs: 1,
-            hints_used: 1,
-            solution_viewed: false,
-            outcome: None,
-            code: None,
-        };
+        let mut row = AttemptRow::builder()
+            .id(a)
+            .active_secs(300)
+            .test_runs(2)
+            .failed_runs(1)
+            .hints_used(1)
+            .solution_viewed(false)
+            .build();
         store.save_attempt(&row).unwrap();
         assert_eq!(store.question_stats(1).unwrap().attempts, 0);
 
