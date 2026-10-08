@@ -1,0 +1,12 @@
+function subtreeWithAllDeepest(root: TreeNode | null): TreeNode | null {
+  // dfs(node) -> [height of the subtree, root of the answer inside it]
+  const dfs = (node: TreeNode | null): [number, TreeNode | null] => {
+    if (node === null) return [0, null];
+    const [lh, la] = dfs(node.left);
+    const [rh, ra] = dfs(node.right);
+    if (lh > rh) return [lh + 1, la];
+    if (rh > lh) return [rh + 1, ra];
+    return [lh + 1, node];
+  };
+  return dfs(root)[1];
+}
