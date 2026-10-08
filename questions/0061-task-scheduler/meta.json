@@ -1,0 +1,48 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 61,
+  "slug": "task-scheduler",
+  "title": "Task Scheduler",
+  "difficulty": "medium",
+  "tags": [
+    "greedy",
+    "heap",
+    "counting"
+  ],
+  "companies": [
+    "meta",
+    "amazon",
+    "microsoft",
+    "google"
+  ],
+  "target_minutes": 25,
+  "signature": {
+    "function": "least_interval",
+    "params": [
+      {
+        "name": "tasks",
+        "type": "string[]"
+      },
+      {
+        "name": "n",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

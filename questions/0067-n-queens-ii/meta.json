@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 67,
+  "slug": "n-queens-ii",
+  "title": "N-Queens II",
+  "difficulty": "hard",
+  "tags": [
+    "backtracking",
+    "bit-manipulation"
+  ],
+  "companies": [
+    "amazon",
+    "google",
+    "microsoft",
+    "meta"
+  ],
+  "target_minutes": 30,
+  "signature": {
+    "function": "total_n_queens",
+    "params": [
+      {
+        "name": "n",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
