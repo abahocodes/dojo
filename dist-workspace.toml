@@ -23,3 +23,6 @@ formula = "dojo"
 publish-jobs = ["homebrew"]
 # sqlx checks queries against the committed .sqlx cache, not a database
 github-build-setup = "../build-setup.yml"
+# release.yml is edited by hand: the Homebrew job pushes with a deploy key
+# (HOMEBREW_TAP_DEPLOY_KEY) instead of a token. Re-apply after `dist generate`.
+allow-dirty = ["ci"]
