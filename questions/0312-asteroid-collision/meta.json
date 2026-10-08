@@ -1,0 +1,59 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 312,
+  "slug": "asteroid-collision",
+  "title": "Asteroid Collision",
+  "difficulty": "medium",
+  "tags": [
+    "stack",
+    "arrays",
+    "simulation"
+  ],
+  "companies": [
+    "amazon",
+    "uber",
+    "meta",
+    "lyft"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "asteroid_collision",
+    "params": [
+      {
+        "name": "asteroids",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}
