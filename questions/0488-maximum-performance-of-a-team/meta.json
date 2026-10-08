@@ -1,0 +1,69 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 488,
+  "slug": "maximum-performance-of-a-team",
+  "title": "Maximum Performance of a Team",
+  "difficulty": "hard",
+  "tags": [
+    "heap",
+    "greedy",
+    "sorting"
+  ],
+  "companies": [
+    "amazon",
+    "google"
+  ],
+  "target_minutes": 40,
+  "signature": {
+    "function": "max_performance",
+    "params": [
+      {
+        "name": "n",
+        "type": "int"
+      },
+      {
+        "name": "speed",
+        "type": "int[]"
+      },
+      {
+        "name": "efficiency",
+        "type": "int[]"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}
