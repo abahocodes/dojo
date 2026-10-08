@@ -139,9 +139,10 @@ impl App {
     }
 
     pub(super) fn cmd_contribute(&mut self, args: &[&str]) -> Option<Entry> {
-        match args.first().copied() {
-            Some("claude") | Some("openai") | Some("ollama") => {
-                let p = Provider::parse(args[0]).unwrap_or(Provider::Claude);
+        let option = args.first().map(|a| a.to_ascii_lowercase());
+        match option.as_deref() {
+            Some(name @ ("claude" | "openai" | "ollama")) => {
+                let p = Provider::parse(name).unwrap_or(Provider::Claude);
                 self.config.contribute.provider = p.name().into();
                 if let Err(e) = self.config.save(&self.paths.config_file) {
                     return Some(views::error(format!("could not save config: {e:#}")));

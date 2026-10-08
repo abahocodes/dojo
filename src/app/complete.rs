@@ -152,12 +152,7 @@ fn arguments(bank: &Bank, spec: &Spec, line: &str, args: &str) -> Vec<Item> {
             questions(bank, token, |id| (replace(&id.to_string(), true), true))
         }
         "solve" | "list" | "report" => {
-            let mut values = bank.labels();
-            values.extend(["easy", "medium", "hard"].map(String::from));
-            if spec.name == "solve" && position == 0 {
-                values.insert(0, "need".into());
-                values.insert(1, "random".into());
-            }
+            let values = choices(bank, spec.name, position);
             rank(token, &values, |v| v.clone())
                 .into_iter()
                 .filter(|v| v.as_str() != token)
@@ -172,22 +167,64 @@ fn arguments(bank: &Bank, spec: &Spec, line: &str, args: &str) -> Vec<Item> {
                 })
                 .collect()
         }
-        "editor" if position == 0 => {
-            simple(rank(token, EDITOR_PRESETS, |s| s.to_string()), &replace)
-        }
-        "lang" if position == 0 => {
-            let langs: Vec<&str> = Language::ALL.iter().map(|l| l.name()).collect();
-            simple(rank(token, &langs, |s| s.to_string()), &replace)
-        }
-        "help" if position == 0 => {
-            let names: Vec<&str> = COMMANDS.iter().map(|c| c.name).collect();
-            simple(rank(token, &names, |s| s.to_string()), &replace)
+        "editor" | "lang" | "help" if position == 0 => {
+            let values = choices(bank, spec.name, position);
+            simple(rank(token, &values, |s| s.clone()), &replace)
         }
         _ => vec![],
     }
 }
 
-fn simple(values: Vec<&&str>, replace: &dyn Fn(&str, bool) -> String) -> Vec<Item> {
+/// The named values an argument can take (not question ids).
+fn choices(bank: &Bank, command: &str, position: usize) -> Vec<String> {
+    match command {
+        "solve" | "list" | "report" => {
+            let mut values = bank.labels();
+            values.extend(["easy", "medium", "hard"].map(String::from));
+            if command == "solve" && position == 0 {
+                values.insert(0, "need".into());
+                values.insert(1, "random".into());
+            }
+            values
+        }
+        "editor" if position == 0 => EDITOR_PRESETS.iter().map(|s| s.to_string()).collect(),
+        "lang" if position == 0 => Language::ALL.iter().map(|l| l.name().to_string()).collect(),
+        "help" if position == 0 => COMMANDS.iter().map(|c| c.name.to_string()).collect(),
+        _ => vec![],
+    }
+}
+
+/// Whether Enter should take the selected suggestion instead of running the
+/// line as typed. Only a partly typed command name, or a partly typed value
+/// from a fixed set (`/lang py`, `/help sol`, `/report gra`), completes.
+/// Everything else runs as typed, Tab being the way to take a suggestion:
+/// free text (`/solve two sum`, `/list dp`, `/show two`), editor commands
+/// (`/editor subl`), ids, counts and exact values. `/solve need` means
+/// `need`, not a fuzzy match like `indeed`.
+pub fn enter_completes(bank: &Bank, line: &str, ctx: Context) -> bool {
+    let Some(rest) = line.strip_prefix('/') else {
+        return false;
+    };
+    let Some((name, args)) = rest.split_once(' ') else {
+        return true;
+    };
+    let Some(spec) = find(name) else {
+        return false;
+    };
+    if !takes_args(spec, ctx) {
+        return false;
+    }
+    let token = args.rsplit_once(' ').map_or(args, |(_, t)| t);
+    let position = args.split(' ').count() - 1;
+    let fixed_set = matches!((spec.name, position), ("lang" | "help" | "report", 0));
+    fixed_set
+        && !token.is_empty()
+        && !choices(bank, spec.name, position)
+            .iter()
+            .any(|v| v == token)
+}
+
+fn simple(values: Vec<&String>, replace: &dyn Fn(&str, bool) -> String) -> Vec<Item> {
     values
         .into_iter()
         .take(MAX_ITEMS)
@@ -355,5 +392,39 @@ mod tests {
             "{:?}",
             labels(line, IDLE)
         );
+    }
+
+    /// Enter runs the line as typed unless it's finishing a partial command
+    /// name or fixed-set value (`/solve need` used to become `/solve
+    /// indeed`, `/solve two sum` became `/solve two prefix-sum`).
+    #[rstest]
+    #[case::command_name("/sol", true)]
+    #[case::partial_language("/lang ja", true)]
+    #[case::partial_help("/help sol", true)]
+    #[case::partial_report_label("/report gra", true)]
+    #[case::keyword("/solve need", false)]
+    #[case::keyword_then_space("/solve need ", false)]
+    #[case::count("/solve need 3", false)]
+    #[case::random_count("/solve random 3", false)]
+    #[case::query("/solve two sum", false)]
+    #[case::short_query("/solve dp", false)]
+    #[case::partial_word_query("/solve nee", false)]
+    #[case::ids("/solve 42 43", false)]
+    #[case::list_query("/list two sum", false)]
+    #[case::list_partial("/list grap", false)]
+    #[case::show_search("/show two", false)]
+    #[case::show_slug("/show two-sum", false)]
+    #[case::show_id("/show 42", false)]
+    #[case::past_count("/past 6 3", false)]
+    #[case::hint_id("/hint 3", false)]
+    #[case::editor_command("/editor subl", false)]
+    #[case::editor_vi("/editor vi", false)]
+    #[case::editor_flags("/editor code --wait", false)]
+    #[case::exact_language("/lang go", false)]
+    #[case::exact_report_label("/report graphs", false)]
+    #[case::exact_help("/help solve", false)]
+    #[case::plain_text("hello", false)]
+    fn enter_completes_only_partial_names(#[case] line: &str, #[case] completes: bool) {
+        assert_eq!(enter_completes(&Bank::embedded(), line, IDLE), completes);
     }
 }

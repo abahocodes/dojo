@@ -86,6 +86,7 @@ impl App {
 
         // `random` and `need` take an optional count: `/solve need 3`.
         let count = |keyword: &str| match (words.get(1), n) {
+            _ if words.len() > 2 => Err(views::error(format!("usage: /solve {keyword} [N]"))),
             (Some(w), _) => match w.parse::<usize>() {
                 Ok(v) if v > 0 => Ok(v),
                 _ => Err(views::error(format!("usage: /solve {keyword} [N]"))),
@@ -93,6 +94,16 @@ impl App {
             (None, Some(v)) => Ok(v),
             (None, None) => Ok(1),
         };
+        // Numbers are ids, never search words: `/solve -1` used to start
+        // whichever title contained "1".
+        if words.iter().all(|w| super::looks_numeric(w))
+            && !words.iter().all(|w| w.parse::<u32>().is_ok())
+        {
+            let bad = words.iter().find(|w| w.parse::<u32>().is_err()).unwrap();
+            return Some(views::error(format!(
+                "`{bad}` isn't a question id  ·  /list"
+            )));
+        }
         let (queue, mode, query): (Vec<u32>, &str, Option<String>) = if words[0] == "need" {
             let count = match count("need") {
                 Ok(c) => c,
@@ -137,7 +148,13 @@ impl App {
                 .collect();
             (pick_random(pool, count), "random", None)
         } else if words.iter().all(|w| w.parse::<u32>().is_ok()) {
-            let ids: Vec<u32> = words.iter().map(|w| w.parse().unwrap()).collect();
+            // `/solve 3 3` practices #3 once.
+            let mut ids: Vec<u32> = Vec::new();
+            for id in words.iter().map(|w| w.parse().unwrap()) {
+                if !ids.contains(&id) {
+                    ids.push(id);
+                }
+            }
             if let Some(missing) = ids.iter().find(|id| self.bank.get(**id).is_none()) {
                 return Some(views::error(format!("no question #{missing}  ·  /list")));
             }
@@ -570,6 +587,16 @@ impl App {
                 return self.continue_unfinished(target);
             }
         };
+        // With a question open, `/edit` goes back to it; another id would
+        // be silently ignored.
+        if let Some(arg) = args.first()
+            && arg.parse::<u32>() != Ok(a.question_id)
+        {
+            return Some(views::error(format!(
+                "#{} is open  ·  /edit to go back to it, /skip to move on",
+                a.question_id
+            )));
+        }
         if a.timer.resume() {
             a.mtime = a.file_mtime(); // edits made while paused aren't a save
             self.record(EventKind::Resume, serde_json::Value::Null);

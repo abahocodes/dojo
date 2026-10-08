@@ -200,8 +200,92 @@ pub const COMMANDS: &[Spec] = &[
     },
 ];
 
+/// Looks a command up by name or alias, ignoring case (`/Solve` works).
 pub fn find(name: &str) -> Option<&'static Spec> {
+    let name = name.to_ascii_lowercase();
     COMMANDS
         .iter()
-        .find(|c| c.name == name || c.aliases.contains(&name))
+        .find(|c| c.name == name || c.aliases.contains(&name.as_str()))
+}
+
+/// The command a mistyped name most likely meant (`/sovle` → `solve`):
+/// the closest name or alias within two edits, for "did you mean".
+pub fn closest(name: &str) -> Option<&'static str> {
+    let name = name.to_ascii_lowercase();
+    COMMANDS
+        .iter()
+        .filter(|c| c.soon.is_none())
+        .flat_map(|c| {
+            std::iter::once(c.name)
+                .chain(c.aliases.iter().copied())
+                .map(move |n| (c.name, n))
+        })
+        .map(|(command, n)| (edit_distance(&name, n), command))
+        .filter(|(d, _)| *d <= 2.min(name.len().saturating_sub(1)))
+        .min_by_key(|(d, _)| *d)
+        .map(|(_, command)| command)
+}
+
+/// Edits (insert, delete, substitute, swap two neighbours) between two
+/// words.
+fn edit_distance(a: &str, b: &str) -> usize {
+    let (a, b): (Vec<char>, Vec<char>) = (a.chars().collect(), b.chars().collect());
+    let mut d = vec![vec![0; b.len() + 1]; a.len() + 1];
+    for (i, row) in d.iter_mut().enumerate() {
+        row[0] = i;
+    }
+    d[0] = (0..=b.len()).collect();
+    for i in 1..=a.len() {
+        for j in 1..=b.len() {
+            let cost = usize::from(a[i - 1] != b[j - 1]);
+            d[i][j] = (d[i - 1][j] + 1)
+                .min(d[i][j - 1] + 1)
+                .min(d[i - 1][j - 1] + cost);
+            if i > 1 && j > 1 && a[i - 1] == b[j - 2] && a[i - 2] == b[j - 1] {
+                d[i][j] = d[i][j].min(d[i - 2][j - 2] + 1);
+            }
+        }
+    }
+    d[a.len()][b.len()]
+}
+
+/// How many arguments a command accepts, when that's a fixed number. Free
+/// text (`/solve`, `/list`, `/show`, `/editor`) and `[id] [n]` forms,
+/// which also accept search words, check their own.
+pub fn max_args(spec: &Spec) -> Option<usize> {
+    match spec.name {
+        _ if !spec.takes_args() => Some(0),
+        "lang" | "help" | "report" | "contribute" | "edit" => Some(1),
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use rstest::rstest;
+
+    use super::*;
+
+    #[rstest]
+    #[case::exact("solve", Some("solve"))]
+    #[case::upper("SOLVE", Some("solve"))]
+    #[case::mixed("Help", Some("help"))]
+    #[case::alias("Q", Some("quit"))]
+    #[case::unknown("sovle", None)]
+    fn finds_commands_ignoring_case(#[case] name: &str, #[case] found: Option<&str>) {
+        assert_eq!(find(name).map(|s| s.name), found);
+    }
+
+    #[rstest]
+    #[case::swap("sovle", Some("solve"))]
+    #[case::swap_list("lsit", Some("list"))]
+    #[case::missing_letter("sumbit", Some("submit"))]
+    #[case::extra_letter("helpp", Some("help"))]
+    #[case::alias_typo("exti", Some("quit"))]
+    #[case::case("SOVLE", Some("solve"))]
+    #[case::nonsense("xyz", None)]
+    #[case::too_short("x", None)]
+    fn suggests_the_closest_command(#[case] name: &str, #[case] expected: Option<&str>) {
+        assert_eq!(closest(name), expected);
+    }
 }
