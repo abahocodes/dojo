@@ -8,7 +8,6 @@ use std::fmt;
 use std::path::Path;
 
 use anyhow::{Context, Result};
-use rust_embed::RustEmbed;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -17,9 +16,8 @@ pub use types::Type;
 
 use crate::lang::Language;
 
-#[derive(RustEmbed)]
-#[folder = "questions/"]
-struct Embedded;
+/// The bank packed by build.rs: zstd over (path, data) records.
+static BANK_ZST: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/bank.zst"));
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
@@ -218,12 +216,7 @@ pub struct Bank {
 impl Bank {
     /// The question bank compiled into the binary.
     pub fn embedded() -> Bank {
-        let files = Embedded::iter()
-            .filter_map(|path| {
-                let file = Embedded::get(&path)?;
-                Some((path.to_string(), file.data.into_owned()))
-            })
-            .collect();
+        let files = unpack(BANK_ZST).unwrap_or_default();
         // Embedded questions are validated in CI; a bad one is skipped rather
         // than taking the whole app down.
         Bank::from_files(files).0
@@ -408,6 +401,25 @@ fn parse_hints(md: &str) -> Vec<Hint> {
     hints
 }
 
+/// Reads build.rs's archive back into (path, data) pairs.
+fn unpack(packed: &[u8]) -> Option<BTreeMap<String, Vec<u8>>> {
+    let raw = zstd::decode_all(packed).ok()?;
+    let mut files = BTreeMap::new();
+    let mut rest = raw.as_slice();
+    fn take(n: usize, rest: &mut &[u8]) -> Option<Vec<u8>> {
+        let (head, tail) = rest.split_at_checked(n)?;
+        *rest = tail;
+        Some(head.to_vec())
+    }
+    while !rest.is_empty() {
+        let len = u32::from_le_bytes(take(4, &mut rest)?.try_into().ok()?) as usize;
+        let path = String::from_utf8(take(len, &mut rest)?).ok()?;
+        let len = u32::from_le_bytes(take(4, &mut rest)?.try_into().ok()?) as usize;
+        files.insert(path, take(len, &mut rest)?);
+    }
+    Some(files)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -423,11 +435,33 @@ mod tests {
 
     #[test]
     fn embedded_bank_loads() {
-        let files = Embedded::iter()
-            .filter_map(|p| Some((p.to_string(), Embedded::get(&p)?.data.into_owned())))
-            .collect();
+        let files = unpack(BANK_ZST).expect("bank unpacks");
         let (bank, errors) = Bank::from_files(files);
         assert!(errors.is_empty(), "{errors:?}");
         assert!(!bank.all().is_empty());
+    }
+
+    #[test]
+    fn embedded_bank_matches_the_questions_folder() {
+        let embedded = unpack(BANK_ZST).expect("bank unpacks");
+        let mut on_disk = BTreeMap::new();
+        collect_files(Path::new("questions"), Path::new("questions"), &mut on_disk).unwrap();
+        // Top-level files (README.md) aren't part of any question.
+        on_disk.retain(|path, _| path.contains('/'));
+        assert_eq!(
+            embedded.keys().collect::<Vec<_>>(),
+            on_disk.keys().collect::<Vec<_>>()
+        );
+        assert!(embedded.iter().all(|(path, data)| on_disk[path] == *data));
+    }
+
+    #[test]
+    fn unpack_rejects_truncated_archives() {
+        let mut archive = Vec::new();
+        archive.extend_from_slice(&5u32.to_le_bytes());
+        archive.extend_from_slice(b"a/b");
+        let packed = zstd::encode_all(archive.as_slice(), 1).unwrap();
+        assert!(unpack(&packed).is_none());
+        assert!(unpack(b"not zstd").is_none());
     }
 }
