@@ -13,9 +13,14 @@ use std::path::Path;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
+use jiff::Timestamp;
 use sqlx::SqlitePool;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
+use sqlx::types::time::OffsetDateTime;
 use tokio::runtime::Runtime;
+
+use crate::lang::Language;
+use crate::session::Outcome;
 
 static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!();
 
@@ -33,8 +38,26 @@ pub struct AttemptRow<'a> {
     pub failed_runs: u32,
     pub hints_used: usize,
     pub solution_viewed: bool,
-    pub outcome: Option<&'a str>,
+    /// Set when the attempt finishes (which also sets its end time).
+    pub outcome: Option<Outcome>,
     pub code: Option<&'a str>,
+}
+
+/// What happened during an attempt (`events.kind`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, sqlx::Type)]
+#[sqlx(type_name = "TEXT", rename_all = "snake_case")]
+pub enum EventKind {
+    Start,
+    Continue,
+    EditorOpen,
+    TestRun,
+    Hint,
+    SolutionViewed,
+    Pause,
+    IdlePause,
+    Resume,
+    Suspend,
+    Outcome,
 }
 
 /// What the user has done on one question before.
@@ -43,7 +66,7 @@ pub struct QuestionStats {
     pub attempts: i64,
     pub solved: i64,
     pub best_secs: Option<i64>,
-    pub last_at: Option<String>,
+    pub last_at: Option<Timestamp>,
 }
 
 /// An attempt that was started but never finished; it can be continued.
@@ -51,8 +74,8 @@ pub struct QuestionStats {
 pub struct OpenAttempt {
     pub id: i64,
     pub question_id: i64,
-    pub language: String,
-    pub started_at: String,
+    pub language: Language,
+    pub started_at: Timestamp,
     pub active_secs: i64,
     pub test_runs: i64,
     pub failed_runs: i64,
@@ -66,9 +89,9 @@ pub struct OpenAttempt {
 pub struct AttemptRecord {
     pub session_id: i64,
     pub question_id: i64,
-    pub started_at: String,
+    pub started_at: Timestamp,
     pub active_secs: i64,
-    pub outcome: Option<String>,
+    pub outcome: Option<Outcome>,
     pub failed_runs: i64,
     pub hints_used: i64,
 }
@@ -76,10 +99,10 @@ pub struct AttemptRecord {
 /// One past attempt on a question, with its code.
 #[derive(Debug, Clone)]
 pub struct PastAttempt {
-    pub language: String,
-    pub started_at: String,
+    pub language: Language,
+    pub started_at: Timestamp,
     pub active_secs: i64,
-    pub outcome: Option<String>,
+    pub outcome: Option<Outcome>,
     pub test_runs: i64,
     pub hints_used: i64,
     pub code: Option<String>,
@@ -91,6 +114,65 @@ struct Id {
 
 struct HistoryLine {
     line: String,
+}
+
+/// Rows as SQLite returns them; timestamps become `jiff::Timestamp` (what
+/// the rest of dojo uses) at this boundary.
+struct OpenRow {
+    id: i64,
+    question_id: i64,
+    language: Language,
+    started_at: OffsetDateTime,
+    active_secs: i64,
+    test_runs: i64,
+    failed_runs: i64,
+    hints_used: i64,
+    solution_viewed: bool,
+    code: Option<String>,
+}
+
+impl From<OpenRow> for OpenAttempt {
+    fn from(r: OpenRow) -> OpenAttempt {
+        OpenAttempt {
+            id: r.id,
+            question_id: r.question_id,
+            language: r.language,
+            started_at: to_jiff(r.started_at),
+            active_secs: r.active_secs,
+            test_runs: r.test_runs,
+            failed_runs: r.failed_runs,
+            hints_used: r.hints_used,
+            solution_viewed: r.solution_viewed,
+            code: r.code,
+        }
+    }
+}
+
+struct RecordRow {
+    session_id: i64,
+    question_id: i64,
+    started_at: OffsetDateTime,
+    active_secs: i64,
+    outcome: Option<Outcome>,
+    failed_runs: i64,
+    hints_used: i64,
+}
+
+struct PastRow {
+    language: Language,
+    started_at: OffsetDateTime,
+    active_secs: i64,
+    outcome: Option<Outcome>,
+    test_runs: i64,
+    hints_used: i64,
+    code: Option<String>,
+}
+
+struct StatsRow {
+    attempts: i64,
+    solved: i64,
+    best_secs: Option<i64>,
+    last_at: Option<OffsetDateTime>,
 }
 
 impl Store {
@@ -127,8 +209,18 @@ impl Store {
                 .max_lifetime(None)
                 .connect_with(options),
         )?;
-        rt.block_on(MIGRATOR.run(&pool))
-            .context("migrating the database (if it was created by a newer dojo, upgrade dojo)")?;
+        rt.block_on(MIGRATOR.run(&pool)).map_err(|e| match e {
+            // The schema was rewritten before dojo's first users; a database
+            // from a pre-release build can't be migrated.
+            sqlx::migrate::MigrateError::VersionMismatch(_)
+            | sqlx::migrate::MigrateError::VersionMissing(_) => anyhow::anyhow!(
+                "this database was created by a pre-release dojo with an older schema; \
+                 move it aside (or delete it) and dojo will start a fresh one"
+            ),
+            other => anyhow::Error::new(other).context(
+                "migrating the database (if it was created by a newer dojo, upgrade dojo)",
+            ),
+        })?;
         Ok(Store { pool, rt })
     }
 
@@ -159,16 +251,13 @@ impl Store {
         Ok(rows.into_iter().rev().map(|r| r.line).collect())
     }
 
-    pub fn create_session(&self, mode: &str, query: Option<&str>) -> Result<i64> {
+    pub fn create_session(&self) -> Result<i64> {
         let at = now();
         let row = self.rt.block_on(
             sqlx::query_as!(
                 Id,
-                r#"INSERT INTO sessions (started_at, mode, query) VALUES (?, ?, ?)
-                   RETURNING id AS "id!""#,
-                at,
-                mode,
-                query
+                r#"INSERT INTO sessions (started_at) VALUES (?) RETURNING id AS "id!""#,
+                at
             )
             .fetch_one(&self.pool),
         )?;
@@ -188,19 +277,22 @@ impl Store {
         Ok(())
     }
 
-    pub fn create_attempt(&self, session_id: i64, question_id: u32, language: &str) -> Result<i64> {
+    pub fn create_attempt(
+        &self,
+        session_id: i64,
+        question_id: u32,
+        language: Language,
+    ) -> Result<i64> {
         let at = now();
         let question_id = question_id as i64;
-        let dojo_version = env!("CARGO_PKG_VERSION");
         let row = self.rt.block_on(
             sqlx::query_as!(
                 Id,
-                r#"INSERT INTO attempts (session_id, question_id, dojo_version, language, started_at)
-                   VALUES (?, ?, ?, ?, ?)
+                r#"INSERT INTO attempts (session_id, question_id, language, started_at)
+                   VALUES (?, ?, ?, ?)
                    RETURNING id AS "id!""#,
                 session_id,
                 question_id,
-                dojo_version,
                 language,
                 at
             )
@@ -235,7 +327,12 @@ impl Store {
         Ok(())
     }
 
-    pub fn event(&self, attempt_id: i64, kind: &str, payload: serde_json::Value) -> Result<()> {
+    pub fn event(
+        &self,
+        attempt_id: i64,
+        kind: EventKind,
+        payload: serde_json::Value,
+    ) -> Result<()> {
         let at = now();
         let payload = (!payload.is_null()).then(|| payload.to_string());
         self.rt.block_on(
@@ -253,10 +350,11 @@ impl Store {
 
     /// Every unfinished attempt, most recent first.
     pub fn open_attempts(&self) -> Result<Vec<OpenAttempt>> {
-        Ok(self.rt.block_on(
+        let rows = self.rt.block_on(
             sqlx::query_as!(
-                OpenAttempt,
-                r#"SELECT id AS "id!", question_id, language, started_at, active_secs,
+                OpenRow,
+                r#"SELECT id AS "id!", question_id, language AS "language: Language",
+                          started_at AS "started_at: OffsetDateTime", active_secs,
                           test_runs, failed_runs, hints_used,
                           solution_viewed AS "solution_viewed: bool", code
                    FROM attempts
@@ -264,16 +362,22 @@ impl Store {
                    ORDER BY id DESC"#
             )
             .fetch_all(&self.pool),
-        )?)
+        )?;
+        Ok(rows.into_iter().map(OpenAttempt::from).collect())
     }
 
     /// The unfinished attempt on a question in a language, if any.
-    pub fn open_attempt(&self, question_id: u32, language: &str) -> Result<Option<OpenAttempt>> {
+    pub fn open_attempt(
+        &self,
+        question_id: u32,
+        language: Language,
+    ) -> Result<Option<OpenAttempt>> {
         let question_id = question_id as i64;
-        Ok(self.rt.block_on(
+        let row = self.rt.block_on(
             sqlx::query_as!(
-                OpenAttempt,
-                r#"SELECT id AS "id!", question_id, language, started_at, active_secs,
+                OpenRow,
+                r#"SELECT id AS "id!", question_id, language AS "language: Language",
+                          started_at AS "started_at: OffsetDateTime", active_secs,
                           test_runs, failed_runs, hints_used,
                           solution_viewed AS "solution_viewed: bool", code
                    FROM attempts
@@ -284,64 +388,145 @@ impl Store {
                 language
             )
             .fetch_optional(&self.pool),
-        )?)
+        )?;
+        Ok(row.map(OpenAttempt::from))
     }
 
     /// Every attempt on one question, oldest first.
     pub fn past_attempts(&self, question_id: u32) -> Result<Vec<PastAttempt>> {
         let question_id = question_id as i64;
-        Ok(self.rt.block_on(
+        let rows = self.rt.block_on(
             sqlx::query_as!(
-                PastAttempt,
-                "SELECT language, started_at, active_secs, outcome, test_runs, hints_used, code
-                 FROM attempts
-                 WHERE question_id = ?
-                 ORDER BY id",
+                PastRow,
+                r#"SELECT language AS "language: Language",
+                          started_at AS "started_at: OffsetDateTime", active_secs,
+                          outcome AS "outcome: Outcome", test_runs, hints_used, code
+                   FROM attempts
+                   WHERE question_id = ?
+                   ORDER BY id"#,
                 question_id
             )
             .fetch_all(&self.pool),
-        )?)
+        )?;
+        Ok(rows
+            .into_iter()
+            .map(|r| PastAttempt {
+                language: r.language,
+                started_at: to_jiff(r.started_at),
+                active_secs: r.active_secs,
+                outcome: r.outcome,
+                test_runs: r.test_runs,
+                hints_used: r.hints_used,
+                code: r.code,
+            })
+            .collect())
     }
 
     /// Every attempt, oldest first.
     pub fn attempts(&self) -> Result<Vec<AttemptRecord>> {
-        Ok(self.rt.block_on(
+        let rows = self.rt.block_on(
             sqlx::query_as!(
-                AttemptRecord,
-                "SELECT session_id, question_id, started_at, active_secs, outcome,
-                        failed_runs, hints_used
-                 FROM attempts
-                 ORDER BY id"
+                RecordRow,
+                r#"SELECT session_id, question_id, started_at AS "started_at: OffsetDateTime",
+                          active_secs, outcome AS "outcome: Outcome", failed_runs, hints_used
+                   FROM attempts
+                   ORDER BY id"#
             )
             .fetch_all(&self.pool),
-        )?)
+        )?;
+        Ok(rows
+            .into_iter()
+            .map(|r| AttemptRecord {
+                session_id: r.session_id,
+                question_id: r.question_id,
+                started_at: to_jiff(r.started_at),
+                active_secs: r.active_secs,
+                outcome: r.outcome,
+                failed_runs: r.failed_runs,
+                hints_used: r.hints_used,
+            })
+            .collect())
     }
 
     pub fn question_stats(&self, question_id: u32) -> Result<QuestionStats> {
         let question_id = question_id as i64;
-        Ok(self.rt.block_on(
+        let r = self.rt.block_on(
             sqlx::query_as!(
-                QuestionStats,
+                StatsRow,
                 r#"SELECT COUNT(*) AS "attempts!: i64",
                           COALESCE(SUM(outcome IN ('pass', 'revealed')), 0) AS "solved!: i64",
                           MIN(CASE WHEN outcome = 'pass' THEN active_secs END) AS "best_secs: i64",
-                          MAX(started_at) AS "last_at: String"
+                          MAX(started_at) AS "last_at: OffsetDateTime"
                    FROM attempts
                    WHERE question_id = ? AND outcome IS NOT NULL"#,
                 question_id
             )
             .fetch_one(&self.pool),
-        )?)
+        )?;
+        Ok(QuestionStats {
+            attempts: r.attempts,
+            solved: r.solved,
+            best_secs: r.best_secs,
+            last_at: r.last_at.map(to_jiff),
+        })
     }
 }
 
-pub fn now() -> String {
-    jiff::Timestamp::now().to_string()
+/// The current time, as stored.
+fn now() -> OffsetDateTime {
+    OffsetDateTime::now_utc()
+}
+
+fn to_jiff(t: OffsetDateTime) -> Timestamp {
+    Timestamp::from_nanosecond(t.unix_timestamp_nanos()).unwrap_or_default()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The schema rejects what the app should never write.
+    #[rstest::rstest]
+    #[case::unknown_language("UPDATE attempts SET language = 'rust'")]
+    #[case::unknown_outcome("UPDATE attempts SET outcome = 'won', ended_at = started_at")]
+    #[case::outcome_without_end("UPDATE attempts SET outcome = 'pass'")]
+    #[case::end_without_outcome("UPDATE attempts SET ended_at = started_at")]
+    #[case::more_failures_than_runs("UPDATE attempts SET test_runs = 1, failed_runs = 2")]
+    #[case::negative_time("UPDATE attempts SET active_secs = -1")]
+    #[case::ends_before_it_starts(
+        "UPDATE attempts SET outcome = 'pass', ended_at = '2000-01-01 00:00:00'"
+    )]
+    #[case::unknown_event(
+        "INSERT INTO events (attempt_id, at, kind) VALUES (1, '2026-01-01 00:00:00', 'teleport')"
+    )]
+    #[case::payload_not_json(
+        "INSERT INTO events (attempt_id, at, kind, payload) VALUES (1, '2026-01-01 00:00:00', 'hint', '{oops')"
+    )]
+    #[case::unknown_attempt(
+        "INSERT INTO events (attempt_id, at, kind) VALUES (99, '2026-01-01 00:00:00', 'hint')"
+    )]
+    #[case::empty_history_line(
+        "INSERT INTO input_history (at, line) VALUES ('2026-01-01 00:00:00', '')"
+    )]
+    fn schema_rejects_bad_rows(#[case] sql: &'static str) {
+        let store = Store::memory().unwrap();
+        let s = store.create_session().unwrap();
+        store.create_attempt(s, 1, Language::Python).unwrap();
+        let result = store.rt.block_on(sqlx::query(sql).execute(&store.pool));
+        assert!(result.is_err(), "{sql} was accepted");
+    }
+
+    #[test]
+    fn timestamps_round_trip() {
+        let store = Store::memory().unwrap();
+        let before = Timestamp::now();
+        let s = store.create_session().unwrap();
+        store.create_attempt(s, 7, Language::Go).unwrap();
+        let open = store.open_attempt(7, Language::Go).unwrap().unwrap();
+        let after = Timestamp::now();
+        assert!(before <= open.started_at && open.started_at <= after);
+        assert_eq!(open.language, Language::Go);
+    }
 
     #[test]
     fn migrates_and_records_history() {
@@ -355,10 +540,14 @@ mod tests {
     #[test]
     fn records_attempts() {
         let store = Store::memory().unwrap();
-        let s = store.create_session("id", None).unwrap();
-        let a = store.create_attempt(s, 1, "python").unwrap();
+        let s = store.create_session().unwrap();
+        let a = store.create_attempt(s, 1, Language::Python).unwrap();
         store
-            .event(a, "test_run", serde_json::json!({"passed": 1, "total": 3}))
+            .event(
+                a,
+                EventKind::TestRun,
+                serde_json::json!({"passed": 1, "total": 3}),
+            )
             .unwrap();
         let mut row = AttemptRow::builder()
             .id(a)
@@ -371,29 +560,34 @@ mod tests {
         store.save_attempt(&row).unwrap();
         assert_eq!(store.question_stats(1).unwrap().attempts, 0);
 
-        row.outcome = Some("pass");
+        row.outcome = Some(Outcome::Pass);
         row.code = Some("def f(): pass");
         store.save_attempt(&row).unwrap();
-        let a2 = store.create_attempt(s, 1, "python").unwrap();
+        let a2 = store.create_attempt(s, 1, Language::Python).unwrap();
         row.id = a2;
         row.active_secs = 200;
-        row.outcome = Some("fail");
+        row.outcome = Some(Outcome::Fail);
         store.save_attempt(&row).unwrap();
         store.end_session(s).unwrap();
 
         assert!(store.open_attempts().unwrap().is_empty());
-        let a3 = store.create_attempt(s, 1, "python").unwrap();
+        let a3 = store.create_attempt(s, 1, Language::Python).unwrap();
         row.id = a3;
         row.active_secs = 42;
         row.outcome = None;
         row.code = Some("wip");
         store.save_attempt(&row).unwrap();
-        let open = store.open_attempt(1, "python").unwrap().unwrap();
+        let open = store.open_attempt(1, Language::Python).unwrap().unwrap();
         assert_eq!(
             (open.id, open.active_secs, open.code.as_deref()),
             (a3, 42, Some("wip"))
         );
-        assert!(store.open_attempt(1, "javascript").unwrap().is_none());
+        assert!(
+            store
+                .open_attempt(1, Language::JavaScript)
+                .unwrap()
+                .is_none()
+        );
         assert_eq!(store.open_attempts().unwrap().len(), 1);
         assert_eq!(store.attempts().unwrap().len(), 3);
         let past = store.past_attempts(1).unwrap();

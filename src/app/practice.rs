@@ -22,7 +22,7 @@ use crate::runner::{self, Language, Which};
 use crate::session::{
     self, Attempt, Done, Outcome, Session, Timer, editor_command, is_terminal_editor,
 };
-use crate::store::{AttemptRow, OpenAttempt};
+use crate::store::{AttemptRow, EventKind, OpenAttempt};
 
 impl App {
     fn current_question(&self) -> Option<&Question> {
@@ -30,12 +30,12 @@ impl App {
         self.bank.get(*s.queue.get(s.index)?)
     }
 
-    fn record(&mut self, kind: &str, payload: serde_json::Value) {
+    fn record(&mut self, kind: EventKind, payload: serde_json::Value) {
         let Some(a) = self.session.as_ref().and_then(|s| s.attempt.as_ref()) else {
             return;
         };
         if let Err(e) = self.store.event(a.id, kind, payload) {
-            self.notify(format!("could not record {kind}: {e:#}"));
+            self.notify(format!("could not record {kind:?}: {e:#}"));
         }
     }
 
@@ -50,7 +50,7 @@ impl App {
             .failed_runs(a.failed_runs)
             .hints_used(a.hints_used)
             .solution_viewed(a.solution_viewed)
-            .maybe_outcome(outcome.map(Outcome::as_str))
+            .maybe_outcome(outcome)
             .maybe_code(code)
             .build();
         if let Err(e) = self.store.save_attempt(&row) {
@@ -201,7 +201,7 @@ impl App {
                 s.query = query;
             }
             None => {
-                let id = match self.store.create_session("practice", None) {
+                let id = match self.store.create_session() {
                     Ok(id) => id,
                     Err(e) => {
                         return Some(views::error(format!("could not start session: {e:#}")));
@@ -234,13 +234,13 @@ impl App {
         // /solve always starts fresh: an unfinished attempt on this question
         // is closed (its code stays in the database).
         if continuing.is_none() {
-            match self.store.open_attempt(q.meta.id, lang.name()) {
+            match self.store.open_attempt(q.meta.id, lang) {
                 Ok(Some(old)) => {
                     self.close_open_attempt(&old);
                     self.transcript.push(views::info(format!(
                         "↷ skipped your unfinished attempt on #{} from {} (its code is saved)",
                         q.meta.id,
-                        views::ago(&old.started_at)
+                        views::ago(old.started_at)
                     )));
                 }
                 Ok(None) => {}
@@ -284,14 +284,11 @@ impl App {
                     .build(),
                 views::Resume::Continued {
                     elapsed: Duration::from_secs(o.active_secs.max(0) as u64),
-                    started_at: o.started_at.clone(),
+                    started_at: o.started_at,
                 },
             ),
             None => {
-                let id = match self
-                    .store
-                    .create_attempt(session_id, q.meta.id, lang.name())
-                {
+                let id = match self.store.create_attempt(session_id, q.meta.id, lang) {
                     Ok(id) => id,
                     Err(e) => {
                         return Some(views::error(format!("could not record attempt: {e:#}")));
@@ -322,9 +319,9 @@ impl App {
             s.attempt = Some(attempt);
         }
         match open {
-            Some(_) => self.record("continue", json!({ "session_id": session_id })),
+            Some(_) => self.record(EventKind::Continue, json!({ "session_id": session_id })),
             None => self.record(
-                "start",
+                EventKind::Start,
                 json!({ "language": lang.name(), "selection": selection }),
             ),
         }
@@ -349,9 +346,7 @@ impl App {
             }));
         };
         let qid = o.question_id as u32;
-        let Some(lang) = Language::parse(&o.language) else {
-            return Some(views::error(format!("unknown language `{}`", o.language)));
-        };
+        let lang = o.language;
         if self.bank.get(qid).is_none_or(|q| !q.supports(lang)) {
             return Some(views::error(format!(
                 "#{qid} is no longer available in {}",
@@ -369,7 +364,7 @@ impl App {
                 s.query = None;
             }
             None => {
-                let id = match self.store.create_session("practice", None) {
+                let id = match self.store.create_session() {
                     Ok(id) => id,
                     Err(e) => return Some(views::error(format!("could not start session: {e:#}"))),
                 };
@@ -402,12 +397,12 @@ impl App {
             .failed_runs(o.failed_runs as u32)
             .hints_used(o.hints_used as usize)
             .solution_viewed(o.solution_viewed)
-            .outcome(skip_outcome(o.test_runs as u32).as_str())
+            .outcome(skip_outcome(o.test_runs as u32))
             .build();
         let result = self.store.save_attempt(&row).and_then(|_| {
             self.store.event(
                 o.id,
-                "outcome",
+                EventKind::Outcome,
                 json!({ "outcome": skip_outcome(o.test_runs as u32).as_str() }),
             )
         });
@@ -445,7 +440,7 @@ impl App {
             .dir(&a.dir)
             .line(line)
             .call();
-        self.record("editor_open", json!({ "command": template }));
+        self.record(EventKind::EditorOpen, json!({ "command": template }));
         if is_terminal_editor(&template) {
             self.pending_command = Some((command, super::AfterCommand::Editor));
             None
@@ -482,7 +477,7 @@ impl App {
         };
         if a.timer.resume() {
             self.record(
-                "resume",
+                EventKind::Resume,
                 json!({ "after_idle_secs": since.elapsed().as_secs() }),
             );
             self.save_attempt(None, None);
@@ -512,7 +507,7 @@ impl App {
             return;
         }
         self.away = Some(last_seen);
-        self.record("idle_pause", json!({ "idle_secs": idle.as_secs() }));
+        self.record(EventKind::IdlePause, json!({ "idle_secs": idle.as_secs() }));
         self.save_attempt(None, None);
         self.transcript.push(views::info(format!(
             "⏸ paused: nothing for {minutes} min, so that time isn't counted  ·  press any key or save to carry on"
@@ -577,7 +572,7 @@ impl App {
         };
         if a.timer.resume() {
             a.mtime = a.file_mtime(); // edits made while paused aren't a save
-            self.record("resume", serde_json::Value::Null);
+            self.record(EventKind::Resume, serde_json::Value::Null);
             self.save_attempt(None, None);
             self.transcript.push(views::info("▶ timer running again"));
         }
@@ -665,7 +660,7 @@ impl App {
         };
 
         self.record(
-            "test_run",
+            EventKind::TestRun,
             json!({
                 "which": if which == Which::All { "all" } else { "visible" },
                 "passed": report.passed(),
@@ -711,7 +706,7 @@ impl App {
             .runs(a.test_runs)
             .failed_runs(a.failed_runs)
             .build();
-        self.record("outcome", json!({ "outcome": outcome.as_str() }));
+        self.record(EventKind::Outcome, json!({ "outcome": outcome.as_str() }));
         self.notice = None;
         self.save_attempt(Some(outcome), code.as_deref());
         // The attempt is over and its code is in the database.
@@ -747,7 +742,7 @@ impl App {
         }
         a.hints_used += 1;
         let n = a.hints_used;
-        self.record("hint", json!({ "n": n }));
+        self.record(EventKind::Hint, json!({ "n": n }));
         self.save_attempt(None, None);
         Some(views::hint(&q, n, true))
     }
@@ -767,7 +762,7 @@ impl App {
         }
         a.solution_viewed = true;
         self.explained_now(q.meta.id);
-        self.record("solution_viewed", serde_json::Value::Null);
+        self.record(EventKind::SolutionViewed, serde_json::Value::Null);
         self.save_attempt(None, None);
         Some(views::solution(&q, a_lang(&self.session).unwrap_or(lang)))
     }
@@ -792,7 +787,7 @@ impl App {
         if !a.timer.pause() {
             return Some(views::info("already paused  ·  /edit to get back to it"));
         }
-        self.record("pause", serde_json::Value::Null);
+        self.record(EventKind::Pause, serde_json::Value::Null);
         self.save_attempt(None, None);
         Some(views::info("⏸ paused  ·  /edit when you're back"))
     }
@@ -821,7 +816,7 @@ impl App {
         };
         a.timer.pause();
         let code = std::fs::read_to_string(&a.file).ok();
-        self.record("suspend", serde_json::Value::Null);
+        self.record(EventKind::Suspend, serde_json::Value::Null);
         self.save_attempt(None, code.as_deref());
         let Some(s) = self.session.as_mut() else {
             return;

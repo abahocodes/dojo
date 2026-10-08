@@ -94,9 +94,20 @@ to the normal terminal on exit.
 
 ## Data model
 
-Tables: `sessions`, `attempts`, `events` (source of truth, JSON payloads),
-`review_state` (FSRS), `input_history`. Stats are derived from events so the
-competence model can change without migrations.
+One migration, `migrations/20261007000000_initial.sql`. Tables: `sessions`,
+`attempts` (one try at one question: language, outcome, counters, and
+`active_secs`, the time the user took, which feeds the grade), `events` (what
+happened during an attempt, JSON payloads) and `input_history`.
+
+- **Enums:** TEXT columns limited by CHECK; read in Rust as enums via
+  `sqlx::Type`: `Language`, `Outcome`, `EventKind`.
+- **Timestamps:** DATETIME columns, read and written in Rust as
+  `time::OffsetDateTime` and converted to `jiff::Timestamp` at the store
+  boundary.
+- **Constraints:** non-negative counters, `failed_runs <= test_runs`, an
+  outcome iff an end time, end after start, JSON payloads, foreign keys with
+  cascade.
+- **No question versions:** questions are edited in place.
 
 ## Competence model
 
