@@ -60,6 +60,9 @@ pub struct Config {
     pub workspace: Option<PathBuf>,
     /// Re-run visible tests whenever the solution file is saved.
     pub auto_test: bool,
+    /// Pause the timer after this many minutes without a key press in dojo
+    /// or a save; that time isn't counted. 0 turns it off.
+    pub idle_pause_minutes: u64,
     /// `/contribute` settings.
     pub contribute: ContributeConfig,
 }
@@ -95,6 +98,7 @@ impl Default for Config {
             language: "python".into(),
             workspace: None,
             auto_test: true,
+            idle_pause_minutes: 15,
             contribute: ContributeConfig::default(),
         }
     }

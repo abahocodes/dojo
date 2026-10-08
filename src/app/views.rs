@@ -404,6 +404,14 @@ pub fn config(config: &Config, paths: &Paths) -> Entry {
             config.workspace(paths).display().to_string(),
             String::new(),
         ),
+        row(
+            "idle pause",
+            match config.idle_pause_minutes {
+                0 => "off".to_string(),
+                m => format!("after {m} min away"),
+            },
+            "  (idle_pause_minutes in the config file)".into(),
+        ),
         Para::blank(),
         Para::plain("Files", t.heading()),
         row(

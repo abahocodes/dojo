@@ -462,8 +462,58 @@ impl App {
         }
     }
 
+    /// The user did something (a key, a paste, a save, closing the editor).
+    /// If the timer paused itself while they were away, it resumes.
+    pub(super) fn active(&mut self) {
+        self.last_activity = Instant::now();
+        let Some(since) = self.away.take() else {
+            return;
+        };
+        let Some(a) = self.session.as_mut().and_then(|s| s.attempt.as_mut()) else {
+            return;
+        };
+        if a.timer.resume() {
+            self.record(
+                "resume",
+                json!({ "after_idle_secs": since.elapsed().as_secs() }),
+            );
+            self.save_attempt(None, None);
+            self.transcript.push(views::info(format!(
+                "▶ welcome back  ·  you were away {}, which isn't counted",
+                away_for(since.elapsed())
+            )));
+        }
+    }
+
+    /// Pauses the timer when nothing has happened for a while: no key in
+    /// dojo and no save. The idle time isn't counted.
+    pub(super) fn check_idle(&mut self) {
+        let minutes = self.config.idle_pause_minutes;
+        if minutes == 0 || self.running.is_some() || self.away.is_some() {
+            return;
+        }
+        let idle = self.last_activity.elapsed();
+        if idle < Duration::from_secs(minutes * 60) {
+            return;
+        }
+        let last_seen = self.last_activity;
+        let Some(a) = self.session.as_mut().and_then(|s| s.attempt.as_mut()) else {
+            return;
+        };
+        if !a.timer.pause_at(last_seen) {
+            return;
+        }
+        self.away = Some(last_seen);
+        self.record("idle_pause", json!({ "idle_secs": idle.as_secs() }));
+        self.save_attempt(None, None);
+        self.transcript.push(views::info(format!(
+            "⏸ paused: nothing for {minutes} min, so that time isn't counted  ·  press any key or save to carry on"
+        )));
+    }
+
     /// Called after a terminal editor exits.
     pub(super) fn editor_closed(&mut self, result: anyhow::Result<bool>) {
+        self.active();
         match result {
             Ok(true) => {}
             Ok(false) => self
@@ -478,6 +528,14 @@ impl App {
 
     /// Re-runs visible tests when the solution file changed on disk.
     pub(super) fn check_saved(&mut self) {
+        let Some(a) = self.session.as_mut().and_then(|s| s.attempt.as_mut()) else {
+            return;
+        };
+        let now = a.file_mtime();
+        // A save while away counts as being back.
+        if self.away.is_some() && now.is_some() && now != a.mtime {
+            self.active();
+        }
         if self.running.is_some() || !self.config.auto_test {
             return;
         }
@@ -487,7 +545,6 @@ impl App {
         if a.timer.paused() {
             return;
         }
-        let now = a.file_mtime();
         if now.is_some() && now != a.mtime {
             a.mtime = now;
             self.transcript.push(views::input("/test  (saved)"));
@@ -834,8 +891,29 @@ fn skip_outcome(test_runs: u32) -> Outcome {
     }
 }
 
+/// `23 min`, `1 h 05 min`.
+fn away_for(d: Duration) -> String {
+    let m = d.as_secs() / 60;
+    if m >= 60 {
+        format!("{} h {:02} min", m / 60, m % 60)
+    } else {
+        format!("{m} min")
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
+    #[rstest::rstest]
+    #[case(0, "0 min")]
+    #[case(23 * 60 + 59, "23 min")]
+    #[case(60 * 60, "1 h 00 min")]
+    #[case(125 * 60, "2 h 05 min")]
+    fn away_for_reads_well(#[case] secs: u64, #[case] expected: &str) {
+        assert_eq!(super::away_for(Duration::from_secs(secs)), expected);
+    }
+
     #[test]
     fn picks_distinct_random_ids() {
         let picked = super::pick_random((1..=17).collect(), 5);
