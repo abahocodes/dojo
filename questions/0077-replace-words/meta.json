@@ -1,0 +1,46 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 77,
+  "slug": "replace-words",
+  "title": "Replace Words",
+  "difficulty": "medium",
+  "tags": [
+    "trie",
+    "strings",
+    "hash-map"
+  ],
+  "companies": [
+    "uber",
+    "amazon",
+    "google"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "replace_words",
+    "params": [
+      {
+        "name": "roots",
+        "type": "string[]"
+      },
+      {
+        "name": "sentence",
+        "type": "string"
+      }
+    ],
+    "returns": "string"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
