@@ -1,0 +1,44 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 47,
+  "slug": "pacific-atlantic-water-flow",
+  "title": "Pacific Atlantic Water Flow",
+  "difficulty": "medium",
+  "tags": [
+    "graphs",
+    "dfs",
+    "bfs",
+    "matrix"
+  ],
+  "companies": [
+    "google",
+    "amazon",
+    "meta"
+  ],
+  "target_minutes": 30,
+  "signature": {
+    "function": "pacific_atlantic",
+    "params": [
+      {
+        "name": "heights",
+        "type": "int[][]"
+      }
+    ],
+    "returns": "int[][]"
+  },
+  "compare": "unordered",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
