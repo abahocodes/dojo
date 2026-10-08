@@ -59,7 +59,7 @@ NNNN-slug/
 dojo scaffold questions/NNNN-slug    # draft boilerplate from the signature, register it in meta.json
 dojo validate                        # organization, schema, tests, reference solutions, boilerplate
 dojo validate --question NNNN-slug   # just one question (what CI runs on question PRs)
-cargo test                           # the same checks, one test per question (asset_0001_two_sum, ...)
+cargo test --features question-tests # the same checks, as one cargo test per question
 dojo schema                          # regenerate schema/*.json after changing the types
 ```
 

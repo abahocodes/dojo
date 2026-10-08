@@ -384,6 +384,7 @@ fn code(q: &Question, folder: &Path) -> Vec<String> {
 mod asset_tests {
     use std::path::{Path, PathBuf};
 
+    #[cfg(feature = "question-tests")]
     use rstest::rstest;
 
     fn root() -> PathBuf {
@@ -392,7 +393,9 @@ mod asset_tests {
 
     /// One test per question folder (each `questions/*/meta.json`), so a
     /// failure names the question. Checks organization, content, and runs
-    /// every reference solution and boilerplate.
+    /// every reference solution and boilerplate. Only with the
+    /// `question-tests` feature: question PRs are checked by question.yml.
+    #[cfg(feature = "question-tests")]
     #[rstest]
     fn asset(#[files("questions/*/meta.json")] meta: PathBuf) {
         let dir = meta.parent().unwrap();
