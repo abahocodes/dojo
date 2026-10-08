@@ -157,9 +157,9 @@
       ]
     },
     "Type": {
-      "description": "int, float, bool, string, ListNode, TreeNode, or any of those followed by one or more []",
+      "description": "int (32-bit), long (64-bit), float, bool, string, ListNode, TreeNode, or any of those followed by one or more []",
       "type": "string",
-      "pattern": "^(int|float|bool|string|ListNode|TreeNode)(\\[\\])*$"
+      "pattern": "^(int|long|float|bool|string|ListNode|TreeNode)(\\[\\])*$"
     },
     "Compare": {
       "description": "How a returned value is compared against the expected output.",

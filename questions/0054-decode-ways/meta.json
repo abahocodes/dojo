@@ -23,7 +23,7 @@
         "type": "string"
       }
     ],
-    "returns": "int"
+    "returns": "long"
   },
   "statement": "statement.md",
   "hints": "hints.md",

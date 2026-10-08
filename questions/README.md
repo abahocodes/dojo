@@ -44,8 +44,10 @@ NNNN-slug/
   `python` (`.py`) and `javascript` (`.js`).
 - The signature is language-agnostic. `function` and param names are
   snake_case; JavaScript uses camelCase (`two_sum` → `twoSum`).
-- Types: `int`, `float`, `bool`, `string`, `ListNode`, `TreeNode`, plus `[]`
-  suffixes. In tests, `ListNode` is an array and `TreeNode` a level-order array
+- Types: `int`, `long`, `float`, `bool`, `string`, `ListNode`, `TreeNode`,
+  plus `[]` suffixes. `int` is 32-bit (Java/C++ `int`); use `long` for values
+  beyond ±2^31 (up to ±2^53, which JavaScript represents exactly). Node values
+  are `int`s. In tests, `ListNode` is an array and `TreeNode` a level-order array
   with nulls. Harnesses provide `ListNode`/`TreeNode` to solutions.
 - `compare`: `exact` (default), `unordered`, `unordered_deep`, `float`.
 - At least 2 visible and 3 hidden cases. Hidden cases run on `/submit` only.
