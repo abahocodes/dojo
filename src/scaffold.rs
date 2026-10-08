@@ -29,8 +29,7 @@ pub fn boilerplate(meta: &Meta, lang: Language) -> String {
         Language::Java => {
             crate::runner::compiled::java::boilerplate(&meta.signature, &header(meta))
         }
-        // Filled in as each compiled language lands.
-        Language::Cpp => String::new(),
+        Language::Cpp => crate::runner::compiled::cpp::boilerplate(&meta.signature, &header(meta)),
     }
 }
 
