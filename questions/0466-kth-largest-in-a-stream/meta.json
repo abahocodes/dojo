@@ -1,0 +1,65 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 466,
+  "slug": "kth-largest-in-a-stream",
+  "title": "Kth Largest in a Stream",
+  "difficulty": "easy",
+  "tags": [
+    "heap",
+    "arrays"
+  ],
+  "companies": [
+    "amazon",
+    "meta",
+    "microsoft"
+  ],
+  "target_minutes": 15,
+  "signature": {
+    "function": "kth_largest_stream",
+    "params": [
+      {
+        "name": "k",
+        "type": "int"
+      },
+      {
+        "name": "nums",
+        "type": "int[]"
+      },
+      {
+        "name": "adds",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}
