@@ -120,6 +120,11 @@ pub struct App {
     job_seq: u64,
     /// When the open attempt's clock was last saved.
     last_autosave: Instant,
+    /// Last key press, paste, scroll or save, for pausing when idle.
+    last_activity: Instant,
+    /// Set when the timer paused itself because the user stepped away: the
+    /// moment they were last seen. The next activity resumes it.
+    away: Option<Instant>,
     /// Unfinished attempts, most recent first (refreshed when sessions end).
     pub unfinished: Vec<crate::store::OpenAttempt>,
     /// The fullscreen report, while open.
@@ -172,6 +177,8 @@ impl App {
             secret_for: None,
             job_seq: 0,
             last_autosave: Instant::now(),
+            last_activity: Instant::now(),
+            away: None,
             report: None,
             setup: None,
             unfinished,
@@ -903,6 +910,7 @@ pub fn run(initial: Option<String>) -> Result<()> {
             }
             app.check_saved();
             app.autosave();
+            app.check_idle();
 
             term.draw(|f| ui::draw(f, &mut app))?;
             // Wake often enough for the timer and spinner.
@@ -912,7 +920,11 @@ pub fn run(initial: Option<String>) -> Result<()> {
             }
             // Drain everything queued before redrawing (fast typing, pastes).
             loop {
-                match event::read()? {
+                let ev = event::read()?;
+                if matches!(ev, Event::Key(_) | Event::Paste(_) | Event::Mouse(_)) {
+                    app.active();
+                }
+                match ev {
                     Event::Key(key) => app.on_key(key),
                     Event::Paste(text) => app.on_paste(&text),
                     Event::Mouse(m) => match (m.kind, app.report.as_mut()) {

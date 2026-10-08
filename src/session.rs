@@ -83,6 +83,18 @@ impl Timer {
         }
     }
 
+    /// Pauses as if it had been paused at `at` (when the user stepped
+    /// away), so time since then isn't counted.
+    pub fn pause_at(&mut self, at: Instant) -> bool {
+        match self.since.take() {
+            Some(s) => {
+                self.banked += at.saturating_duration_since(s);
+                true
+            }
+            None => false,
+        }
+    }
+
     pub fn resume(&mut self) -> bool {
         if self.since.is_none() {
             self.since = Some(Instant::now());
@@ -484,6 +496,27 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
+
+    #[test]
+    fn pausing_at_a_past_moment_drops_the_time_since() {
+        let start = Instant::now() - Duration::from_secs(600);
+        let mut t = Timer {
+            banked: Duration::from_secs(30),
+            since: Some(start),
+        };
+        // Last seen 4 minutes in; the 6 minutes since aren't counted.
+        assert!(t.pause_at(start + Duration::from_secs(240)));
+        assert!(t.paused());
+        assert_eq!(t.elapsed(), Duration::from_secs(270));
+        assert!(!t.pause_at(Instant::now()), "already paused");
+    }
+
+    #[test]
+    fn pausing_before_the_timer_started_counts_nothing() {
+        let mut t = Timer::resume_from(Duration::from_secs(5));
+        t.pause_at(Instant::now() - Duration::from_secs(60));
+        assert_eq!(t.elapsed(), Duration::from_secs(5));
+    }
 
     #[rstest]
     #[case("nvim {file}", true, None, true)]
