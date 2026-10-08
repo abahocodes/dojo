@@ -1,0 +1,18 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"s": "ab-cd"}, "output": "dc-ba"},
+    {"input": {"s": "Go!2-it=Now"}, "output": "wo!2-Nt=ioG"},
+    {"input": {"s": "1-2?"}, "output": "1-2?"},
+    {"input": {"s": "x[Y]_z"}, "output": "z[Y]_x"},
+    {"input": {"s": "a"}, "output": "a", "hidden": true},
+    {"input": {"s": "7"}, "output": "7", "hidden": true},
+    {"input": {"s": "Zz"}, "output": "zZ", "hidden": true},
+    {"input": {"s": "\\a^B`"}, "output": "\\B^a`", "hidden": true},
+    {"input": {"s": "Test1ng-Leet=code-Q!"}, "output": "Qedo1ct-eeLg=ntse-T!", "hidden": true},
+    {"input": {"s": "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz"}, "output": "!\"#$%&'()*+,-./0123456789:;<=>?@zyxwvutsrqponmlkjihgfedcba[\\]^_`ZYXWVUTSRQPONMLKJIHGFEDCBA", "hidden": true},
+    {"input": {"s": ":K=+WD@#DVz4+jPbl!a]L2m*`O=.Or,-A-yn@n/'tU\"!^molyo!uRhp4UA7gev^AJkwdxBujTkWJcxjP:-ba1R4'N<9R;@IC?`q3"}, "output": ":q=+CI@#RNR4+abPj!x]c2J*`W=.kT,-j-uB@x/'dw\"!^kJAve!gAUp4hR7uoy^lomUtnnyArOOmLalb:-Pj1z4'V<9D;@DW?`K3", "hidden": true},
+    {"input": {"s": "lgitznfwnhihxdxhjqfmlpasnrieofhcjcejpucygeqebiazgozfucmqlglibjdmesunqfhmjqaeqxfrgurtimotmucwpmuntmiz"}, "output": "zimtnumpwcumtomitrugrfxqeaqjmhfqnusemdjbilglqmcufzogzaibeqegycupjecjchfoeirnsaplmfqjhxdxhihnwfnztigl", "hidden": true},
+    {"input": {"s": "2637[1@1[]90084[3@[06912426[3@9[14950]4013991918939[488[[63837@0@38]3]]936739131[1697[025[]3[62@[51"}, "output": "2637[1@1[]90084[3@[06912426[3@9[14950]4013991918939[488[[63837@0@38]3]]936739131[1697[025[]3[62@[51", "hidden": true}
+  ]
+}

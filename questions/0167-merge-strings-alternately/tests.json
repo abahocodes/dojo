@@ -1,0 +1,15 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"word1": "dog", "word2": "cat"}, "output": "dcoagt"},
+    {"input": {"word1": "ab", "word2": "wxyz"}, "output": "awbxyz"},
+    {"input": {"word1": "hello", "word2": "q"}, "output": "hqello"},
+    {"input": {"word1": "a", "word2": "b"}, "output": "ab", "hidden": true},
+    {"input": {"word1": "z", "word2": "zzz"}, "output": "zzzz", "hidden": true},
+    {"input": {"word1": "abcd", "word2": "e"}, "output": "aebcd", "hidden": true},
+    {"input": {"word1": "tgmatoqvlswqhpexsdlscvugtueqaatsjasjdohwcfxvxlxkxigtvfsirlmocwuydnzjaeceksytdoeenjlwwocdlcmqykcwowgu", "word2": "kzfxprfegwoootqeazfscvhdgyeuxzlodtsmniqtjpxdestyxxzuffffgmzhshozrxqkzprlequppjmupyrflkngydskbhjrponz"}, "output": "tkgzmfaxtporqfvelgswwoqohopteqxesadzlfssccvvuhgdtguyeequaxaztlsojdatssjmdnoihqwtcjfpxxvdxelsxtkyxxixgztuvfffsfifrglmmzohcswhuoyzdrnxzqjkazepcrelkesqyutpdpojemeunpjylrwfwlokcndglycdmsqkybkhcjwropwognuz", "hidden": true},
+    {"input": {"word1": "sshyfjzwbyxslefrvkvqqjmvcfstlijbmrqmcmjweatkfvabblyvztnbuoratcbwwiblvpvuywetkqioalkrfstinuzazfjwjnma", "word2": "x"}, "output": "sxshyfjzwbyxslefrvkvqqjmvcfstlijbmrqmcmjweatkfvabblyvztnbuoratcbwwiblvpvuywetkqioalkrfstinuzazfjwjnma", "hidden": true},
+    {"input": {"word1": "cej", "word2": "pukkukxifmwknonrmawkmsfidqczjphajmmclluodgycohyzwpfweybxvoqantxbfewrzzggwtezfrsvtnuvarllroyhwpncknzh"}, "output": "cpeujkkukxifmwknonrmawkmsfidqczjphajmmclluodgycohyzwpfweybxvoqantxbfewrzzggwtezfrsvtnuvarllroyhwpncknzh", "hidden": true},
+    {"input": {"word1": "epzefknocxjzeoddwumvjpvdbesfbpetnbwzpfvegztgjbsvyanhbfifs", "word2": "wpuwquxznsjibifrbenowwsdgyuduvpxnegccvhkprnpkxtzforrgtlyfhclxmlc"}, "output": "ewppzuewfqkunxozcnxsjjzieboidfdrwbuemnvojwpwvsddbgeysufdbupveptxnnbewgzcpcfvvhekgpzrtngpjkbxstvzyfaonrhrbgftilfysfhclxmlc", "hidden": true}
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"s": "cab#t", "t": "cat"}, "output": true},
+    {"input": {"s": "x#y", "t": "yy#"}, "output": true},
+    {"input": {"s": "ab##", "t": "c#d#"}, "output": true},
+    {"input": {"s": "a#c", "t": "b"}, "output": false},
+    {"input": {"s": "#", "t": "a#"}, "output": true, "hidden": true},
+    {"input": {"s": "a", "t": "b"}, "output": false, "hidden": true},
+    {"input": {"s": "###a", "t": "a"}, "output": true, "hidden": true},
+    {"input": {"s": "bxj##tw", "t": "bxo#j##tw"}, "output": true, "hidden": true},
+    {"input": {"s": "a##c", "t": "#a#c"}, "output": true, "hidden": true},
+    {"input": {"s": "y#fo##f", "t": "y#f#o##f"}, "output": true, "hidden": true},
+    {"input": {"s": "ab#c", "t": "ad#cc#"}, "output": true, "hidden": true},
+    {"input": {"s": "abc#", "t": "abcd##"}, "output": true, "hidden": true},
+    {"input": {"s": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz###################################################################################################", "t": "z"}, "output": true, "hidden": true},
+    {"input": {"s": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz####################################################################################################", "t": "q#"}, "output": true, "hidden": true},
+    {"input": {"s": "aaaa####b###bba#b#ba#aaa#aab#abab#####b##abaabbb#ab##aa##a#bb#a##ba##abbabbab##aa#ab#########b######bb#ab##bab#ba#aa#bb###aaba###bb##b#aaaaa###abaa#a####b##baa#####b#aab##", "t": "a####ba###ba###abaaaab#a####bab#aa#bab#b#a##ba##aa####bb###bab#####abaaabaa##a#b#a##b#b###b##bbaaa#b#ab##ab#baabab###a######a#ba##bb#b###abbaa#aab##ba#b###aa####b"}, "output": false, "hidden": true},
+    {"input": {"s": "a#######b##ba######a##a##b#bb#b#ba#a##aba##bba#baaaa##aba##bb#b#aa###aaa##b#a##a#a##b#a#b####ba##ab##b#b####aaa#ab##b#b#abbba#aa###b##aaa#b", "t": "##baaabaabc#c#c#c#c#"}, "output": true, "hidden": true},
+    {"input": {"s": "###abb###a##bb##abba##a#a###ab", "t": "###abb###a##bb##abba##a#a###ab"}, "output": true, "hidden": true},
+    {"input": {"s": "b#a##aa#babbb##b", "t": "###abb#####b#b##aaa##a"}, "output": false, "hidden": true},
+    {"input": {"s": "aaaa######b#aa#bb####ba##ba######aab###ab##a###a#baabab##ab######b###b#a#a#b#b#ab##b#a####a###bb#b#aa##baaba######a##ab###aa###aa##b##bbb", "t": "##bbbc#c#c#c#"}, "output": true, "hidden": true},
+    {"input": {"s": "a#aa#b###b####babbb#a#bb#a####b##a##a#aa##b#ba#bbb##b##b#####aaab###a#b#b#a#b####abbb##abbaa#ab##b####a###aa#ab##b#aa#b#ba#b###a#ba##b######a##ab####aabbb#", "t": "a#aa#b###b####babbb#a#bb#a####b##a##a#aa##b#ba#bbb##b##b#####aaab###a#b#b#a#b####abbb##abbaa#ab##b####a###aa#ab##b#aa#b#ba#b###a#ba##b######a##ab####aabbb#"}, "output": true, "hidden": true},
+    {"input": {"s": "###a#b##aa###a#aab##babb#a###bab#bb####a##b#b#aa#aa##a##b#aa#ab###a##aaaaa#bab#b####b", "t": "b#a#aba#a####b####a#####ab#bb##aa#aa#b#ab##aababa########baa##bbb#a##b##aa#a#bb#ba##a####ba######a####b#a##b##b####aa#bba##abbba##baab##b#abbbbbbb#a#ab##bbbbbaaab#a#a##bba#b#b#a#bb#b####b##b#abaa"}, "output": false, "hidden": true},
+    {"input": {"s": "a#b#aaabbab####a#bb#abbababbba##ab####a#b##a#bab#aba#b#aaaab#a#####b#baa#b#a#aba##aba#a####bb#", "t": "###aaababbabbaabbabc#"}, "output": true, "hidden": true},
+    {"input": {"s": "#b#baba###a##ba###b##a##bb######bab#babba##b##b##b###a", "t": "#b#baba###a##ba###b##a##bb######bab#babba##b##b##b###a"}, "output": true, "hidden": true},
+    {"input": {"s": "bbbbba#a##ab##b#b##aaa#ab##a#####a###baab#b#b##ab#a##aba##a####abb#ab#a###bbb", "t": "bab#######a###b##b#ab#a#ab#b#a#a##a#a##ab##b############aa#aa"}, "output": false, "hidden": true},
+    {"input": {"s": "ba", "t": "##bac#c#c#"}, "output": true, "hidden": true},
+    {"input": {"s": "b#ba#bb#b#ba#ba###a#####bab#####a#b", "t": "b#ba#bb#b#ba#ba###a#####bab#####a#b"}, "output": true, "hidden": true}
+  ]
+}
