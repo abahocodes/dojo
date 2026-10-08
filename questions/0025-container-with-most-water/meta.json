@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 25,
+  "slug": "container-with-most-water",
+  "title": "Container With Most Water",
+  "difficulty": "medium",
+  "tags": [
+    "arrays",
+    "two-pointers",
+    "greedy"
+  ],
+  "companies": [
+    "amazon",
+    "bloomberg",
+    "google"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "container_with_most_water",
+    "params": [
+      {
+        "name": "heights",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

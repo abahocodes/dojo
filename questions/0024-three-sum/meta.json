@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 24,
+  "slug": "three-sum",
+  "title": "Three Sum",
+  "difficulty": "medium",
+  "tags": [
+    "arrays",
+    "two-pointers",
+    "sorting"
+  ],
+  "companies": [
+    "amazon",
+    "meta",
+    "microsoft"
+  ],
+  "target_minutes": 30,
+  "signature": {
+    "function": "three_sum",
+    "params": [
+      {
+        "name": "nums",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int[][]"
+  },
+  "compare": "unordered_deep",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
