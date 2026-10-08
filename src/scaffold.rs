@@ -24,7 +24,20 @@ pub fn boilerplate(meta: &Meta, lang: Language) -> String {
     match lang {
         Language::Python => python(meta),
         Language::JavaScript => javascript(meta),
+        Language::TypeScript => typescript(meta),
+        Language::Go => crate::runner::compiled::go::boilerplate(&meta.signature, &header(meta)),
+        // Filled in as each compiled language lands.
+        Language::Java | Language::Cpp => String::new(),
     }
+}
+
+/// The two comment lines every boilerplate starts with (without comment
+/// markers).
+fn header(meta: &Meta) -> String {
+    format!(
+        "{}. {} ({})\n/show to reread the problem · /test runs visible tests · /submit when done",
+        meta.id, meta.title, meta.difficulty
+    )
 }
 
 fn py_type(t: &Type) -> String {
@@ -124,6 +137,48 @@ fn javascript(meta: &Meta) -> String {
         "function {}({}) {{\n\n}}\n",
         Language::JavaScript.function_name(&sig.function),
         params
+    ));
+    s
+}
+
+fn ts_type(t: &Type) -> String {
+    match t {
+        Type::List(inner) if matches!(**inner, Type::ListNode | Type::TreeNode) => {
+            format!("Array<{}>", ts_type(inner))
+        }
+        Type::List(inner) => format!("{}[]", ts_type(inner)),
+        other => js_type(other),
+    }
+}
+
+fn typescript(meta: &Meta) -> String {
+    let sig = &meta.signature;
+    let mut s = String::new();
+    for line in header(meta).lines() {
+        s.push_str(&format!("// {line}\n"));
+    }
+    s.push('\n');
+    if uses(meta, &Type::ListNode) {
+        s.push_str(
+            "/**\n * Provided by dojo:\n * class ListNode {\n *     val: number\n *     next: ListNode | null\n *     constructor(val?: number, next?: ListNode | null)\n * }\n */\n\n",
+        );
+    }
+    if uses(meta, &Type::TreeNode) {
+        s.push_str(
+            "/**\n * Provided by dojo:\n * class TreeNode {\n *     val: number\n *     left: TreeNode | null\n *     right: TreeNode | null\n *     constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null)\n * }\n */\n\n",
+        );
+    }
+    let params = sig
+        .params
+        .iter()
+        .map(|p| format!("{}: {}", camel(&p.name), ts_type(&p.ty)))
+        .collect::<Vec<_>>()
+        .join(", ");
+    s.push_str(&format!(
+        "function {}({}): {} {{\n\n}}\n",
+        Language::TypeScript.function_name(&sig.function),
+        params,
+        ts_type(&sig.returns)
     ));
     s
 }

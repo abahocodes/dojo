@@ -209,8 +209,10 @@ impl App {
             }
             Step::Language(choices) => {
                 let Some(lang) = pick_language(choices, line) else {
-                    self.transcript
-                        .push(views::error("pick 1–2, or type python or javascript"));
+                    self.transcript.push(views::error(format!(
+                        "pick 1–{}, or type a language's name",
+                        Language::ALL.len()
+                    )));
                     return true;
                 };
                 self.config.language = lang.name().to_string();

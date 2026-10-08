@@ -83,6 +83,18 @@
         },
         "javascript": {
           "$ref": "#/$defs/LanguageFiles"
+        },
+        "typescript": {
+          "$ref": "#/$defs/LanguageFiles"
+        },
+        "java": {
+          "$ref": "#/$defs/LanguageFiles"
+        },
+        "cpp": {
+          "$ref": "#/$defs/LanguageFiles"
+        },
+        "go": {
+          "$ref": "#/$defs/LanguageFiles"
         }
       },
       "additionalProperties": false,

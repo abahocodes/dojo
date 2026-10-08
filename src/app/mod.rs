@@ -879,7 +879,12 @@ impl App {
         };
         let Some(lang) = Language::parse(name) else {
             return Some(views::error(format!(
-                "`{name}` isn't supported  ·  python or javascript"
+                "`{name}` isn't supported  ·  {}",
+                Language::ALL
+                    .iter()
+                    .map(|l| l.name())
+                    .collect::<Vec<_>>()
+                    .join(", ")
             )));
         };
         self.config.language = lang.name().to_string();

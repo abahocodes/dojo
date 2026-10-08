@@ -1,4 +1,7 @@
-// dojo javascript harness. Usage: node harness.js <solution.js> <spec.json> <results.json>
+// dojo javascript harness. Usage: node harness.js <solution.js|ts> <spec.json> <results.json>
+//
+// TypeScript solutions (.ts) have their types stripped first (Node 22.13+),
+// which keeps line numbers.
 //
 // Same protocol as harness.py. The solution runs in a vm context so a plain
 // top-level `function twoSum(...)` works without exports, each case gets a
@@ -104,7 +107,7 @@ function formatError(err, file) {
   return String(err.stack)
     .split('\n')
     .filter((line) => !/^\s+at /.test(line) || line.includes(file))
-    .map((line) => line.replace(/\(.*?([^/(]+\.js:\d+:\d+)\)/, '($1)'))
+    .map((line) => line.replace(/\(.*?([^/(]+\.[jt]s:\d+:\d+)\)/, '($1)'))
     .join('\n')
     .trimEnd();
 }
@@ -164,7 +167,10 @@ function main() {
   let fn;
   progress('load');
   try {
-    const code = fs.readFileSync(solutionPath, 'utf8');
+    let code = fs.readFileSync(solutionPath, 'utf8');
+    if (solutionPath.endsWith('.ts')) {
+      code = require('module').stripTypeScriptTypes(code, { mode: 'strip' });
+    }
     new vm.Script(code, { filename: file }).runInContext(context, { timeout });
     fn = vm.runInContext(
       `typeof ${spec.function} === 'function' ? ${spec.function} : undefined`,

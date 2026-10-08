@@ -6,17 +6,41 @@ use std::fmt;
 pub enum Language {
     Python,
     JavaScript,
+    TypeScript,
+    Java,
+    Cpp,
+    Go,
 }
 
 impl Language {
-    pub const ALL: &[Language] = &[Language::Python, Language::JavaScript];
+    pub const ALL: &[Language] = &[
+        Language::Python,
+        Language::JavaScript,
+        Language::TypeScript,
+        Language::Java,
+        Language::Cpp,
+        Language::Go,
+    ];
 
     pub fn parse(s: &str) -> Option<Language> {
         match s.to_ascii_lowercase().as_str() {
             "python" | "python3" | "py" => Some(Language::Python),
             "javascript" | "js" | "node" => Some(Language::JavaScript),
+            "typescript" | "ts" => Some(Language::TypeScript),
+            "java" => Some(Language::Java),
+            "cpp" | "c++" | "cxx" => Some(Language::Cpp),
+            "go" | "golang" => Some(Language::Go),
             _ => None,
         }
+    }
+
+    /// Languages every question in the bank must have. The rest are
+    /// optional until the bank is ported to them.
+    pub const REQUIRED: &[Language] = &[Language::Python, Language::JavaScript];
+
+    /// Compiled before running (a driver is generated around the solution).
+    pub fn compiled(self) -> bool {
+        matches!(self, Language::Java | Language::Cpp | Language::Go)
     }
 
     /// Stable identifier used in config, the database and asset file names.
@@ -24,6 +48,10 @@ impl Language {
         match self {
             Language::Python => "python",
             Language::JavaScript => "javascript",
+            Language::TypeScript => "typescript",
+            Language::Java => "java",
+            Language::Cpp => "cpp",
+            Language::Go => "go",
         }
     }
 
@@ -31,6 +59,10 @@ impl Language {
         match self {
             Language::Python => "Python 3",
             Language::JavaScript => "JavaScript",
+            Language::TypeScript => "TypeScript",
+            Language::Java => "Java",
+            Language::Cpp => "C++",
+            Language::Go => "Go",
         }
     }
 
@@ -38,6 +70,10 @@ impl Language {
         match self {
             Language::Python => "py",
             Language::JavaScript => "js",
+            Language::TypeScript => "ts",
+            Language::Java => "java",
+            Language::Cpp => "cpp",
+            Language::Go => "go",
         }
     }
 
@@ -51,11 +87,12 @@ impl Language {
         format!("solution.{}", self.ext())
     }
 
-    /// The signature's snake_case name in this language's convention.
+    /// The signature's snake_case name in this language's convention:
+    /// snake_case in Python, camelCase everywhere else (as on LeetCode).
     pub fn function_name(self, snake: &str) -> String {
         match self {
             Language::Python => snake.to_string(),
-            Language::JavaScript => camel(snake),
+            _ => camel(snake),
         }
     }
 }
@@ -128,7 +165,12 @@ mod tests {
     #[case("js", Some(Language::JavaScript))]
     #[case("node", Some(Language::JavaScript))]
     #[case("JavaScript", Some(Language::JavaScript))]
-    #[case("go", None)]
+    #[case("ts", Some(Language::TypeScript))]
+    #[case("Java", Some(Language::Java))]
+    #[case("c++", Some(Language::Cpp))]
+    #[case("cpp", Some(Language::Cpp))]
+    #[case("golang", Some(Language::Go))]
+    #[case("rust", None)]
     #[case("", None)]
     fn parses(#[case] input: &str, #[case] expected: Option<Language>) {
         assert_eq!(Language::parse(input), expected);
@@ -137,6 +179,10 @@ mod tests {
     #[rstest]
     #[case(Language::Python, "python.py", "solution.py", "two_sum")]
     #[case(Language::JavaScript, "javascript.js", "solution.js", "twoSum")]
+    #[case(Language::TypeScript, "typescript.ts", "solution.ts", "twoSum")]
+    #[case(Language::Java, "java.java", "solution.java", "twoSum")]
+    #[case(Language::Cpp, "cpp.cpp", "solution.cpp", "twoSum")]
+    #[case(Language::Go, "go.go", "solution.go", "twoSum")]
     fn file_and_function_names(
         #[case] lang: Language,
         #[case] asset: &str,
