@@ -1,0 +1,44 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 31,
+  "slug": "daily-temperatures",
+  "title": "Daily Temperatures",
+  "difficulty": "medium",
+  "tags": [
+    "monotonic-stack",
+    "stack",
+    "arrays"
+  ],
+  "companies": [
+    "amazon",
+    "google",
+    "meta",
+    "bloomberg"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "daily_temperatures",
+    "params": [
+      {
+        "name": "temperatures",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

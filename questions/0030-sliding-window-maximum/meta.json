@@ -1,0 +1,49 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 30,
+  "slug": "sliding-window-maximum",
+  "title": "Sliding Window Maximum",
+  "difficulty": "hard",
+  "tags": [
+    "sliding-window",
+    "monotonic-queue",
+    "deque",
+    "arrays"
+  ],
+  "companies": [
+    "amazon",
+    "google",
+    "microsoft",
+    "citadel"
+  ],
+  "target_minutes": 30,
+  "signature": {
+    "function": "max_sliding_window",
+    "params": [
+      {
+        "name": "nums",
+        "type": "int[]"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 29,
+  "slug": "longest-repeating-character-replacement",
+  "title": "Longest Repeating Character Replacement",
+  "difficulty": "medium",
+  "tags": [
+    "sliding-window",
+    "strings",
+    "hash-map"
+  ],
+  "companies": [
+    "google",
+    "amazon",
+    "meta",
+    "microsoft"
+  ],
+  "target_minutes": 25,
+  "signature": {
+    "function": "character_replacement",
+    "params": [
+      {
+        "name": "s",
+        "type": "string"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
