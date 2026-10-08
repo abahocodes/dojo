@@ -2,7 +2,7 @@
 //! (one generated `cargo test` per question folder, see `build.rs`).
 
 use std::collections::{BTreeSet, HashMap};
-use std::io::IsTerminal;
+use std::io::{IsTerminal, Write};
 use std::path::Path;
 
 use anyhow::{Context, Result};
@@ -213,6 +213,7 @@ pub fn run(root: &Path, only: &[String], run_code: bool) -> Result<bool> {
         only.to_vec()
     };
     let mut failed = 0;
+    let mut out = std::io::stdout().lock();
 
     for dir in &dirs {
         let Inspection { problems, passed } = inspect_question(root, dir, run_code);
@@ -221,45 +222,48 @@ pub fn run(root: &Path, only: &[String], run_code: bool) -> Result<bool> {
                 .map(|q| format!("{} cases · {} hints", q.cases.len(), q.hints.len()))
                 .unwrap_or_default();
             let detail = format!("{detail} · {}", passed.join(" · "));
-            println!("{} {dir}  {}", paint.green("✓"), paint.dim(&detail));
+            writeln!(out, "{} {dir}  {}", paint.green("✓"), paint.dim(&detail))?;
         } else {
             failed += 1;
-            println!("{} {dir}", paint.red("✗"));
-            print_problems(&problems);
+            writeln!(out, "{} {dir}", paint.red("✗"))?;
+            print_problems(&mut out, &problems)?;
         }
     }
 
     let bank_problems = check_bank(root)?;
     if !bank_problems.is_empty() {
         failed += 1;
-        println!("{} question bank", paint.red("✗"));
-        print_problems(&bank_problems);
+        writeln!(out, "{} question bank", paint.red("✗"))?;
+        print_problems(&mut out, &bank_problems)?;
     }
 
-    println!();
+    writeln!(out)?;
     if failed == 0 {
-        println!(
+        writeln!(
+            out,
             "{}",
             paint.green(&format!("all {} questions valid", dirs.len()))
-        );
+        )?;
     } else {
-        println!(
+        writeln!(
+            out,
             "{}",
             paint.red(&format!(
                 "{failed} problem group(s) in {} questions",
                 dirs.len()
             ))
-        );
+        )?;
     }
     Ok(failed == 0)
 }
 
-fn print_problems(problems: &[String]) {
+fn print_problems(out: &mut impl Write, problems: &[String]) -> std::io::Result<()> {
     for p in problems {
         for (i, line) in p.lines().enumerate() {
-            println!("    {}{line}", if i == 0 { "- " } else { "  " });
+            writeln!(out, "    {}{line}", if i == 0 { "- " } else { "  " })?;
         }
     }
+    Ok(())
 }
 
 /// Organization: the folder holds exactly what `meta.json` references.

@@ -33,6 +33,10 @@ tokio = { version = "1.53.2", features = ["rt"] }
 toml = "1.1.6"
 unicode-width = "0.2.2"
 
+[target.'cfg(unix)'.dependencies]
+# Ignoring Ctrl-C while a child owns the terminal; checking for root.
+libc = "0.2.190"
+
 # Build-time code (proc macros like sqlx-macros) is not stripped in release.
 # On macOS 27 (ld-27037), stripping debuginfo from the sqlx-macros dylib leaves
 # a misaligned LINKEDIT and rustc can't load it ("mis-aligned LINKEDIT string

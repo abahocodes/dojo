@@ -13,6 +13,7 @@ mod store;
 mod ui;
 mod validate;
 
+use std::io::Write;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
@@ -89,11 +90,24 @@ enum Cmd {
 fn main() -> ExitCode {
     match run() {
         Ok(code) => code,
+        // `dojo validate | head`: the reader went away, which isn't an error.
+        Err(e) if broken_pipe(&e) => ExitCode::SUCCESS,
         Err(e) => {
             eprintln!("error: {e:#}");
             ExitCode::FAILURE
         }
     }
+}
+
+/// Whether writing to stdout failed because the reading end closed. Rust
+/// ignores SIGPIPE, so a closed pipe shows up as this error instead of
+/// killing dojo (which the clipboard's pipes to xclip/wl-copy rely on).
+fn broken_pipe(e: &anyhow::Error) -> bool {
+    e.chain().any(|cause| {
+        cause
+            .downcast_ref::<std::io::Error>()
+            .is_some_and(|io| io.kind() == std::io::ErrorKind::BrokenPipe)
+    })
 }
 
 fn run() -> Result<ExitCode> {
@@ -116,8 +130,9 @@ fn run() -> Result<ExitCode> {
             Ok(ExitCode::SUCCESS)
         }
         Some(Cmd::Schema { out }) => {
+            let mut stdout = std::io::stdout().lock();
             for file in schema::write(&out)? {
-                println!("wrote {file}");
+                writeln!(stdout, "wrote {file}")?;
             }
             Ok(ExitCode::SUCCESS)
         }
@@ -132,9 +147,10 @@ fn run() -> Result<ExitCode> {
                     })
                     .collect::<Result<Vec<_>>>()?
             };
+            let mut stdout = std::io::stdout().lock();
             for dir in dirs {
                 for file in scaffold::run(&dir, &langs, force)? {
-                    println!("wrote {}/{file}", dir.display());
+                    writeln!(stdout, "wrote {}/{file}", dir.display())?;
                 }
             }
             Ok(ExitCode::SUCCESS)
@@ -148,7 +164,7 @@ fn run() -> Result<ExitCode> {
             Ok(ExitCode::SUCCESS)
         }
         Some(Cmd::Report { json: true, .. }) => {
-            println!("{}", app::report_json()?);
+            writeln!(std::io::stdout().lock(), "{}", app::report_json()?)?;
             Ok(ExitCode::SUCCESS)
         }
         Some(Cmd::Report { json: false, label }) => {

@@ -448,7 +448,13 @@ impl App {
             self.pending_command = Some((command, super::AfterCommand::Editor));
             None
         } else {
-            match session::launch_gui(&command) {
+            let log = self
+                .paths
+                .default_workspace
+                .parent()
+                .unwrap_or(&self.paths.default_workspace)
+                .join("editor.log");
+            match session::launch_gui(&command, &log) {
                 Ok(()) => {
                     let program = template.split_whitespace().next().unwrap_or("editor");
                     Some(views::info(format!(

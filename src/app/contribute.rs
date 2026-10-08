@@ -709,9 +709,26 @@ pub fn signature(d: &Draft) -> String {
 }
 
 /// Runs `command`, then waits for Enter so its output can be read before
-/// dojo takes the terminal back.
+/// dojo takes the terminal back. The command runs in a subshell so its
+/// `set -e` or `exit` can't skip the pause; POSIX sh only (`/bin/sh` is dash
+/// on Debian and Ubuntu, which has no `read -p`).
 fn with_pause(command: &str) -> String {
     format!(
-        "{command}; status=$?; echo; read -r -p 'Press Enter to return to dojo... ' _; exit $status"
+        "( {command}\n); status=$?; echo; printf 'Press Enter to return to dojo... '; read -r _ </dev/tty; exit $status"
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pause_wrapper_parses_in_sh() {
+        let command = with_pause("set -e\nfalse # a trailing comment");
+        let status = std::process::Command::new("sh")
+            .args(["-n", "-c", &command])
+            .status()
+            .unwrap();
+        assert!(status.success(), "{command}");
+    }
 }

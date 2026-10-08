@@ -806,9 +806,16 @@ impl App {
         let Some(text) = self.transcript.last_copy().map(str::to_string) else {
             return Some(views::info("nothing to copy yet"));
         };
+        let lines = text.lines().count();
         Some(match ui::clipboard::copy(&text) {
-            Ok(()) => {
-                self.notify(format!("copied {} lines", text.lines().count()));
+            Ok(ui::clipboard::Copied::Native) => {
+                self.notify(format!("copied {lines} lines"));
+                return None;
+            }
+            Ok(ui::clipboard::Copied::Terminal) => {
+                self.notify(format!(
+                    "sent {lines} lines to the clipboard through the terminal (OSC 52)"
+                ));
                 return None;
             }
             Err(e) => views::error(format!("copy failed: {e}")),
@@ -824,6 +831,19 @@ fn which(program: &str) -> bool {
 }
 
 pub fn run(initial: Option<String>) -> Result<()> {
+    use std::io::{IsTerminal, Write};
+    // Drawing into a pipe or a dumb terminal would only write escape codes.
+    if !std::io::stdout().is_terminal() {
+        anyhow::bail!(
+            "dojo needs a terminal to open in (stdout isn't one)  ·  for scripts use \
+             `dojo report --json` or `dojo validate`"
+        );
+    }
+    if std::env::var_os("TERM").is_some_and(|t| t == "dumb") {
+        anyhow::bail!(
+            "dojo can't draw in a dumb terminal (TERM=dumb)  ·  run it in a full terminal"
+        );
+    }
     let mut app = App::new()?;
     let mut term = ui::terminal::init()?;
     if let Some(line) = initial {
@@ -897,8 +917,14 @@ pub fn run(initial: Option<String>) -> Result<()> {
         app.end_session(false);
     }
     ui::terminal::restore();
-    if let Some(done) = app.last_summary.as_ref().filter(|d| !d.is_empty()) {
-        println!("{}", views::summary_text(&app.bank, done));
-    }
-    result
+    let printed = match app.last_summary.as_ref().filter(|d| !d.is_empty()) {
+        Some(done) => writeln!(
+            std::io::stdout().lock(),
+            "{}",
+            views::summary_text(&app.bank, done)
+        ),
+        None => Ok(()),
+    };
+    result?;
+    Ok(printed?)
 }

@@ -207,7 +207,9 @@ function main() {
       context.__dojo_fn = fn;
       context.__dojo_args = spec.params.map((p) => decode(p.type, c.input[p.name]));
       const got = vm.runInContext('__dojo_fn(...__dojo_args)', context, { timeout });
-      r.got = JSON.parse(JSON.stringify(encode(spec.returns, got)) ?? 'null');
+      // No `??` (Node 14+): the harness should still parse on old Node.
+      const json = JSON.stringify(encode(spec.returns, got));
+      r.got = JSON.parse(json === undefined ? 'null' : json);
       r.status = 'ok';
     } catch (e) {
       if (e && e.code === 'ERR_SCRIPT_EXECUTION_TIMEOUT') {
