@@ -684,14 +684,17 @@ mod runaway_tests {
 
     #[test]
     fn crash_is_reported_on_its_case() {
+        // The process kills itself the way the OS kills a process that runs
+        // out of memory. (A real segfault would also work, but macOS shows a
+        // "Python quit unexpectedly" dialog for every one.)
         let (r, _) = run_code(
             Language::Python,
-            "import ctypes\n\ndef two_sum(nums, target):\n    if len(nums) == 2:\n        ctypes.string_at(0)\n    return []\n",
+            "import os, signal\n\ndef two_sum(nums, target):\n    if len(nums) == 2:\n        os.kill(os.getpid(), signal.SIGKILL)\n    return []\n",
         );
         // Case 1 (4 numbers) finished; case 2 ([5, 5]) crashed; case 3 not run.
         assert_eq!(statuses(&r), [Status::Fail, Status::Error, Status::NotRun]);
         let err = r.cases[1].error.as_deref().unwrap_or_default();
-        assert!(err.contains("crashed"), "{err}");
+        assert!(err.contains("crashed") && err.contains("memory"), "{err}");
     }
 }
 
