@@ -153,10 +153,13 @@ Some behavior to know:
 ## Contribute a question
 
 Describe a question in plain words and dojo drafts all of it: the statement,
-hints, explained solution, tests, and starter code and a reference solution in
-every language. It then validates the draft by running everything locally.
-Review the result, ask for changes in your own words, and `/accept` opens the
-pull request for you, using `gh`, which dojo can install and sign you in to.
+hints, explained solution, tests, and a reference solution in all six languages
+(Python, JavaScript, TypeScript, Java, C++ and Go); starter code is generated
+from the signature. It then validates the draft by running everything locally
+(so Java, C++ and Go need a JDK, a C++ compiler and Go installed), with a
+status line per language. Review the result, ask for changes in your own words
+(e.g. "fix the Go solution"), and `/accept` opens the pull request for you,
+using `gh`, which dojo can install and sign you in to.
 
 ```text
 /contribute ollama    free, runs a local model (dojo can install Ollama for you)

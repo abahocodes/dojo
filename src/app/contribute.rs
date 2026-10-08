@@ -722,6 +722,53 @@ fn with_pause(command: &str) -> String {
 mod tests {
     use super::*;
 
+    /// The review lists every language with its own status line.
+    #[test]
+    fn review_shows_a_line_per_language() {
+        use crate::contribute::draft::LangStatus;
+        use crate::lang::Language;
+        let bank = crate::questions::Bank::embedded();
+        let draft = Draft::from_question(bank.get(13).unwrap());
+        let built = Built::builder()
+            .dir("/tmp/x".into())
+            .problems(vec![
+                "solutions/java.java fails case 2: expected 2, got 1".into(),
+                "solutions/go.go is missing: write the Go reference solution (`go_solution`)"
+                    .into(),
+            ])
+            .visible(3)
+            .hidden(5)
+            .generated(0)
+            .languages(
+                Language::ALL
+                    .iter()
+                    .map(|&l| {
+                        let s = match l {
+                            Language::Java => LangStatus::Failed(1),
+                            Language::Go => LangStatus::Missing,
+                            _ => LangStatus::Passed,
+                        };
+                        (l, s)
+                    })
+                    .collect(),
+            )
+            .build();
+        let entry = views::contrib_review()
+            .draft(&draft)
+            .built(&built)
+            .model("m")
+            .rounds(1)
+            .usage(Usage::default())
+            .call();
+        let text = entry.copy;
+        for l in Language::ALL {
+            assert!(text.contains(l.label()), "{l}: {text}");
+        }
+        assert!(text.contains("1 problem (below)"), "{text}");
+        assert!(text.contains("no solution drafted"), "{text}");
+        assert!(text.contains("solutions/java.java fails case 2"), "{text}");
+    }
+
     #[test]
     fn pause_wrapper_parses_in_sh() {
         let command = with_pause("set -e\nfalse # a trailing comment");

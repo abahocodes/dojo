@@ -142,7 +142,7 @@ pub fn draft(
                 .build());
         }
         messages.push(Client::user(&format!(
-            "dojo built and validated your question and found problems:\n{}\n\nFix them and return the complete corrected question.",
+            "dojo built and validated your question and found problems:\n{}\n\nFix them (keeping all six reference solutions consistent) and return the complete corrected question.",
             built
                 .problems
                 .iter()
@@ -172,7 +172,8 @@ pub fn describe_message(text: &str) -> Value {
     ))
 }
 
-/// A follow-up: the contributor's requested changes.
+/// A follow-up: the contributor's requested changes. Outstanding problems
+/// (failing or missing languages included) are sent along to be fixed.
 pub fn revise_message(text: &str, problems: &[String]) -> Value {
     let mut msg = format!("The contributor asks for changes:\n\n{text}");
     if !problems.is_empty() {
@@ -181,14 +182,16 @@ pub fn revise_message(text: &str, problems: &[String]) -> Value {
             msg.push_str(&format!("- {p}\n"));
         }
     }
-    msg.push_str("\nReturn the complete updated question.");
+    msg.push_str(
+        "\nApply every change to all six reference solutions (Python, JavaScript, TypeScript, Java, C++, Go) so they stay consistent with each other and the signature, and return the complete updated question.",
+    );
     Client::user(&msg)
 }
 
 /// The PR description.
 pub fn pr_body(draft: &Draft, built: &Built, model: &str) -> String {
     format!(
-        "Adds **{}** ({}): {}\n\n- Tags: {}\n- Companies: {}\n- Tests: {} visible, {} hidden ({} generated); expected outputs computed by running the Python reference solution\n- Python and JavaScript reference solutions pass every test; boilerplates load and don't pass\n\nDrafted with `/contribute` ({model}) and validated locally with dojo's question checks.\n",
+        "Adds **{}** ({}): {}\n\n- Tags: {}\n- Companies: {}\n- Tests: {} visible, {} hidden ({} generated); expected outputs computed by running the Python reference solution\n- Reference solutions in {} pass every test; starter code is generated from the signature (`dojo scaffold`), loads and doesn't pass\n\nDrafted with `/contribute` ({model}) and validated locally with dojo's question checks.\n",
         draft.title,
         draft.difficulty,
         draft
@@ -206,5 +209,11 @@ pub fn pr_body(draft: &Draft, built: &Built, model: &str) -> String {
         built.visible,
         built.hidden,
         built.generated,
+        built
+            .languages
+            .iter()
+            .map(|(l, _)| l.label())
+            .collect::<Vec<_>>()
+            .join(", "),
     )
 }
