@@ -49,6 +49,10 @@ NNNN-slug/
   with nulls. Harnesses provide `ListNode`/`TreeNode` to solutions.
 - `compare`: `exact` (default), `unordered`, `unordered_deep`, `float`.
 - At least 2 visible and 3 hidden cases. Hidden cases run on `/submit` only.
+- Limits that keep questions safe to run: at most 100 cases and 200 KB of
+  tests; visible inputs under 1,000 characters (they're printed); each
+  reference solution under 1s per case (users get 3s) and deterministic
+  (two runs, same results).
 - Questions are not versioned: edit them in place. Attempts record the dojo
   release they ran on, which pins the exact copy of every question.
 - Statements must be original wording — never copied from other sites.

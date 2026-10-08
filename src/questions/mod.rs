@@ -193,11 +193,6 @@ impl Question {
         self.meta.id
     }
 
-    /// Languages listed in `meta.json`.
-    pub fn languages(&self) -> Vec<Language> {
-        self.meta.languages.keys().copied().collect()
-    }
-
     pub fn supports(&self, lang: Language) -> bool {
         self.meta.languages.contains_key(&lang)
     }

@@ -1,6 +1,12 @@
 # Checks contributed questions: only the question folders a PR adds or
-# changes are validated (schema, organization, tests, reference solutions in
-# every language, boilerplate), plus the bank-wide id/slug uniqueness check.
+# changes are validated, plus the bank-wide id/slug uniqueness check. For
+# each folder (`dojo validate --question`):
+#   - schema: meta.json and tests.json against schema/*.json
+#   - layout and content: files referenced, naming, hints, case types, limits
+#     (case count, tests size, visible inputs small enough to print)
+#   - runs safely in every language: reference solutions pass every case
+#     under 1s each (the limit is 3s), give the same results on two runs, and
+#     the boilerplate loads without already passing
 # Separate from ci.yml, which tests dojo itself.
 #
 # Runs on `pull_request` (not `pull_request_target`), so code from forks runs
