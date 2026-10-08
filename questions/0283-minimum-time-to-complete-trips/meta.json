@@ -1,0 +1,60 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 283,
+  "slug": "minimum-time-to-complete-trips",
+  "title": "Minimum Time to Complete Trips",
+  "difficulty": "medium",
+  "tags": [
+    "binary-search",
+    "arrays"
+  ],
+  "companies": [
+    "amazon",
+    "microsoft"
+  ],
+  "target_minutes": 25,
+  "signature": {
+    "function": "minimum_time",
+    "params": [
+      {
+        "name": "time",
+        "type": "int[]"
+      },
+      {
+        "name": "total_trips",
+        "type": "int"
+      }
+    ],
+    "returns": "long"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}
