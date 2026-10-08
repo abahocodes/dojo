@@ -325,6 +325,11 @@ impl App {
             }
         };
 
+        // Baseline for save detection: the fresh file isn't a save.
+        let mut attempt = attempt;
+        attempt.mtime = attempt.file_mtime();
+        let continuing = open.is_some();
+
         let entry = views::session_question()
             .question(&q)
             .position(position)
@@ -344,7 +349,10 @@ impl App {
         }
         self.last_autosave = Instant::now();
         self.transcript.push(entry);
-        self.open_editor()
+        // `/edit` continuing unfinished work goes straight back to the
+        // editor; `/solve` and `/next` show the problem with the timer
+        // running and leave opening the editor to `/edit` (or Enter).
+        if continuing { self.open_editor() } else { None }
     }
 
     /// Continues an unfinished attempt (the most recent, or the one on
@@ -443,13 +451,14 @@ impl App {
     fn open_editor(&mut self) -> Option<Entry> {
         let a = self.session.as_mut()?.attempt.as_mut()?;
         a.mtime = a.file_mtime();
+        a.editor_opened = true;
         // Put the cursor where the user left off.
         let code = std::fs::read_to_string(&a.file).unwrap_or_default();
         let line = self
             .bank
             .get(a.question_id)
-            .and_then(|q| q.boilerplate.get(&a.lang))
-            .map_or(1, |b| session::resume_line(b, &code));
+            .and_then(|q| session::starter(q, a.lang))
+            .map_or(1, |b| session::resume_line(&b, &code));
         let (template, _) = self.config.editor();
         let command = editor_command()
             .template(&template)

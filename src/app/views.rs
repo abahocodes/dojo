@@ -539,7 +539,7 @@ pub fn session_question(
         Span::styled("/hint", t.accent()),
         Span::styled(" nudge  ·  ", t.dim()),
         Span::styled("/edit", t.accent()),
-        Span::styled(" reopen editor", t.dim()),
+        Span::styled(" open your editor", t.dim()),
     ]));
     entry(paras)
 }
