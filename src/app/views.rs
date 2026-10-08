@@ -888,6 +888,37 @@ pub fn session_summary(bank: &Bank, done: &[Done]) -> Entry {
     entry(paras)
 }
 
+/// Offered on `/quit` when some questions weren't solved: their explained
+/// solutions, one at a time.
+pub fn review_offer(bank: &Bank, missed: &[(u32, Outcome)]) -> Entry {
+    let t = theme();
+    let names: Vec<String> = missed
+        .iter()
+        .map(|(id, _)| {
+            let title = bank.get(*id).map(|q| q.meta.title.as_str()).unwrap_or("");
+            format!("#{id} {title}")
+        })
+        .collect();
+    let their = if missed.len() == 1 {
+        "Its explained solution is"
+    } else {
+        "Their explained solutions are"
+    };
+    entry(vec![
+        Para::plain("Before you go", t.heading()),
+        Para::new(vec![
+            Span::styled(names.join(", "), t.bold()),
+            Span::raw(format!(
+                " didn't work out. {their} the fastest way to close the gap."
+            )),
+        ]),
+        Para::plain(
+            "⏎ walks through them one by one  ·  /quit leaves now",
+            t.dim(),
+        ),
+    ])
+}
+
 /// Plain-text session summary printed to the normal terminal on exit.
 pub fn summary_text(bank: &Bank, done: &[Done]) -> String {
     let solved = done
