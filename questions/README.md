@@ -41,8 +41,8 @@ NNNN-slug/
   no missing files, no stray files, no file referenced twice, no paths
   outside the folder.
 - Languages: `python` (`.py`), `javascript` (`.js`), `typescript` (`.ts`),
-  `java` (`.java`), `cpp` (`.cpp`) and `go` (`.go`). Python and JavaScript
-  are required; the others are being added to every question.
+  `java` (`.java`), `cpp` (`.cpp`) and `go` (`.go`). Every question has
+  all six.
   `dojo scaffold <folder> --lang typescript,java,cpp,go` writes starter code
   from the signature and registers the files.
 - Solutions look like LeetCode's: plain functions in Python, JavaScript,
