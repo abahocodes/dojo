@@ -141,6 +141,10 @@ pub struct Attempt {
     pub last_run: Option<(usize, usize)>,
     /// Solution file mtime when last checked, for re-running tests on save.
     pub mtime: Option<SystemTime>,
+    /// The editor was opened for this attempt in this window (`/solve` and
+    /// `/next` show the problem first; `/edit` opens it).
+    #[builder(default)]
+    pub editor_opened: bool,
 }
 
 impl Attempt {

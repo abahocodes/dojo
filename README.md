@@ -79,8 +79,10 @@ Then:
 /solve random     surprise me
 ```
 
-Your editor opens on a fresh file with the function to write. Save, and the
-visible tests run. When they pass, `/submit` runs the hidden ones too.
+dojo shows the problem and starts the timer. Press Enter (or `/edit`) to open
+your editor on a fresh file with the problem in a comment on top and the
+function to write. Save, and the visible tests run. When they pass, `/submit`
+runs the hidden ones too.
 
 <img src="docs/images/pass.png" alt="All visible tests and all 19 hidden tests passing, then Solved #52 House Robber with the time against target" width="820">
 

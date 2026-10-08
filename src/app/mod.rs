@@ -290,7 +290,15 @@ impl App {
                     tips: vec![tip("/edit", "keep editing"), hint],
                 },
                 None if a.test_runs == 0 => Prompt {
-                    enter: enter("/edit", "back to the editor".into()),
+                    enter: enter(
+                        "/edit",
+                        if a.editor_opened {
+                            "back to the editor"
+                        } else {
+                            "open the editor"
+                        }
+                        .into(),
+                    ),
                     tips: vec![tip("/test", "run tests"), hint],
                 },
                 _ => Prompt {
