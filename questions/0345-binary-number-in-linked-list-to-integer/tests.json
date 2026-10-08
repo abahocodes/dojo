@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"head": [1, 1, 0, 1]}, "output": 13},
+    {"input": {"head": [0, 0, 1, 0]}, "output": 2},
+    {"input": {"head": [1]}, "output": 1},
+    {"input": {"head": [0]}, "output": 0, "hidden": true},
+    {"input": {"head": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}, "output": 1073741823, "hidden": true},
+    {"input": {"head": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, "output": 536870912, "hidden": true},
+    {"input": {"head": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, "output": 0, "hidden": true},
+    {"input": {"head": [1, 0, 1, 0, 1]}, "output": 21, "hidden": true},
+    {"input": {"head": [0, 0, 1, 1, 0, 1, 0]}, "output": 26, "hidden": true},
+    {"input": {"head": [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0]}, "output": 350, "hidden": true},
+    {"input": {"head": [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1]}, "output": 19197811, "hidden": true},
+    {"input": {"head": [1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]}, "output": 928656447, "hidden": true}
+  ]
+}
