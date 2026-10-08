@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"s1": "red fish blue fish", "s2": "one fish two"}, "output": ["red", "blue", "one", "two"]},
+    {"input": {"s1": "go go", "s2": "stop"}, "output": ["stop"]},
+    {"input": {"s1": "the quick fox", "s2": "the lazy dog"}, "output": ["quick", "fox", "lazy", "dog"]},
+    {"input": {"s1": "a b c", "s2": "c b a"}, "output": [], "hidden": true},
+    {"input": {"s1": "x", "s2": "y"}, "output": ["x", "y"], "hidden": true},
+    {"input": {"s1": "z", "s2": "z"}, "output": [], "hidden": true},
+    {"input": {"s1": "hello", "s2": "hello world hello"}, "output": ["world"], "hidden": true},
+    {"input": {"s1": "aa aa aa", "s2": "bb"}, "output": ["bb"], "hidden": true},
+    {"input": {"s1": "yak emu cat ant emu gnu cat ape fox yak dog hen fox owl yak yak emu cat cat hen eel cat ape owl hen emu dog eel emu yak emu dog ape gnu bee ape ape eel owl yak gnu owl hen bee gnu dog bee hen owl dog", "s2": "cat yak fox hen dog ant gnu gnu yak fox hen dog dog ant owl eel eel ant bee dog emu yak cat fox emu ape yak bee owl ape eel ape bee emu cat ant yak hen owl cat owl eel bee yak emu cat eel ape fox ant"}, "output": [], "hidden": true},
+    {"input": {"s1": "ff qz hw ye g isjp uia p dku rmkl qqqm jsf re qwui dfb g u tucg nqm e u zfrc i ukjo ksm wjw xswj h tfb okqz t lzz smvf dku nqm d q d fxj qhop ldv rec p riqi izex g kn izex x panu hhbj isjp t p t uzg h", "s2": "x yx z jyz pnb ofh u qz r yade wjw u hjsv i q lv z d lm kx rj tucg ejvh dt u inx w kjs qz jfvf d ifb huf ye o rmkl zq vzjw xy f oxt rq b o zml rec pnb dfb tucg u x lne qrm zx f nj e lne p yjr fxj b b"}, "output": ["ff", "hw", "uia", "qqqm", "jsf", "re", "qwui", "zfrc", "ukjo", "ksm", "xswj", "tfb", "okqz", "lzz", "smvf", "qhop", "ldv", "riqi", "kn", "panu", "hhbj", "uzg", "yx", "jyz", "ofh", "r", "yade", "hjsv", "lv", "lm", "kx", "rj", "ejvh", "dt", "inx", "w", "kjs", "jfvf", "ifb", "huf", "zq", "vzjw", "xy", "oxt", "rq", "zml", "qrm", "zx", "nj", "yjr"], "hidden": true},
+    {"input": {"s1": "nj yade ft t lv e lv qqqm rec qqqm as gm cv riqi cv e x t jbw gm nj n jbw lv lv h wxn e x h x t ff jyz qhop n ff lv inx n h t t h prgf co smvf rmkl wxn smvf e i rmkl jbw d x inx inx ff qhop wxn smvf t", "s2": "p fxj z i zpg qbbq fv m ye pecy vtl bi yx huf dku vr f u p zt p eg lc r eq re ye u i r ifb huf i lc u vtl fv fxj i qbbq l pecy fxj ejvh uzg zt uzg pecy fv m z ejvh ye b vr bi ejvh dku l eq lc hw fxj"}, "output": ["yade", "ft", "rec", "as", "riqi", "jyz", "prgf", "co", "d", "zpg", "yx", "f", "eg", "re", "ifb", "b", "hw"], "hidden": true},
+    {"input": {"s1": "a b c d e f g h i j k l m n o p q r s t u v w x y z", "s2": "z y x w v u t s r q p o n"}, "output": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"], "hidden": true}
+  ]
+}

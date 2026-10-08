@@ -1,0 +1,8 @@
+// 228. Corporate Flight Bookings (medium)
+// /show to reread the problem · /test runs visible tests · /submit when done
+
+class Solution {
+    public int[] corpFlightBookings(int[][] bookings, int n) {
+        return null;
+    }
+}

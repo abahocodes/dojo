@@ -34,9 +34,8 @@ impl Language {
         }
     }
 
-    /// Languages every question in the bank must have. The rest are
-    /// optional until the bank is ported to them.
-    pub const REQUIRED: &[Language] = &[Language::Python, Language::JavaScript];
+    /// Languages every question in the bank must have: all of them.
+    pub const REQUIRED: &[Language] = Language::ALL;
 
     /// Compiled before running (a driver is generated around the solution).
     pub fn compiled(self) -> bool {

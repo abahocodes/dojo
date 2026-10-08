@@ -1,0 +1,62 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 150,
+  "slug": "rotate-array",
+  "title": "Rotate Array",
+  "difficulty": "medium",
+  "tags": [
+    "arrays",
+    "two-pointers",
+    "math"
+  ],
+  "companies": [
+    "microsoft",
+    "amazon",
+    "bloomberg"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "rotate",
+    "params": [
+      {
+        "name": "nums",
+        "type": "int[]"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}

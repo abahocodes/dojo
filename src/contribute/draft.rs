@@ -478,6 +478,16 @@ pub fn build(draft: &Draft, root: &Path, id: u32, bank: &Bank) -> Result<Built> 
     let visible = cases.iter().filter(|c| c["hidden"] == false).count();
     let hidden = cases.len() - visible;
     let built = |mut problems: Vec<String>, validated: bool| {
+        // A language the model left out is already explained by `missing`;
+        // validation's generic "no `languages.x` entry" would repeat it.
+        problems.retain(|p| {
+            !Language::ALL.iter().any(|l| {
+                *p == format!("meta.json has no `languages.{}` entry", l.name())
+                    && missing
+                        .iter()
+                        .any(|m| m.contains(&format!("solutions/{}", l.asset_file())))
+            })
+        });
         problems.extend(missing.iter().cloned());
         let languages = statuses(draft, &problems, validated);
         Built::builder()

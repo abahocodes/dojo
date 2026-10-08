@@ -1,0 +1,58 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 257,
+  "slug": "find-original-array-from-doubled-array",
+  "title": "Find Original Array From Doubled Array",
+  "difficulty": "medium",
+  "tags": [
+    "arrays",
+    "sorting",
+    "hash-map",
+    "greedy"
+  ],
+  "companies": [
+    "google",
+    "amazon"
+  ],
+  "target_minutes": 25,
+  "signature": {
+    "function": "find_original_array",
+    "params": [
+      {
+        "name": "changed",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}

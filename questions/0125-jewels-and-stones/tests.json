@@ -1,0 +1,18 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"jewels": "xY", "stones": "xxYyyY"}, "output": 4},
+    {"input": {"jewels": "q", "stones": "QQQ"}, "output": 0},
+    {"input": {"jewels": "aeiouAEIOU", "stones": "ProgrammingInterview"}, "output": 7},
+    {"input": {"jewels": "z", "stones": "z"}, "output": 1, "hidden": true},
+    {"input": {"jewels": "abc", "stones": "ABC"}, "output": 0, "hidden": true},
+    {"input": {"jewels": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX", "stones": "ZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz"}, "output": 25, "hidden": true},
+    {"input": {"jewels": "Mm", "stones": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"}, "output": 50, "hidden": true},
+    {"input": {"jewels": "U", "stones": "ugmbJkkeGYknndqQjzmYgRNRpAqVQHhWcxyual"}, "output": 0, "hidden": true},
+    {"input": {"jewels": "HLaUGpJAMCfBIrn", "stones": "VpviSYKHXJdo"}, "output": 3, "hidden": true},
+    {"input": {"jewels": "KS", "stones": "zhswuPQgLKxJS"}, "output": 2, "hidden": true},
+    {"input": {"jewels": "nqwHRfuICxzhYDLWSJKAmVTegGtEpMFayXjdkBbrOZN", "stones": "nvX"}, "output": 2, "hidden": true},
+    {"input": {"jewels": "eCnIhTpQszKUOyWwblELHGB", "stones": "dRNoSCLpjVMNviA"}, "output": 3, "hidden": true},
+    {"input": {"jewels": "KTc", "stones": "MJPSnOWUvvMOHxRVzGHNdsHDp"}, "output": 0, "hidden": true}
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"n": 8}, "output": 3},
+    {"input": {"n": 10}, "output": 4},
+    {"input": {"n": 1}, "output": 1},
+    {"input": {"n": 2}, "output": 1},
+    {"input": {"n": 3}, "output": 2, "hidden": true},
+    {"input": {"n": 5}, "output": 2, "hidden": true},
+    {"input": {"n": 6}, "output": 3, "hidden": true},
+    {"input": {"n": 7}, "output": 3, "hidden": true},
+    {"input": {"n": 2147483647}, "output": 65535, "hidden": true},
+    {"input": {"n": 4503599627370496}, "output": 94906265, "hidden": true},
+    {"input": {"n": 4503599627370495}, "output": 94906265, "hidden": true},
+    {"input": {"n": 4503599615578245}, "output": 94906265, "hidden": true},
+    {"input": {"n": 4503599615578244}, "output": 94906264, "hidden": true},
+    {"input": {"n": 50000005000000}, "output": 10000000, "hidden": true},
+    {"input": {"n": 50000004999999}, "output": 9999999, "hidden": true},
+    {"input": {"n": 1000000000000000}, "output": 44721359, "hidden": true},
+    {"input": {"n": 43882011874134}, "output": 9368244, "hidden": true},
+    {"input": {"n": 1789332342414711}, "output": 59821941, "hidden": true},
+    {"input": {"n": 2715263206511564}, "output": 73692104, "hidden": true},
+    {"input": {"n": 1571234013828059}, "output": 56057719, "hidden": true},
+    {"input": {"n": 105794403509277}, "output": 14546091, "hidden": true},
+    {"input": {"n": 196283061899120}, "output": 19813280, "hidden": true},
+    {"input": {"n": 2948804164523067}, "output": 76795886, "hidden": true},
+    {"input": {"n": 1789060034483233}, "output": 59817388, "hidden": true},
+    {"input": {"n": 839267272297571}, "output": 40969921, "hidden": true},
+    {"input": {"n": 1499644789757426}, "output": 54765769, "hidden": true}
+  ]
+}

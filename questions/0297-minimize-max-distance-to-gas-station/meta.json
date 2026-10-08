@@ -1,0 +1,60 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 297,
+  "slug": "minimize-max-distance-to-gas-station",
+  "title": "Minimize Max Distance to Gas Station",
+  "difficulty": "hard",
+  "tags": [
+    "binary-search",
+    "arrays"
+  ],
+  "companies": [
+    "google"
+  ],
+  "target_minutes": 40,
+  "signature": {
+    "function": "minmax_gas_dist",
+    "params": [
+      {
+        "name": "stations",
+        "type": "int[]"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "float"
+  },
+  "compare": "float",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}
