@@ -1,0 +1,27 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"formula": "Mg(OH)2"}, "output": "H2MgO2"},
+    {"input": {"formula": "K4(ON(SO3)2)2"}, "output": "K4N2O14S4"},
+    {"input": {"formula": "H2O"}, "output": "H2O"},
+    {"input": {"formula": "Be32"}, "output": "Be32"},
+    {"input": {"formula": "Fe2(C(Ag3)2Uuo)3(H)Au"}, "output": "Ag18AuC3Fe2HUuo3"},
+    {"input": {"formula": "H"}, "output": "H", "hidden": true},
+    {"input": {"formula": "HHHH"}, "output": "H4", "hidden": true},
+    {"input": {"formula": "(H)"}, "output": "H", "hidden": true},
+    {"input": {"formula": "(H)2"}, "output": "H2", "hidden": true},
+    {"input": {"formula": "Uuo2Uuo"}, "output": "Uuo3", "hidden": true},
+    {"input": {"formula": "HeH"}, "output": "HHe", "hidden": true},
+    {"input": {"formula": "(((((((((((((((((((((((((((((H)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2)2He"}, "output": "H536870912He", "hidden": true},
+    {"input": {"formula": "Ca(OH)2(H2O)10Zn"}, "output": "CaH22O12Zn", "hidden": true},
+    {"input": {"formula": "NaCl(NaCl)99Cl"}, "output": "Cl101Na100", "hidden": true},
+    {"input": {"formula": "He261C4(Fe)H"}, "output": "C4FeHHe261", "hidden": true},
+    {"input": {"formula": "H3BMg(Pb396Na134(CaO6Cu357)9)Al2"}, "output": "Al2BCa9Cu3213H3MgNa134O54Pb396", "hidden": true},
+    {"input": {"formula": "F(Mg6)212Be9Ar(CuCaAg5)K6"}, "output": "Ag5ArBe9CaCuFK6Mg1272", "hidden": true},
+    {"input": {"formula": "(O3CuUuo8)(Ca392)255OHg(ZnP)Pb3HgO"}, "output": "Ca99960CuHg2O5PPb3Uuo8Zn", "hidden": true},
+    {"input": {"formula": "S4(BMg6Al)7Al9(((F7CuMg7)4)9Uuo)AuHgP929Si(((Na2))8)8Ca(((AlNSi3)175)2)U982((Zn247)9Mg((ArLi163Xyzab)Ne4Cl7))3Li8(((Fe7B8)6Uuo4))7PCl2UuoNH(UC5)((Ca6)497ArAr860)5BeXyzab(S(Ca))3"}, "output": "Al366Ar4308AuB343BeC5Ca14914Cl23Cu36F252Fe294HHgLi497Mg297N351Na128Ne12P930S7Si1051U983Uuo30Xyzab4Zn6669", "hidden": true},
+    {"input": {"formula": "Ca(Zn2)2(Be5Be5)H219Cu3(Si8)4AgHHg9((Ca2Uuo8Au207)169Pb9U)7K9Hg"}, "output": "AgAu244881Be10Ca2367Cu3H220Hg10K9Pb63Si32U7Uuo9464Zn4", "hidden": true},
+    {"input": {"formula": "((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((Ab))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))B((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((O))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))2"}, "output": "AbBO2", "hidden": true},
+    {"input": {"formula": "AuClFFHgArCuPbMgClPbNeMgClKMgCuUUuoCaNeHgNaOAgBPbONeSAgMgCaHeNePbSKAgKAlHeNNLiKZnAlPMgOAuMgLiNaUNAgHeNaZnMgLiHOLiZnKCuHgSHCHeClOAuUuoHAgSZnSPPFeSFNONaSPbNAlCaHgCAuHeKAlPbUCPSiNaMgZnAuMgMgXyzabLiFFeCAuCFCuNaAlAlUZnPFeNePbCuAgMgFArNeArBAlPBAuHgBMgBUPbKMgZnSiOUAgKArFFLiPBeAuCuMgCuCuUuoNeFBXyzabLiPNeNAgLiMgSUuoClCaBeSiPSArOHeHgCUuoCaKCaBNeBeAlCaMgAgCaFeCuUuoPbNeKNeAlClHgPbNeClNaPbXyzabAuNeCaKCuHgAlZnPFeFArKNeNClClUuoAlAgMgLiFeZnAgAuPbCuFAlUSKHgCaFeOCSiArHeArZnSHgCaCaBeArAuLiXyzabHHgXyzabXyzabKZnCuAgSUCuNFUAlCNeBHgHeCaPBeUuoMgMgKKArUuoClAuArULiPbNFeHeCuOCPbUuoAuAlHgAuArLiAuHeBeLiAuCaAuAuCuAuBeHeUHgXyzabCUAlPPbBeMgMgPbHgAlArAlCuFeAgBUuoFeHeBeXyzabUuoSPCaSiClClZnAlAuCuHLiAlKArOHgNeHFeNaSiSiAlNXyzabUuoAlXyzabFeClHCuAgCSONAr"}, "output": "Ag14Al21Ar15Au20B9Be9C11Ca15Cl13Cu18F12Fe12H7He12Hg16K17Li14Mg21N11Na8Ne16O12P13Pb16S14Si7U12Uuo13Xyzab10Zn12", "hidden": true}
+  ]
+}
