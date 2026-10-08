@@ -1,0 +1,18 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"preorder": [1, 2, 4, 5, 3, 6], "postorder": [4, 5, 2, 6, 3, 1]}, "output": [1, 2, 3, 4, 5, 6]},
+    {"input": {"preorder": [1, 2, 3], "postorder": [3, 2, 1]}, "output": [1, 2, null, 3]},
+    {"input": {"preorder": [4, 1, 3, 2], "postorder": [1, 2, 3, 4]}, "output": [4, 1, 3, null, null, 2]},
+    {"input": {"preorder": [1], "postorder": [1]}, "output": [1], "hidden": true},
+    {"input": {"preorder": [2, 1], "postorder": [1, 2]}, "output": [2, 1], "hidden": true},
+    {"input": {"preorder": [1, 2, 3, 4, 5], "postorder": [5, 4, 3, 2, 1]}, "output": [1, 2, null, 3, null, 4, null, 5], "hidden": true},
+    {"input": {"preorder": [7, 6, 3, 4, 1, 5, 2], "postorder": [3, 6, 2, 5, 1, 4, 7]}, "output": [7, 6, 4, 3, null, 1, null, null, null, 5, null, 2], "hidden": true},
+    {"input": {"preorder": [12, 2, 15, 8, 4, 5, 3, 11, 7, 10, 9, 6, 13, 1, 14], "postorder": [8, 15, 11, 3, 10, 9, 7, 5, 4, 2, 14, 1, 13, 6, 12]}, "output": [12, 2, 6, 15, 4, 13, null, 8, null, 5, null, 1, null, null, null, 3, 7, 14, null, 11, null, 10, 9], "hidden": true},
+    {"input": {"preorder": [3, 11, 12, 22, 8, 6, 13, 14, 17, 5, 9, 1, 18, 20, 7, 4, 19, 2, 10, 21, 16, 15], "postorder": [13, 17, 14, 6, 8, 9, 1, 5, 22, 18, 12, 19, 4, 2, 7, 21, 15, 16, 10, 20, 11, 3]}, "output": [3, 11, null, 12, 20, 22, 18, 7, 10, 8, 5, null, null, 4, 2, 21, 16, 6, null, 9, 1, 19, null, null, null, null, null, 15, null, 13, 14, null, null, null, null, null, null, null, null, null, null, 17], "hidden": true},
+    {"input": {"preorder": [14, 9, 17, 20, 16, 7, 8, 30, 13, 18, 10, 2, 6, 3, 1, 12, 5, 29, 27, 11, 15, 25, 23, 28, 21, 19, 4, 26, 22, 24], "postorder": [16, 8, 2, 10, 18, 13, 30, 7, 20, 5, 12, 1, 11, 27, 29, 3, 15, 6, 17, 28, 21, 23, 25, 9, 4, 24, 22, 26, 19, 14]}, "output": [14, 9, 19, 17, 25, 4, 26, 20, 6, 23, null, null, null, 22, null, 16, 7, 3, 15, 28, 21, 24, null, null, null, 8, 30, 1, 29, null, null, null, null, null, null, null, null, null, null, 13, null, 12, null, 27, null, 18, null, 5, null, 11, null, 10, null, null, null, null, null, 2], "hidden": true},
+    {"input": {"preorder": [13, 4, 3, 20, 14, 5, 29, 17, 19, 10, 6, 23, 22, 2, 15, 30, 12, 1, 24, 26, 16, 8, 18, 27, 7, 28, 21, 25, 11, 9], "postorder": [3, 5, 29, 14, 20, 4, 6, 22, 2, 23, 10, 24, 1, 12, 30, 8, 16, 18, 26, 15, 19, 11, 25, 21, 28, 7, 9, 27, 17, 13]}, "output": [13, 4, 17, 3, 20, 19, 27, null, null, 14, null, 10, 15, 7, 9, 5, 29, 6, 23, 30, 26, 28, null, null, null, null, null, null, null, null, null, 22, 2, 12, null, 16, 18, 21, null, null, null, null, null, 1, null, 8, null, null, null, 25, null, 24, null, null, null, 11], "hidden": true},
+    {"input": {"preorder": [1, 9, 25, 15, 21, 14, 12, 7, 5, 26, 2, 13, 18, 8, 17, 30, 27, 3, 29, 22, 16, 11, 19, 4, 28, 24, 10, 6, 23, 20], "postorder": [14, 12, 21, 2, 26, 5, 7, 15, 18, 13, 25, 9, 27, 30, 17, 11, 16, 10, 24, 28, 4, 23, 6, 19, 22, 20, 29, 3, 8, 1]}, "output": [1, 9, 8, 25, null, 17, 3, 15, 13, 30, null, 29, null, 21, 7, 18, null, 27, null, 22, 20, 14, 12, 5, null, null, null, null, null, 16, 19, null, null, null, null, null, null, 26, null, 11, null, 4, 6, 2, null, null, null, 28, null, 23, null, null, null, 24, null, null, null, 10], "hidden": true},
+    {"input": {"preorder": [3, 6, 30, 23, 14, 18, 15, 8, 10, 9, 4, 24, 29, 5, 17, 21, 26, 16, 27, 11, 19, 20, 2, 7, 1, 25, 12, 28, 13, 22], "postorder": [14, 18, 23, 8, 10, 15, 30, 24, 29, 4, 17, 21, 5, 9, 6, 11, 19, 27, 2, 7, 20, 16, 12, 28, 25, 22, 13, 1, 26, 3]}, "output": [3, 6, 26, 30, 9, 16, 1, 23, 15, 4, 5, 27, 20, 25, 13, 14, 18, 8, 10, 24, 29, 17, 21, 11, 19, 2, 7, 12, 28, 22], "hidden": true}
+  ]
+}
