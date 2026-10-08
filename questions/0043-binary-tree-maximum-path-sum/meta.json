@@ -1,0 +1,44 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 43,
+  "slug": "binary-tree-maximum-path-sum",
+  "title": "Binary Tree Maximum Path Sum",
+  "difficulty": "hard",
+  "tags": [
+    "trees",
+    "dfs",
+    "dynamic-programming"
+  ],
+  "companies": [
+    "meta",
+    "amazon",
+    "google",
+    "microsoft"
+  ],
+  "target_minutes": 30,
+  "signature": {
+    "function": "max_path_sum",
+    "params": [
+      {
+        "name": "root",
+        "type": "TreeNode"
+      }
+    ],
+    "returns": "int"
+  },
+  "compare": "exact",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
