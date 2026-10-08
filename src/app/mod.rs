@@ -5,6 +5,7 @@ mod complete;
 mod contribute;
 mod input;
 mod practice;
+mod setup;
 mod transcript;
 mod views;
 
@@ -123,6 +124,8 @@ pub struct App {
     pub unfinished: Vec<crate::store::OpenAttempt>,
     /// The fullscreen report, while open.
     pub report: Option<ReportView>,
+    /// First-run setup, while it runs.
+    setup: Option<setup::Setup>,
     /// Results of the last session, printed to the terminal on exit.
     last_summary: Option<Vec<Done>>,
     quit: bool,
@@ -137,9 +140,14 @@ impl App {
         let bank = Bank::embedded();
         let unfinished = store.open_attempts().unwrap_or_default();
         let mut transcript = Transcript::default();
-        transcript.push(views::welcome(&bank, &config, &unfinished));
+        transcript.push(views::welcome(
+            &bank,
+            &config,
+            paths.config_file.exists(),
+            &unfinished,
+        ));
         let (tx, rx) = channel();
-        Ok(App {
+        let mut app = App {
             bank,
             config,
             paths,
@@ -165,10 +173,13 @@ impl App {
             job_seq: 0,
             last_autosave: Instant::now(),
             report: None,
+            setup: None,
             unfinished,
             last_summary: None,
             quit: false,
-        })
+        };
+        app.maybe_start_setup();
+        Ok(app)
     }
 
     /// What Enter on an empty prompt does, and how to describe it.
@@ -182,6 +193,9 @@ impl App {
         let tip = |key: &str, text: &str| (key.to_string(), text.to_string());
         let enter = |cmd: &str, label: String| Some((cmd.to_string(), label));
 
+        if let Some(p) = self.setup_prompt() {
+            return p;
+        }
         if let Some(tips) = self.contrib_prompt() {
             return Prompt { enter: None, tips };
         }
@@ -287,7 +301,9 @@ impl App {
             session: self.session.is_some(),
             review: self.contrib_reviewing(),
         };
-        self.completions = complete::complete(&self.bank, self.input.text(), ctx);
+        self.completions = self
+            .setup_completions(self.input.text())
+            .unwrap_or_else(|| complete::complete(&self.bank, self.input.text(), ctx));
         self.selected = 0;
         self.dismissed = false;
     }
@@ -427,6 +443,11 @@ impl App {
                 self.input.set("");
                 self.transcript.push(views::info("key entry cancelled"));
             }
+            KeyCode::Esc if self.setup.is_some() && !self.popup_open() => {
+                self.input.set("");
+                self.transcript.push(views::info("keeping the defaults"));
+                self.finish_setup();
+            }
             KeyCode::Esc => {
                 if self.popup_open() {
                     self.dismissed = true;
@@ -467,6 +488,10 @@ impl App {
         let line = self.input.take();
         self.completions.clear();
         let line = line.trim();
+        if line.is_empty() && self.setup.is_some() {
+            self.setup_text("");
+            return;
+        }
         if line.is_empty() {
             // Enter on an empty prompt does the obvious next thing.
             if let Some((command, _)) = self.default_action() {
@@ -601,7 +626,7 @@ impl App {
 
     pub fn execute(&mut self, line: &str) {
         let Some(rest) = line.strip_prefix('/') else {
-            if self.contrib_text(line) {
+            if self.setup_text(line) || self.contrib_text(line) {
                 return;
             }
             self.transcript.push(views::info(

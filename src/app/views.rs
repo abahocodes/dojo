@@ -14,7 +14,7 @@ use crate::ui::markdown;
 use crate::ui::text::{Para, fit};
 use crate::ui::theme::theme;
 
-fn entry(paras: Vec<Para>) -> Entry {
+pub(super) fn entry(paras: Vec<Para>) -> Entry {
     let copy = markdown::plain(&paras);
     Entry::builder()
         .paras(paras)
@@ -68,7 +68,12 @@ fn status(icon: &'static str, msg: String, style: ratatui::style::Style) -> Entr
     entry(paras)
 }
 
-pub fn welcome(bank: &Bank, config: &Config, unfinished: &[OpenAttempt]) -> Entry {
+pub fn welcome(
+    bank: &Bank,
+    config: &Config,
+    config_exists: bool,
+    unfinished: &[OpenAttempt],
+) -> Entry {
     let t = theme();
     let (editor, source) = config.editor();
     let mut paras = vec![
@@ -132,15 +137,18 @@ pub fn welcome(bank: &Bank, config: &Config, unfinished: &[OpenAttempt]) -> Entr
             );
         }
     }
-    paras.push(Para::blank());
-    paras.push(Para::new(vec![
-        Span::styled("editor ", t.dim()),
-        Span::raw(editor),
-        Span::styled(format!(" ({source})"), t.dim()),
-        Span::styled("  ·  language ", t.dim()),
-        Span::raw(config.language.clone()),
-        Span::styled("  ·  change with /editor and /lang", t.dim()),
-    ]));
+    // Before first-run setup there's nothing chosen to show yet.
+    if config_exists {
+        paras.push(Para::blank());
+        paras.push(Para::new(vec![
+            Span::styled("editor ", t.dim()),
+            Span::raw(editor),
+            Span::styled(format!(" ({source})"), t.dim()),
+            Span::styled("  ·  language ", t.dim()),
+            Span::raw(config.language.clone()),
+            Span::styled("  ·  change with /editor and /lang", t.dim()),
+        ]));
+    }
     Entry::builder()
         .paras(paras)
         .copy(String::new())
