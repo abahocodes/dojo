@@ -1,0 +1,27 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"n": 4, "a": 2, "b": 3, "c": 4}, "output": 6},
+    {"input": {"n": 5, "a": 3, "b": 3, "c": 7}, "output": 12},
+    {"input": {"n": 10, "a": 4, "b": 6, "c": 9}, "output": 27},
+    {"input": {"n": 1, "a": 1, "b": 1, "c": 1}, "output": 1, "hidden": true},
+    {"input": {"n": 1, "a": 1000000000, "b": 1000000000, "c": 1000000000}, "output": 1000000000, "hidden": true},
+    {"input": {"n": 2, "a": 1000000000, "b": 1000000000, "c": 999999999}, "output": 1000000000, "hidden": true},
+    {"input": {"n": 1000000000, "a": 2, "b": 217983653, "c": 336916467}, "output": 1999999984, "hidden": true},
+    {"input": {"n": 1000000000, "a": 1, "b": 1, "c": 1}, "output": 1000000000, "hidden": true},
+    {"input": {"n": 1000000000, "a": 2, "b": 3, "c": 5}, "output": 1363636364, "hidden": true},
+    {"input": {"n": 999999999, "a": 2, "b": 2, "c": 3}, "output": 1499999998, "hidden": true},
+    {"input": {"n": 5, "a": 999999937, "b": 999999929, "c": 999999893}, "output": 1999999858, "hidden": true},
+    {"input": {"n": 25, "a": 6, "b": 10, "c": 15}, "output": 96, "hidden": true},
+    {"input": {"n": 41, "a": 43, "b": 7, "c": 28}, "output": 252, "hidden": true},
+    {"input": {"n": 1786, "a": 22, "b": 24, "c": 12}, "output": 14736, "hidden": true},
+    {"input": {"n": 1791, "a": 44, "b": 47, "c": 17}, "output": 17952, "hidden": true},
+    {"input": {"n": 644, "a": 49, "b": 42, "c": 41}, "output": 10038, "hidden": true},
+    {"input": {"n": 1218, "a": 30, "b": 5, "c": 6}, "output": 3654, "hidden": true},
+    {"input": {"n": 63, "a": 13, "b": 8, "c": 14}, "output": 260, "hidden": true},
+    {"input": {"n": 407, "a": 33, "b": 32, "c": 28}, "output": 4480, "hidden": true},
+    {"input": {"n": 1014, "a": 11, "b": 42, "c": 13}, "output": 5616, "hidden": true},
+    {"input": {"n": 1911, "a": 21, "b": 48, "c": 29}, "output": 19572, "hidden": true},
+    {"input": {"n": 1403, "a": 36, "b": 5, "c": 41}, "output": 5820, "hidden": true}
+  ]
+}
