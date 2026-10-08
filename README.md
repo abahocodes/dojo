@@ -11,6 +11,7 @@ mastered, then tells you what to practice next.
 [![CI](https://github.com/abahocodes/dojo/actions/workflows/ci.yml/badge.svg)](https://github.com/abahocodes/dojo/actions/workflows/ci.yml)
 ![macOS and Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-informational)
 ![Python and JavaScript](https://img.shields.io/badge/solve%20in-Python%20%7C%20JavaScript-blueviolet)
+[![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Sponsor](https://img.shields.io/badge/sponsor-%E2%99%A5-ea4aaa)](https://github.com/sponsors/abahocodes)
 
 <img src="docs/images/solve.png" alt="Solving House Robber in dojo: the problem statement, then failing tests showing expected and actual values, with the timer at the bottom" width="820">
@@ -202,3 +203,7 @@ builds the binaries, the install script and the Homebrew formula.
 
 dojo is free and open source. If it helps you land the job, consider
 [sponsoring its development](https://github.com/sponsors/abahocodes) (or run `/donate`).
+
+## License
+
+[MIT](LICENSE)
