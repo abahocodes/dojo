@@ -1,0 +1,50 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 91,
+  "slug": "interleaving-string",
+  "title": "Interleaving String",
+  "difficulty": "medium",
+  "tags": [
+    "dynamic-programming",
+    "strings"
+  ],
+  "companies": [
+    "amazon",
+    "google",
+    "microsoft",
+    "apple"
+  ],
+  "target_minutes": 30,
+  "signature": {
+    "function": "is_interleave",
+    "params": [
+      {
+        "name": "s1",
+        "type": "string"
+      },
+      {
+        "name": "s2",
+        "type": "string"
+      },
+      {
+        "name": "s3",
+        "type": "string"
+      }
+    ],
+    "returns": "bool"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

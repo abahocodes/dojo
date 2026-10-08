@@ -1,0 +1,46 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 87,
+  "slug": "longest-increasing-path-in-a-matrix",
+  "title": "Longest Increasing Path in a Matrix",
+  "difficulty": "hard",
+  "tags": [
+    "dynamic-programming",
+    "matrix",
+    "dfs",
+    "topological-sort",
+    "memoization"
+  ],
+  "companies": [
+    "google",
+    "meta",
+    "amazon",
+    "uber",
+    "bytedance"
+  ],
+  "target_minutes": 35,
+  "signature": {
+    "function": "longest_increasing_path",
+    "params": [
+      {
+        "name": "matrix",
+        "type": "int[][]"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

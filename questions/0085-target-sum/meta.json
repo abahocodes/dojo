@@ -1,0 +1,47 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 85,
+  "slug": "target-sum",
+  "title": "Target Sum",
+  "difficulty": "medium",
+  "tags": [
+    "dynamic-programming",
+    "knapsack",
+    "backtracking"
+  ],
+  "companies": [
+    "meta",
+    "amazon",
+    "google",
+    "bloomberg"
+  ],
+  "target_minutes": 25,
+  "signature": {
+    "function": "find_target_sum_ways",
+    "params": [
+      {
+        "name": "nums",
+        "type": "int[]"
+      },
+      {
+        "name": "target",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
