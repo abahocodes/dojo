@@ -562,6 +562,9 @@ impl App {
     /// `/past [question] [n]`: past attempts and their code. Without a
     /// question, the one being worked on.
     fn cmd_past(&self, args: &[&str]) -> Option<Entry> {
+        if let Some(e) = id_and_count_usage("past", args) {
+            return Some(e);
+        }
         let (q_args, n) = match args {
             [.., last] if args.len() > 1 && last.parse::<usize>().is_ok() => {
                 (&args[..args.len() - 1], last.parse::<usize>().ok())
@@ -576,7 +579,7 @@ impl App {
                 .and_then(|id| self.bank.get(*id))
             {
                 Some(q) => q,
-                None => return Some(views::error("which question?  ·  /past 11")),
+                None => return Some(views::error("which question?  ·  /past <id>")),
             }
         } else {
             match self.resolve(q_args) {
@@ -690,9 +693,11 @@ impl App {
         let name = parts.next().unwrap_or("");
         let args: Vec<&str> = parts.collect();
         let Some(spec) = commands::find(name) else {
-            self.transcript.push(views::error(format!(
-                "unknown command /{name}  ·  /help lists them"
-            )));
+            self.transcript
+                .push(views::error(match commands::closest(name) {
+                    Some(meant) => format!("unknown command /{name}  ·  did you mean /{meant}?"),
+                    None => format!("unknown command /{name}  ·  /help lists them"),
+                }));
             return;
         };
         if let Some(milestone) = spec.soon {
@@ -700,6 +705,18 @@ impl App {
                 "/{} isn't built yet — it lands in {milestone}. See PLAN.md.",
                 spec.name
             )));
+            return;
+        }
+        // Words a command doesn't take are an error, not ignored: `/quit
+        // now` shouldn't quit, `/lang python java` shouldn't pick one.
+        if let Some(max) = commands::max_args(spec)
+            && args.len() > max
+        {
+            self.transcript.push(views::error(if max == 0 {
+                format!("/{} takes no arguments", spec.name)
+            } else {
+                format!("usage: /{} {}", spec.name, spec.args)
+            }));
             return;
         }
         let out = match spec.name {
@@ -752,6 +769,13 @@ impl App {
                 .get(id)
                 .ok_or_else(|| views::error(format!("no question #{id}  ·  /list to browse")));
         }
+        // Numbers are ids, never search words: `/show 1 2` or `/show -1`
+        // shouldn't open whichever title happens to contain them.
+        if args.iter().all(|a| looks_numeric(a)) {
+            return Err(views::error(format!(
+                "`{query}` isn't a question id  ·  give one id, a slug or search words"
+            )));
+        }
         if let Some(q) = self.bank.by_slug(&query) {
             return Ok(q);
         }
@@ -772,6 +796,14 @@ impl App {
     }
 
     fn cmd_list(&self, args: &[&str]) -> Option<Entry> {
+        if let Some(flag) = args
+            .iter()
+            .find(|a| a.starts_with('-') && !looks_numeric(a))
+        {
+            return Some(views::error(format!(
+                "/list has no `{flag}` option  ·  usage: /list [query | tag | company]"
+            )));
+        }
         let query = args.join(" ");
         Some(views::question_list(&search(&self.bank, &query), &query))
     }
@@ -791,7 +823,10 @@ impl App {
     }
 
     fn cmd_hint(&self, args: &[&str]) -> Option<Entry> {
-        // `/hint <id> [n]`; the session form (`/hint` alone) arrives in M2.
+        // `/hint <id> [n]`; `/hint` alone in a session is `cmd_hint_session`.
+        if let Some(e) = id_and_count_usage("hint", args) {
+            return Some(e);
+        }
         let (q_args, n) = match args {
             [.., last] if args.len() > 1 && last.parse::<usize>().is_ok() => {
                 (&args[..args.len() - 1], last.parse::<usize>().unwrap())
@@ -932,6 +967,29 @@ impl App {
             Err(e) => views::error(format!("copy failed: {e}")),
         })
     }
+}
+
+/// `/hint` and `/past` take `[id] [n]`, or search words then `n`. All
+/// numbers but not one id and one positive count is a usage error, not a
+/// search (`/hint 1 2 3` used to open #322 "132 Pattern").
+fn id_and_count_usage(command: &str, args: &[&str]) -> Option<Entry> {
+    let ok = match args {
+        _ if !args.iter().all(|a| looks_numeric(a)) => true,
+        [] => true,
+        [id] => id.parse::<u32>().is_ok(),
+        [id, n] => id.parse::<u32>().is_ok() && n.parse::<usize>().is_ok_and(|n| n > 0),
+        _ => false,
+    };
+    (!ok).then(|| views::error(format!("usage: /{command} [id] [n]")))
+}
+
+/// A number-like word (`12`, `-1`, `1.5`): meant as an id or count, so
+/// never used as search words.
+pub(super) fn looks_numeric(word: &str) -> bool {
+    word.chars().any(|c| c.is_ascii_digit())
+        && word
+            .chars()
+            .all(|c| c.is_ascii_digit() || matches!(c, '-' | '+' | '.'))
 }
 
 /// Questions that ended failed or skipped, once each, minus those already
@@ -1100,5 +1158,32 @@ mod tests {
     ) {
         let session: Vec<Done> = session.iter().map(|(id, o)| done(*id, *o)).collect();
         assert_eq!(missed(&session, explained), expected);
+    }
+
+    #[rstest]
+    #[case::id("12", true)]
+    #[case::negative("-1", true)]
+    #[case::decimal("1.5", true)]
+    #[case::word("two", false)]
+    #[case::mixed("3sum", false)]
+    #[case::flag("-n", false)]
+    #[case::nan("nan", false)]
+    fn knows_number_like_words(#[case] word: &str, #[case] numeric: bool) {
+        assert_eq!(looks_numeric(word), numeric);
+    }
+
+    #[rstest]
+    #[case::nothing(&[], true)]
+    #[case::id(&["1"], true)]
+    #[case::id_and_count(&["1", "2"], true)]
+    #[case::search_words(&["two", "sum"], true)]
+    #[case::search_then_count(&["two", "sum", "2"], true)]
+    #[case::three_numbers(&["1", "2", "3"], false)]
+    #[case::negative_id(&["-1"], false)]
+    #[case::negative_count(&["1", "-1"], false)]
+    #[case::zero_count(&["1", "0"], false)]
+    #[case::decimal(&["1.5"], false)]
+    fn checks_id_and_count(#[case] args: &[&str], #[case] ok: bool) {
+        assert_eq!(id_and_count_usage("hint", args).is_none(), ok);
     }
 }

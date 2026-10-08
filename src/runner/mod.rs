@@ -119,6 +119,20 @@ pub fn toolchain(lang: Language) -> Result<String> {
         .args(tool(lang).version_args)
         .output()
         .map_err(|e| anyhow!("{program} not found ({e}); {}", install_hint(lang)))?;
+    // A stub that can't run (macOS's /usr/bin/java with no JDK: "Unable to
+    // locate a Java Runtime") is as good as missing.
+    if !out.status.success() {
+        let why = String::from_utf8_lossy(&out.stderr);
+        let why = why
+            .lines()
+            .find(|l| !l.trim().is_empty())
+            .unwrap_or("it failed");
+        bail!(
+            "{program} doesn't run ({}); {}",
+            why.trim(),
+            install_hint(lang)
+        );
+    }
     // Python 2 and javac print their version to stderr.
     let stdout = String::from_utf8_lossy(&out.stdout);
     let stderr = String::from_utf8_lossy(&out.stderr);
