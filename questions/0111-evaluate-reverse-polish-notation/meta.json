@@ -1,0 +1,44 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 111,
+  "slug": "evaluate-reverse-polish-notation",
+  "title": "Evaluate Reverse Polish Notation",
+  "difficulty": "medium",
+  "tags": [
+    "stack",
+    "arrays",
+    "math"
+  ],
+  "companies": [
+    "amazon",
+    "linkedin",
+    "google",
+    "meta",
+    "microsoft"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "eval_rpn",
+    "params": [
+      {
+        "name": "tokens",
+        "type": "string[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
