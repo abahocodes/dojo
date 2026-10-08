@@ -152,12 +152,7 @@ fn arguments(bank: &Bank, spec: &Spec, line: &str, args: &str) -> Vec<Item> {
             questions(bank, token, |id| (replace(&id.to_string(), true), true))
         }
         "solve" | "list" | "report" => {
-            let mut values = bank.labels();
-            values.extend(["easy", "medium", "hard"].map(String::from));
-            if spec.name == "solve" && position == 0 {
-                values.insert(0, "need".into());
-                values.insert(1, "random".into());
-            }
+            let values = choices(bank, spec.name, position);
             rank(token, &values, |v| v.clone())
                 .into_iter()
                 .filter(|v| v.as_str() != token)
@@ -172,22 +167,62 @@ fn arguments(bank: &Bank, spec: &Spec, line: &str, args: &str) -> Vec<Item> {
                 })
                 .collect()
         }
-        "editor" if position == 0 => {
-            simple(rank(token, EDITOR_PRESETS, |s| s.to_string()), &replace)
-        }
-        "lang" if position == 0 => {
-            let langs: Vec<&str> = Language::ALL.iter().map(|l| l.name()).collect();
-            simple(rank(token, &langs, |s| s.to_string()), &replace)
-        }
-        "help" if position == 0 => {
-            let names: Vec<&str> = COMMANDS.iter().map(|c| c.name).collect();
-            simple(rank(token, &names, |s| s.to_string()), &replace)
+        "editor" | "lang" | "help" if position == 0 => {
+            let values = choices(bank, spec.name, position);
+            simple(rank(token, &values, |s| s.clone()), &replace)
         }
         _ => vec![],
     }
 }
 
-fn simple(values: Vec<&&str>, replace: &dyn Fn(&str, bool) -> String) -> Vec<Item> {
+/// The named values an argument can take (not question ids).
+fn choices(bank: &Bank, command: &str, position: usize) -> Vec<String> {
+    match command {
+        "solve" | "list" | "report" => {
+            let mut values = bank.labels();
+            values.extend(["easy", "medium", "hard"].map(String::from));
+            if command == "solve" && position == 0 {
+                values.insert(0, "need".into());
+                values.insert(1, "random".into());
+            }
+            values
+        }
+        "editor" if position == 0 => EDITOR_PRESETS.iter().map(|s| s.to_string()).collect(),
+        "lang" if position == 0 => Language::ALL.iter().map(|l| l.name().to_string()).collect(),
+        "help" if position == 0 => COMMANDS.iter().map(|c| c.name.to_string()).collect(),
+        _ => vec![],
+    }
+}
+
+/// Whether Enter should run the line as typed rather than take a
+/// suggestion: the argument being typed is already a complete value (a
+/// known name or question id), or the line ends with a space after one.
+/// `/solve need` means `need`, not a fuzzy match like `indeed`.
+pub fn finished(bank: &Bank, line: &str, ctx: Context) -> bool {
+    let Some((name, args)) = line.strip_prefix('/').and_then(|r| r.split_once(' ')) else {
+        return false;
+    };
+    let Some(spec) = find(name) else {
+        return false;
+    };
+    if !takes_args(spec, ctx) {
+        return false;
+    }
+    let (before, token) = args.rsplit_once(' ').unwrap_or(("", args));
+    if token.is_empty() {
+        return !before.trim().is_empty();
+    }
+    let position = args.split(' ').count() - 1;
+    let id = |t: &str| t.parse::<u32>().is_ok_and(|id| bank.get(id).is_some());
+    match spec.name {
+        "show" | "past" | "hint" | "solution" | "solve" if position == 0 && id(token) => true,
+        _ => choices(bank, spec.name, position)
+            .iter()
+            .any(|v| v == token),
+    }
+}
+
+fn simple(values: Vec<&String>, replace: &dyn Fn(&str, bool) -> String) -> Vec<Item> {
     values
         .into_iter()
         .take(MAX_ITEMS)
@@ -355,5 +390,26 @@ mod tests {
             "{:?}",
             labels(line, IDLE)
         );
+    }
+
+    /// Enter runs a finished line as typed instead of taking the top
+    /// suggestion (`/solve need` used to become `/solve indeed`).
+    #[rstest]
+    #[case::exact_keyword("/solve need", true)]
+    #[case::exact_keyword_then_space("/solve need ", true)]
+    #[case::exact_label("/list graphs", true)]
+    #[case::second_label("/report graphs hard", true)]
+    #[case::question_id("/show 42", true)]
+    #[case::solve_id("/solve 42", true)]
+    #[case::language("/lang go", true)]
+    #[case::editor("/editor nvim", true)]
+    #[case::partial_keyword("/solve nee", false)]
+    #[case::partial_language("/lang ja", false)]
+    #[case::no_argument_yet("/solve ", false)]
+    #[case::unknown_id("/show 99999", false)]
+    #[case::command_name("/sol", false)]
+    #[case::plain_text("hello", false)]
+    fn knows_when_a_line_is_finished(#[case] line: &str, #[case] finished: bool) {
+        assert_eq!(super::finished(&Bank::embedded(), line, IDLE), finished);
     }
 }

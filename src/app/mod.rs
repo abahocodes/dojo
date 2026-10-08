@@ -94,6 +94,9 @@ pub struct App {
     pub input: input::Input,
     pub completions: Vec<Item>,
     pub selected: usize,
+    /// The user moved through the suggestions, so Enter takes the selected
+    /// one even when the line already reads as finished.
+    chose: bool,
     /// Esc hides suggestions until the input changes.
     dismissed: bool,
     pub notice: Option<(String, Instant)>,
@@ -167,6 +170,7 @@ impl App {
             input: input::Input::with_history(history),
             completions: vec![],
             selected: 0,
+            chose: false,
             dismissed: false,
             notice: None,
             quit_armed: None,
@@ -331,16 +335,21 @@ impl App {
         self.notice = Some((msg.into(), Instant::now()));
     }
 
-    fn refresh_completions(&mut self) {
-        let ctx = complete::Context {
+    fn completion_context(&self) -> complete::Context {
+        complete::Context {
             attempt: self.session.as_ref().is_some_and(|s| s.attempt.is_some()),
             session: self.session.is_some(),
             review: self.contrib_reviewing(),
-        };
+        }
+    }
+
+    fn refresh_completions(&mut self) {
+        let ctx = self.completion_context();
         self.completions = self
             .setup_completions(self.input.text())
             .unwrap_or_else(|| complete::complete(&self.bank, self.input.text(), ctx));
         self.selected = 0;
+        self.chose = false;
         self.dismissed = false;
     }
 
@@ -450,10 +459,12 @@ impl App {
             KeyCode::Up if self.popup_open() => {
                 let n = self.completions.len().min(complete::MAX_ITEMS);
                 self.selected = (self.selected + n - 1) % n;
+                self.chose = true;
             }
             KeyCode::Down if self.popup_open() => {
                 let n = self.completions.len().min(complete::MAX_ITEMS);
                 self.selected = (self.selected + 1) % n;
+                self.chose = true;
             }
             KeyCode::Up => {
                 self.input.history_prev();
@@ -500,7 +511,10 @@ impl App {
     }
 
     fn on_enter(&mut self) {
-        if self.popup_open() {
+        // A finished line runs as typed; the suggestions are only for Tab
+        // or an explicit pick with the arrow keys.
+        let finished = complete::finished(&self.bank, self.input.text(), self.completion_context());
+        if self.popup_open() && (self.chose || !finished) {
             let typed = self.input.text().trim_end().to_string();
             let item = &self.completions[self.selected];
             // Accept a suggestion that changes the line; submit if it's final.
