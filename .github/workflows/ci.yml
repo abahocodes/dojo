@@ -1,5 +1,6 @@
-# CI for dojo itself: the full suite. Changes that only touch questions/
-# are checked by question.yml instead.
+# CI for dojo itself: format, lint and dojo's tests, including the runner
+# for every language. Questions are not re-run here: each one is validated
+# once, in its own PR, by question.yml, so this stays fast as the bank grows.
 name: ci
 
 on:
@@ -43,9 +44,7 @@ jobs:
       - name: Lint
         run: cargo clippy --all-targets -- -D warnings
 
-      # Includes one test per question folder (validate::asset_tests::asset_*).
+      # The runner tests run every language (runner::language_tests); the
+      # per-question tests stay off (feature `question-tests`).
       - name: Test
         run: cargo test
-
-      - name: Validate questions
-        run: cargo run --quiet -- validate

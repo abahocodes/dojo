@@ -3,6 +3,13 @@ name = "dojo"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+# Also run every question in the bank as its own test (each question's
+# reference solutions and boilerplate in every language). Off by default:
+# questions are validated once, in their own PR, by question.yml; dojo's CI
+# tests the runner per language instead. `cargo test --features question-tests`.
+question-tests = []
+
 [dependencies]
 anyhow = "1.0.104"
 bon = "3.10.2"

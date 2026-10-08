@@ -729,3 +729,251 @@ mod tests {
         assert_eq!(matches(mode, &expected, &got), same);
     }
 }
+
+/// The runner works for every language: values of every type make it into
+/// solutions and back out, right answers pass, wrong ones fail, and hidden
+/// cases run only on submit. Built on small fixture questions (not the
+/// bank), so this suite grows with languages, not with questions.
+#[cfg(test)]
+mod language_tests {
+    use std::collections::BTreeMap;
+
+    use rstest::rstest;
+    use serde_json::{Value, json};
+
+    use super::*;
+
+    struct Fixture {
+        question: Question,
+        python: &'static str,
+        javascript: &'static str,
+    }
+
+    impl Fixture {
+        fn code(&self, lang: Language) -> &'static str {
+            match lang {
+                Language::Python => self.python,
+                Language::JavaScript => self.javascript,
+            }
+        }
+    }
+
+    fn question(
+        function: &str,
+        params: Value,
+        returns: &str,
+        compare: &str,
+        cases: Value,
+    ) -> Question {
+        let meta = json!({
+            "id": 9000, "slug": "runner-fixture", "title": "Runner fixture",
+            "difficulty": "easy", "tags": ["fixture"], "target_minutes": 1,
+            "signature": { "function": function, "params": params, "returns": returns },
+            "compare": compare,
+            "statement": "statement.md", "hints": "hints.md",
+            "explanation": "explanation.md", "tests": "tests.json",
+            "languages": {
+                "python": { "boilerplate": "b.py", "solution": "s.py" },
+                "javascript": { "boilerplate": "b.js", "solution": "s.js" }
+            }
+        });
+        Question::builder()
+            .dir("9000-runner-fixture".into())
+            .meta(serde_json::from_value(meta).unwrap())
+            .statement(String::new())
+            .hints(vec![])
+            .explanation(String::new())
+            .cases(serde_json::from_value(cases).unwrap())
+            .boilerplate(BTreeMap::new())
+            .solutions(BTreeMap::new())
+            .unreferenced(vec![])
+            .build()
+    }
+
+    fn fixture(name: &str) -> Fixture {
+        match name {
+            // int[] and int in, int[] out
+            "ints" => Fixture {
+                question: question(
+                    "scale",
+                    json!([{ "name": "values", "type": "int[]" }, { "name": "factor", "type": "int" }]),
+                    "int[]",
+                    "exact",
+                    json!([
+                        { "input": { "values": [1, 2, 3], "factor": 2 }, "output": [2, 4, 6] },
+                        { "input": { "values": [], "factor": 5 }, "output": [] },
+                        { "input": { "values": [-1, 0, 7], "factor": -3 }, "output": [3, 0, -21], "hidden": true }
+                    ]),
+                ),
+                python: "def scale(values, factor):\n    return [v * factor for v in values]\n",
+                javascript: "function scale(values, factor) { return values.map((v) => v * factor); }\n",
+            },
+            // nested lists
+            "nested" => Fixture {
+                question: question(
+                    "transpose",
+                    json!([{ "name": "grid", "type": "int[][]" }]),
+                    "int[][]",
+                    "exact",
+                    json!([
+                        { "input": { "grid": [[1, 2], [3, 4]] }, "output": [[1, 3], [2, 4]] },
+                        { "input": { "grid": [[1, 2, 3]] }, "output": [[1], [2], [3]] },
+                        { "input": { "grid": [] }, "output": [], "hidden": true }
+                    ]),
+                ),
+                python: "def transpose(grid):\n    return [list(r) for r in zip(*grid)]\n",
+                javascript: "function transpose(grid) {\n  return grid.length ? grid[0].map((_, c) => grid.map((r) => r[c])) : [];\n}\n",
+            },
+            "bool" => Fixture {
+                question: question(
+                    "negate",
+                    json!([{ "name": "flag", "type": "bool" }]),
+                    "bool",
+                    "exact",
+                    json!([
+                        { "input": { "flag": true }, "output": false },
+                        { "input": { "flag": false }, "output": true }
+                    ]),
+                ),
+                python: "def negate(flag):\n    return not flag\n",
+                javascript: "function negate(flag) { return !flag; }\n",
+            },
+            "float" => Fixture {
+                question: question(
+                    "halve",
+                    json!([{ "name": "x", "type": "float" }]),
+                    "float",
+                    "float",
+                    json!([
+                        { "input": { "x": 1 }, "output": 0.5 },
+                        { "input": { "x": 0.3 }, "output": 0.15 },
+                        { "input": { "x": -7.5 }, "output": -3.75, "hidden": true }
+                    ]),
+                ),
+                python: "def halve(x):\n    return x / 2\n",
+                javascript: "function halve(x) { return x / 2; }\n",
+            },
+            "strings" => Fixture {
+                question: question(
+                    "lengths",
+                    json!([{ "name": "words", "type": "string[]" }]),
+                    "int[]",
+                    "exact",
+                    json!([
+                        { "input": { "words": ["a", "bb", ""] }, "output": [1, 2, 0] },
+                        { "input": { "words": [] }, "output": [] },
+                        { "input": { "words": ["道場", "dojo"] }, "output": [2, 4], "hidden": true }
+                    ]),
+                ),
+                python: "def lengths(words):\n    return [len(w) for w in words]\n",
+                javascript: "function lengths(words) { return words.map((w) => w.length); }\n",
+            },
+            "list_node" => Fixture {
+                question: question(
+                    "reverse",
+                    json!([{ "name": "head", "type": "ListNode" }]),
+                    "ListNode",
+                    "exact",
+                    json!([
+                        { "input": { "head": [1, 2, 3] }, "output": [3, 2, 1] },
+                        { "input": { "head": [] }, "output": [] },
+                        { "input": { "head": [7] }, "output": [7], "hidden": true }
+                    ]),
+                ),
+                python: "def reverse(head):\n    prev = None\n    while head:\n        head.next, prev, head = prev, head, head.next\n    return prev\n",
+                javascript: "function reverse(head) {\n  let prev = null;\n  while (head) { const next = head.next; head.next = prev; prev = head; head = next; }\n  return prev;\n}\n",
+            },
+            "tree_node" => Fixture {
+                question: question(
+                    "mirror",
+                    json!([{ "name": "root", "type": "TreeNode" }]),
+                    "TreeNode",
+                    "exact",
+                    json!([
+                        { "input": { "root": [1, 2, 3] }, "output": [1, 3, 2] },
+                        { "input": { "root": [1, null, 2] }, "output": [1, 2] },
+                        { "input": { "root": [] }, "output": [] },
+                        { "input": { "root": [4, 2, 7, 1, 3, 6, 9] }, "output": [4, 7, 2, 9, 6, 3, 1], "hidden": true }
+                    ]),
+                ),
+                python: "def mirror(root):\n    if root:\n        root.left, root.right = mirror(root.right), mirror(root.left)\n    return root\n",
+                javascript: "function mirror(root) {\n  if (root) { [root.left, root.right] = [mirror(root.right), mirror(root.left)]; }\n  return root;\n}\n",
+            },
+            other => panic!("no fixture {other}"),
+        }
+    }
+
+    fn run_fixture(f: &Fixture, lang: Language, code: &str, which: Which) -> RunReport {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join(lang.solution_file());
+        std::fs::write(&file, code).unwrap();
+        run()
+            .question(&f.question)
+            .lang(lang)
+            .solution(&file)
+            .which(which)
+            .call()
+            .unwrap()
+    }
+
+    /// Every type round-trips and correct solutions pass every case.
+    #[rstest]
+    fn correct_solutions_pass(
+        #[values(Language::Python, Language::JavaScript)] lang: Language,
+        #[values("ints", "nested", "bool", "float", "strings", "list_node", "tree_node")]
+        name: &str,
+    ) {
+        let f = fixture(name);
+        let report = run_fixture(&f, lang, f.code(lang), Which::All);
+        assert!(report.fatal.is_none(), "{:?}", report.fatal);
+        let failed: Vec<_> = report
+            .cases
+            .iter()
+            .filter(|c| c.status != Status::Pass)
+            .map(|c| (c.index, c.status, c.got.clone(), c.error.clone()))
+            .collect();
+        assert!(failed.is_empty(), "{lang} {name}: {failed:?}");
+        assert_eq!(report.total(), f.question.cases.len());
+    }
+
+    /// Wrong answers fail and report what the solution returned, converted
+    /// back from the language's own types.
+    #[rstest]
+    #[case::python(Language::Python, "def reverse(head):\n    return head\n")]
+    #[case::javascript(Language::JavaScript, "function reverse(head) { return head; }\n")]
+    fn wrong_answers_fail_with_what_they_returned(#[case] lang: Language, #[case] code: &str) {
+        let f = fixture("list_node");
+        let report = run_fixture(&f, lang, code, Which::Visible);
+        assert_eq!(report.cases[0].status, Status::Fail);
+        assert_eq!(report.cases[0].got, Some(json!([1, 2, 3])));
+        assert_eq!(report.cases[1].status, Status::Pass); // [] reversed is []
+    }
+
+    /// `/test` runs visible cases; `/submit` adds the hidden ones.
+    #[rstest]
+    fn hidden_cases_run_only_on_submit(
+        #[values(Language::Python, Language::JavaScript)] lang: Language,
+    ) {
+        let f = fixture("tree_node");
+        let visible = run_fixture(&f, lang, f.code(lang), Which::Visible);
+        let all = run_fixture(&f, lang, f.code(lang), Which::All);
+        assert_eq!(visible.total(), 3);
+        assert_eq!(all.total(), 4);
+        assert!(all.cases.iter().any(|c| c.hidden));
+    }
+
+    /// A missing function is reported, not a crash.
+    #[rstest]
+    #[case::python(Language::Python, "def something_else():\n    pass\n")]
+    #[case::javascript(Language::JavaScript, "function somethingElse() {}\n")]
+    fn missing_function_is_reported(#[case] lang: Language, #[case] code: &str) {
+        let f = fixture("bool");
+        let report = run_fixture(&f, lang, code, Which::Visible);
+        assert!(
+            report
+                .fatal
+                .unwrap_or_default()
+                .contains("`negate` not found")
+        );
+    }
+}

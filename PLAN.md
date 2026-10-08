@@ -136,8 +136,11 @@ edited by hand), and validates the renumbered folder again inside the repo
 checkout against the current bank before committing.
 
 Two separate workflows:
-- `ci.yml`, for dojo itself (any change outside `questions/`): fmt, clippy,
-  all tests (one per question) and `dojo validate`, on Linux and macOS.
+- `ci.yml`, for dojo itself (any change outside `questions/`): fmt, clippy
+  and dojo's tests on Linux and macOS. It does not re-run the bank: the
+  runner is tested per language on small fixture questions
+  (`runner::language_tests`), so CI grows with languages, not questions.
+  The per-question tests exist behind `--features question-tests`.
 - `question.yml`, for contributed questions (PRs touching `questions/`):
   builds dojo and runs `dojo validate --question <folder>` on only the
   folders the PR adds or changes, plus the id/slug uniqueness check.
