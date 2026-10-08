@@ -1,0 +1,69 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 443,
+  "slug": "closest-binary-search-tree-value-ii",
+  "title": "Closest Binary Search Tree Value II",
+  "difficulty": "hard",
+  "tags": [
+    "trees",
+    "binary-search-tree",
+    "two-pointers",
+    "stack",
+    "heap"
+  ],
+  "companies": [
+    "google",
+    "linkedin",
+    "meta"
+  ],
+  "target_minutes": 40,
+  "signature": {
+    "function": "closest_k_values",
+    "params": [
+      {
+        "name": "root",
+        "type": "TreeNode"
+      },
+      {
+        "name": "target",
+        "type": "float"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "compare": "unordered",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}
