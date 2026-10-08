@@ -1,0 +1,29 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"n": 5, "index": 1, "max_sum": 10}, "output": 3},
+    {"input": {"n": 6, "index": 5, "max_sum": 20}, "output": 5},
+    {"input": {"n": 4, "index": 2, "max_sum": 6}, "output": 2},
+    {"input": {"n": 1, "index": 0, "max_sum": 1}, "output": 1, "hidden": true},
+    {"input": {"n": 1, "index": 0, "max_sum": 1000000000}, "output": 1000000000, "hidden": true},
+    {"input": {"n": 7, "index": 3, "max_sum": 7}, "output": 1, "hidden": true},
+    {"input": {"n": 1000000000, "index": 0, "max_sum": 1000000000}, "output": 1, "hidden": true},
+    {"input": {"n": 1000000000, "index": 500000000, "max_sum": 1000000000}, "output": 1, "hidden": true},
+    {"input": {"n": 3, "index": 1, "max_sum": 1000000000}, "output": 333333334, "hidden": true},
+    {"input": {"n": 2, "index": 1, "max_sum": 999999999}, "output": 500000000, "hidden": true},
+    {"input": {"n": 100000, "index": 31337, "max_sum": 1000000000}, "output": 31622, "hidden": true},
+    {"input": {"n": 6, "index": 1, "max_sum": 10}, "output": 3, "hidden": true},
+    {"input": {"n": 123456789, "index": 98765432, "max_sum": 987654321}, "output": 29398, "hidden": true},
+    {"input": {"n": 50000, "index": 49999, "max_sum": 60000}, "output": 141, "hidden": true},
+    {"input": {"n": 55, "index": 43, "max_sum": 1761}, "output": 50, "hidden": true},
+    {"input": {"n": 19, "index": 13, "max_sum": 1369}, "output": 77, "hidden": true},
+    {"input": {"n": 10, "index": 9, "max_sum": 2380}, "output": 242, "hidden": true},
+    {"input": {"n": 24, "index": 17, "max_sum": 2288}, "output": 102, "hidden": true},
+    {"input": {"n": 6, "index": 3, "max_sum": 2205}, "output": 369, "hidden": true},
+    {"input": {"n": 40, "index": 16, "max_sum": 55}, "output": 4, "hidden": true},
+    {"input": {"n": 9, "index": 5, "max_sum": 2676}, "output": 299, "hidden": true},
+    {"input": {"n": 2, "index": 0, "max_sum": 1248}, "output": 624, "hidden": true},
+    {"input": {"n": 18, "index": 11, "max_sum": 1573}, "output": 92, "hidden": true},
+    {"input": {"n": 26, "index": 4, "max_sum": 577}, "output": 31, "hidden": true}
+  ]
+}
