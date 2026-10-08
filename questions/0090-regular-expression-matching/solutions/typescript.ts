@@ -1,0 +1,18 @@
+function isMatch(s: string, p: string): boolean {
+  const m = s.length;
+  const n = p.length;
+  // dp[i][j] is true when s[i:] matches p[j:]
+  const dp: boolean[][] = Array.from({ length: m + 1 }, () => new Array<boolean>(n + 1).fill(false));
+  dp[m][n] = true;
+  for (let i = m; i >= 0; i--) {
+    for (let j = n - 1; j >= 0; j--) {
+      const first = i < m && (p[j] === s[i] || p[j] === ".");
+      if (j + 1 < n && p[j + 1] === "*") {
+        dp[i][j] = dp[i][j + 2] || (first && dp[i + 1][j]);
+      } else {
+        dp[i][j] = first && dp[i + 1][j + 1];
+      }
+    }
+  }
+  return dp[0][0];
+}
