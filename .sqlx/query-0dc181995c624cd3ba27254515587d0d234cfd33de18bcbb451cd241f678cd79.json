@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id AS \"id!\", question_id, language, started_at, active_secs,\n                          test_runs, failed_runs, hints_used,\n                          solution_viewed AS \"solution_viewed: bool\", code\n                   FROM attempts\n                   WHERE outcome IS NULL AND question_id = ? AND language = ?\n                   ORDER BY id DESC\n                   LIMIT 1",
+  "query": "SELECT id AS \"id!\", question_id, language AS \"language: Language\",\n                          started_at AS \"started_at: OffsetDateTime\", active_secs,\n                          test_runs, failed_runs, hints_used,\n                          solution_viewed AS \"solution_viewed: bool\", code\n                   FROM attempts\n                   WHERE outcome IS NULL\n                   ORDER BY id DESC",
   "describe": {
     "columns": [
       {
@@ -26,7 +26,7 @@
         }
       },
       {
-        "name": "language",
+        "name": "language: Language",
         "ordinal": 2,
         "type_info": "Text",
         "origin": {
@@ -37,9 +37,9 @@
         }
       },
       {
-        "name": "started_at",
+        "name": "started_at: OffsetDateTime",
         "ordinal": 3,
-        "type_info": "Text",
+        "type_info": "Datetime",
         "origin": {
           "Table": {
             "table": "attempts",
@@ -115,7 +115,7 @@
       }
     ],
     "parameters": {
-      "Right": 2
+      "Right": 0
     },
     "nullable": [
       false,
@@ -130,5 +130,5 @@
       true
     ]
   },
-  "hash": "931c81d3c86293c7c8a477ee339fa4603ea64ecf0ec48cd3f86f5f9f227bcadc"
+  "hash": "0dc181995c624cd3ba27254515587d0d234cfd33de18bcbb451cd241f678cd79"
 }

@@ -11,7 +11,7 @@ use ratatui::text::{Line, Span};
 use super::text::{Para, fit, layout};
 use super::theme::theme;
 use crate::model::{GAP, LabelStat, QuestionStat, Report};
-use crate::session::clock;
+use crate::session::{Outcome, clock};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Tab {
@@ -169,7 +169,7 @@ fn local(t: Timestamp) -> jiff::Zoned {
 }
 
 fn ago(t: Timestamp) -> String {
-    crate::app::views_ago(&t.to_string())
+    crate::app::views_ago(t)
 }
 
 fn empty_note(paras: &mut Vec<Para>) {
@@ -499,7 +499,11 @@ fn questions(r: &Report, filter: Option<&str>) -> Vec<Para> {
         spans.push(Span::styled(fit(&best, 13), t.dim()));
         spans.push(Span::styled(
             q.last_attempt.map_or(String::new(), |l| {
-                format!("  {} · {}", ago(l), q.last_outcome.as_deref().unwrap_or(""))
+                format!(
+                    "  {} · {}",
+                    ago(l),
+                    q.last_outcome.map_or("", Outcome::as_str)
+                )
             }),
             t.dim(),
         ));
@@ -519,7 +523,7 @@ fn history(r: &Report) -> Vec<Para> {
         let solved = s
             .attempts
             .iter()
-            .filter(|a| matches!(a.outcome.as_deref(), Some("pass" | "revealed")))
+            .filter(|a| matches!(a.outcome, Some(Outcome::Pass | Outcome::Revealed)))
             .count();
         p.push(Para::new(vec![
             Span::styled(
@@ -537,11 +541,11 @@ fn history(r: &Report) -> Vec<Para> {
             ),
         ]));
         for a in &s.attempts {
-            let (icon, style) = match a.outcome.as_deref() {
-                Some("pass") => ("✓", t.ok()),
-                Some("revealed") => ("✓", t.warn()),
-                Some("fail") => ("✗", t.err()),
-                Some("skip") => ("↷", t.dim()),
+            let (icon, style) = match a.outcome {
+                Some(Outcome::Pass) => ("✓", t.ok()),
+                Some(Outcome::Revealed) => ("✓", t.warn()),
+                Some(Outcome::Fail) => ("✗", t.err()),
+                Some(Outcome::Skip) => ("↷", t.dim()),
                 _ => ("⏸", t.warn()),
             };
             p.push(
@@ -549,7 +553,10 @@ fn history(r: &Report) -> Vec<Para> {
                     Span::styled(format!("{icon} "), style),
                     Span::styled(format!("#{:<4}", a.question_id), t.dim()),
                     Span::raw(fit(&a.title, 34)),
-                    Span::styled(fit(a.outcome.as_deref().unwrap_or("unfinished"), 11), style),
+                    Span::styled(
+                        fit(a.outcome.map_or("unfinished", Outcome::as_str), 11),
+                        style,
+                    ),
                     Span::styled(clock(Duration::from_secs(a.active_secs)), t.dim()),
                 ])
                 .indent(2),

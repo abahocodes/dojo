@@ -1,10 +1,10 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT language, started_at, active_secs, outcome, test_runs, hints_used, code\n                 FROM attempts\n                 WHERE question_id = ?\n                 ORDER BY id",
+  "query": "SELECT language AS \"language: Language\",\n                          started_at AS \"started_at: OffsetDateTime\", active_secs,\n                          outcome AS \"outcome: Outcome\", test_runs, hints_used, code\n                   FROM attempts\n                   WHERE question_id = ?\n                   ORDER BY id",
   "describe": {
     "columns": [
       {
-        "name": "language",
+        "name": "language: Language",
         "ordinal": 0,
         "type_info": "Text",
         "origin": {
@@ -15,9 +15,9 @@
         }
       },
       {
-        "name": "started_at",
+        "name": "started_at: OffsetDateTime",
         "ordinal": 1,
-        "type_info": "Text",
+        "type_info": "Datetime",
         "origin": {
           "Table": {
             "table": "attempts",
@@ -37,7 +37,7 @@
         }
       },
       {
-        "name": "outcome",
+        "name": "outcome: Outcome",
         "ordinal": 3,
         "type_info": "Text",
         "origin": {
@@ -94,5 +94,5 @@
       true
     ]
   },
-  "hash": "9d8732019ca0d6b08c1a2d85fa8963064a26f9c809f07ea5e495c89a91421976"
+  "hash": "bb781be714d49a4970c43c0d0ee782f9832b69db1b99d39f5c9a00f9485115f8"
 }

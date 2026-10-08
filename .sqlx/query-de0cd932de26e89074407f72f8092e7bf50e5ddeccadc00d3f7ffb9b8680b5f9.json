@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT COUNT(*) AS \"attempts!: i64\",\n                          COALESCE(SUM(outcome IN ('pass', 'revealed')), 0) AS \"solved!: i64\",\n                          MIN(CASE WHEN outcome = 'pass' THEN active_secs END) AS \"best_secs: i64\",\n                          MAX(started_at) AS \"last_at: String\"\n                   FROM attempts\n                   WHERE question_id = ? AND outcome IS NOT NULL",
+  "query": "SELECT COUNT(*) AS \"attempts!: i64\",\n                          COALESCE(SUM(outcome IN ('pass', 'revealed')), 0) AS \"solved!: i64\",\n                          MIN(CASE WHEN outcome = 'pass' THEN active_secs END) AS \"best_secs: i64\",\n                          MAX(started_at) AS \"last_at: OffsetDateTime\"\n                   FROM attempts\n                   WHERE question_id = ? AND outcome IS NOT NULL",
   "describe": {
     "columns": [
       {
@@ -22,9 +22,9 @@
         "origin": "Expression"
       },
       {
-        "name": "last_at: String",
+        "name": "last_at: OffsetDateTime",
         "ordinal": 3,
-        "type_info": "Text",
+        "type_info": "Datetime",
         "origin": "Expression"
       }
     ],
@@ -38,5 +38,5 @@
       true
     ]
   },
-  "hash": "ac13427d3db88bb1cda97c71965e43b0f589588042dd1ba82248f9f04e762f1a"
+  "hash": "de0cd932de26e89074407f72f8092e7bf50e5ddeccadc00d3f7ffb9b8680b5f9"
 }

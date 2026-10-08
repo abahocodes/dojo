@@ -11,7 +11,11 @@ use anyhow::{Context, Result, bail};
 use crate::lang::Language;
 use crate::questions::Question;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Stored in `attempts.outcome` (all but `Unfinished`, which is an open
+/// attempt with no outcome).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, sqlx::Type, serde::Serialize)]
+#[sqlx(type_name = "TEXT", rename_all = "lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum Outcome {
     /// Passed every test without viewing the solution.
     Pass,

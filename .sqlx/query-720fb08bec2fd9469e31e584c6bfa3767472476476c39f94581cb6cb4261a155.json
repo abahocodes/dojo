@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "INSERT INTO sessions (started_at, mode, query) VALUES (?, ?, ?)\n                   RETURNING id AS \"id!\"",
+  "query": "INSERT INTO sessions (started_at) VALUES (?) RETURNING id AS \"id!\"",
   "describe": {
     "columns": [
       {
@@ -16,11 +16,11 @@
       }
     ],
     "parameters": {
-      "Right": 3
+      "Right": 1
     },
     "nullable": [
       false
     ]
   },
-  "hash": "8e447b38ea6f0aeb70f101c6936cf6e91399a1a8d8b2c4167bf94002d41582ab"
+  "hash": "720fb08bec2fd9469e31e584c6bfa3767472476476c39f94581cb6cb4261a155"
 }

@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT session_id, question_id, started_at, active_secs, outcome,\n                        failed_runs, hints_used\n                 FROM attempts\n                 ORDER BY id",
+  "query": "SELECT session_id, question_id, started_at AS \"started_at: OffsetDateTime\",\n                          active_secs, outcome AS \"outcome: Outcome\", failed_runs, hints_used\n                   FROM attempts\n                   ORDER BY id",
   "describe": {
     "columns": [
       {
@@ -26,9 +26,9 @@
         }
       },
       {
-        "name": "started_at",
+        "name": "started_at: OffsetDateTime",
         "ordinal": 2,
-        "type_info": "Text",
+        "type_info": "Datetime",
         "origin": {
           "Table": {
             "table": "attempts",
@@ -48,7 +48,7 @@
         }
       },
       {
-        "name": "outcome",
+        "name": "outcome: Outcome",
         "ordinal": 4,
         "type_info": "Text",
         "origin": {
@@ -94,5 +94,5 @@
       false
     ]
   },
-  "hash": "064f68c2650dccd52219599a030f0b0f5ea6c3d8e883e52fd9778a58ab91bfe1"
+  "hash": "d11527643bcd03f176e0d7b5c6121159eef8bee875e9fda65e3270d5e7cd123c"
 }

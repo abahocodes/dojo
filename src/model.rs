@@ -10,6 +10,7 @@ use jiff::{Timestamp, ToSpan};
 use serde::Serialize;
 
 use crate::questions::{Bank, Difficulty, Question};
+use crate::session::Outcome;
 
 /// Older attempts count less: a grade's weight halves every this many days.
 const HALF_LIFE_DAYS: f64 = 30.0;
@@ -24,7 +25,7 @@ pub struct Attempt {
     pub started_at: Timestamp,
     pub active_secs: u64,
     /// `None` while unfinished.
-    pub outcome: Option<String>,
+    pub outcome: Option<Outcome>,
     pub failed_runs: u32,
     pub hints_used: u32,
 }
@@ -36,9 +37,9 @@ impl Attempt {
             Attempt::builder()
                 .session_id(r.session_id)
                 .question_id(u32::try_from(r.question_id).ok()?)
-                .started_at(r.started_at.parse().ok()?)
+                .started_at(r.started_at)
                 .active_secs(r.active_secs.max(0) as u64)
-                .maybe_outcome(r.outcome.clone())
+                .maybe_outcome(r.outcome)
                 .failed_runs(r.failed_runs.max(0) as u32)
                 .hints_used(r.hints_used.max(0) as u32)
                 .build(),
@@ -46,14 +47,14 @@ impl Attempt {
     }
 
     pub fn solved(&self) -> bool {
-        matches!(self.outcome.as_deref(), Some("pass" | "revealed"))
+        matches!(self.outcome, Some(Outcome::Pass | Outcome::Revealed))
     }
 }
 
 /// 0–1: how well an attempt went. A clean pass inside the target time is 1.
 pub fn grade(a: &Attempt, q: &Question) -> f64 {
-    match a.outcome.as_deref() {
-        Some("pass") => {
+    match a.outcome {
+        Some(Outcome::Pass) => {
             let mut g = 1.0;
             g -= 0.08 * a.failed_runs.min(4) as f64;
             if !q.hints.is_empty() {
@@ -66,7 +67,7 @@ pub fn grade(a: &Attempt, q: &Question) -> f64 {
             }
             g.max(0.35)
         }
-        Some("revealed") => 0.15,
+        Some(Outcome::Revealed) => 0.15,
         _ => 0.0,
     }
 }
@@ -99,7 +100,7 @@ pub struct QuestionStat {
     pub best_secs: Option<u64>,
     pub target_secs: u64,
     pub last_attempt: Option<Timestamp>,
-    pub last_outcome: Option<String>,
+    pub last_outcome: Option<Outcome>,
 }
 
 #[derive(Debug, Clone, Serialize, bon::Builder)]
@@ -146,7 +147,7 @@ pub struct Suggestion {
 pub struct SessionAttempt {
     pub question_id: u32,
     pub title: String,
-    pub outcome: Option<String>,
+    pub outcome: Option<Outcome>,
     pub active_secs: u64,
 }
 
@@ -248,7 +249,7 @@ fn question_stat(q: &Question, attempts: Option<&[&Attempt]>, now: Timestamp) ->
     let mut total = 0.0;
     for a in &finished {
         // Skipping without trying is weaker evidence than a real attempt.
-        let tried = if a.outcome.as_deref() == Some("skip") {
+        let tried = if a.outcome == Some(Outcome::Skip) {
             0.5
         } else {
             1.0
@@ -270,13 +271,13 @@ fn question_stat(q: &Question, attempts: Option<&[&Attempt]>, now: Timestamp) ->
         .maybe_best_secs(
             finished
                 .iter()
-                .filter(|a| a.outcome.as_deref() == Some("pass"))
+                .filter(|a| a.outcome == Some(Outcome::Pass))
                 .map(|a| a.active_secs)
                 .min(),
         )
         .target_secs(q.meta.target_minutes as u64 * 60)
         .maybe_last_attempt(last.map(|a| a.started_at))
-        .maybe_last_outcome(last.and_then(|a| a.outcome.clone()))
+        .maybe_last_outcome(last.and_then(|a| a.outcome))
         .build()
 }
 
@@ -343,7 +344,7 @@ fn difficulty_summary(
     let d = difficulty;
     let ratios: Vec<f64> = finished
         .iter()
-        .filter(|a| a.outcome.as_deref() == Some("pass"))
+        .filter(|a| a.outcome == Some(Outcome::Pass))
         .filter_map(|a| {
             let q = bank.get(a.question_id)?;
             (q.meta.difficulty == d)
@@ -430,7 +431,7 @@ fn sessions(bank: &Bank, attempts: &[Attempt]) -> Vec<SessionStat> {
                                         .map(|q| q.meta.title.clone())
                                         .unwrap_or_default(),
                                 )
-                                .maybe_outcome(a.outcome.clone())
+                                .maybe_outcome(a.outcome)
                                 .active_secs(a.active_secs)
                                 .build()
                         })
@@ -537,32 +538,32 @@ mod tests {
         now.checked_sub((days_ago * 24).hours()).unwrap()
     }
 
-    fn attempt(q: u32, days_ago: i64, outcome: &str, secs: u64) -> Attempt {
+    fn attempt(q: u32, days_ago: i64, outcome: Outcome, secs: u64) -> Attempt {
         Attempt::builder()
             .session_id(1)
             .question_id(q)
             .started_at(at(days_ago))
             .active_secs(secs)
-            .outcome(outcome.into())
+            .outcome(outcome)
             .failed_runs(0)
             .hints_used(0)
             .build()
     }
 
     #[rstest]
-    #[case::clean_fast_pass("pass", 300, 0, 0, 1.0)]
-    #[case::at_target("pass", 15 * 60, 0, 0, 1.0)]
-    #[case::double_target("pass", 30 * 60, 0, 0, 0.75)]
-    #[case::way_over_target("pass", 90 * 60, 0, 0, 0.75)]
-    #[case::one_failed_run("pass", 60, 1, 0, 0.92)]
-    #[case::failed_runs_capped("pass", 60, 10, 0, 0.68)]
-    #[case::all_hints("pass", 60, 0, 3, 0.6)]
-    #[case::floor("pass", 30 * 60, 10, 3, 0.35)]
-    #[case::revealed("revealed", 60, 0, 0, 0.15)]
-    #[case::fail("fail", 60, 2, 1, 0.0)]
-    #[case::skip("skip", 10, 0, 0, 0.0)]
+    #[case::clean_fast_pass(Outcome::Pass, 300, 0, 0, 1.0)]
+    #[case::at_target(Outcome::Pass, 15 * 60, 0, 0, 1.0)]
+    #[case::double_target(Outcome::Pass, 30 * 60, 0, 0, 0.75)]
+    #[case::way_over_target(Outcome::Pass, 90 * 60, 0, 0, 0.75)]
+    #[case::one_failed_run(Outcome::Pass, 60, 1, 0, 0.92)]
+    #[case::failed_runs_capped(Outcome::Pass, 60, 10, 0, 0.68)]
+    #[case::all_hints(Outcome::Pass, 60, 0, 3, 0.6)]
+    #[case::floor(Outcome::Pass, 30 * 60, 10, 3, 0.35)]
+    #[case::revealed(Outcome::Revealed, 60, 0, 0, 0.15)]
+    #[case::fail(Outcome::Fail, 60, 2, 1, 0.0)]
+    #[case::skip(Outcome::Skip, 10, 0, 0, 0.0)]
     fn grades(
-        #[case] outcome: &str,
+        #[case] outcome: Outcome,
         #[case] secs: u64,
         #[case] failed_runs: u32,
         #[case] hints: u32,
@@ -581,10 +582,10 @@ mod tests {
         let bank = Bank::embedded();
         let now = at(0);
         let attempts = vec![
-            attempt(1, 0, "pass", 300),  // arrays, hash-map
-            attempt(11, 1, "fail", 900), // graphs ...
-            attempt(11, 0, "skip", 30),
-            attempt(13, 2, "pass", 200),
+            attempt(1, 0, Outcome::Pass, 300),  // arrays, hash-map
+            attempt(11, 1, Outcome::Fail, 900), // graphs ...
+            attempt(11, 0, Outcome::Skip, 30),
+            attempt(13, 2, Outcome::Pass, 200),
         ];
         let r = build()
             .bank(&bank)
@@ -627,7 +628,10 @@ mod tests {
     fn older_attempts_count_less() {
         let bank = Bank::embedded();
         let q = bank.get(1).unwrap();
-        let recent_fail = [attempt(1, 0, "fail", 60), attempt(1, 90, "pass", 60)];
+        let recent_fail = [
+            attempt(1, 0, Outcome::Fail, 60),
+            attempt(1, 90, Outcome::Pass, 60),
+        ];
         let refs: Vec<&Attempt> = recent_fail.iter().collect();
         let s = question_stat(q, Some(&refs), at(0)).score.unwrap();
         assert!(s < 0.2, "recent fail should dominate, got {s}");

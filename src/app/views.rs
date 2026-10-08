@@ -127,7 +127,7 @@ pub fn welcome(
                             crate::session::clock(std::time::Duration::from_secs(
                                 o.active_secs.max(0) as u64
                             )),
-                            ago(&o.started_at)
+                            ago(o.started_at)
                         ),
                         t.dim(),
                     ),
@@ -445,10 +445,7 @@ fn tilde(path: &std::path::Path) -> String {
 }
 
 /// "3 days ago" for an RFC 3339 timestamp.
-pub fn ago(ts: &str) -> String {
-    let Ok(then) = ts.parse::<jiff::Timestamp>() else {
-        return ts.to_string();
-    };
+pub fn ago(then: jiff::Timestamp) -> String {
     let secs = (jiff::Timestamp::now().as_second() - then.as_second()).max(0);
     match secs {
         s if s < 90 => "just now".into(),
@@ -465,7 +462,7 @@ pub enum Resume {
     /// An open attempt continued with its clock and counters.
     Continued {
         elapsed: std::time::Duration,
-        started_at: String,
+        started_at: jiff::Timestamp,
     },
 }
 
@@ -505,7 +502,7 @@ pub fn session_question(
             );
         }
         if let Some(last) = &stats.last_at {
-            seen += &format!(" · last {}", ago(last));
+            seen += &format!(" · last {}", ago(*last));
         }
         paras.push(Para::plain(seen, t.warn()));
     }
@@ -525,7 +522,7 @@ pub fn session_question(
             Span::styled(
                 format!(
                     "↺ continuing your attempt from {}  ·  {} on the clock  ·  ",
-                    ago(started_at),
+                    ago(*started_at),
                     crate::session::clock(*elapsed)
                 ),
                 t.warn(),
@@ -980,30 +977,29 @@ pub fn past(q: &Question, attempts: &[crate::store::PastAttempt], shown: usize) 
     ])];
     for (i, a) in attempts.iter().enumerate() {
         let n = i + 1;
-        let (icon, style) = match a.outcome.as_deref() {
-            Some("pass") => ("✓", t.ok()),
-            Some("revealed") => ("✓", t.warn()),
-            Some("fail") => ("✗", t.err()),
-            Some("skip") => ("↷", t.dim()),
+        let (icon, style) = match a.outcome {
+            Some(Outcome::Pass) => ("✓", t.ok()),
+            Some(Outcome::Revealed) => ("✓", t.warn()),
+            Some(Outcome::Fail) => ("✗", t.err()),
+            Some(Outcome::Skip) => ("↷", t.dim()),
             _ => ("⏸", t.warn()),
         };
         let when = a
             .started_at
-            .parse::<jiff::Timestamp>()
-            .map(|ts| {
-                ts.to_zoned(jiff::tz::TimeZone::system())
-                    .strftime("%b %-d, %H:%M")
-                    .to_string()
-            })
-            .unwrap_or_default();
+            .to_zoned(jiff::tz::TimeZone::system())
+            .strftime("%b %-d, %H:%M")
+            .to_string();
         let marker = if n == shown { "▸" } else { " " };
         paras.push(
             Para::new(vec![
                 Span::styled(format!("{marker} {n:>2}  "), t.accent()),
                 Span::styled(fit(&when, 15), t.dim()),
-                Span::raw(fit(&a.language, 11)),
+                Span::raw(fit(a.language.name(), 11)),
                 Span::styled(format!("{icon} "), style),
-                Span::styled(fit(a.outcome.as_deref().unwrap_or("unfinished"), 11), style),
+                Span::styled(
+                    fit(a.outcome.map_or("unfinished", Outcome::as_str), 11),
+                    style,
+                ),
                 Span::raw(crate::session::clock(std::time::Duration::from_secs(
                     a.active_secs.max(0) as u64,
                 ))),
@@ -1030,7 +1026,7 @@ pub fn past(q: &Question, attempts: &[crate::store::PastAttempt], shown: usize) 
             format!(
                 "  ·  {}  ·  {}",
                 a.language,
-                a.outcome.as_deref().unwrap_or("unfinished")
+                a.outcome.map_or("unfinished", Outcome::as_str)
             ),
             t.dim(),
         ),
