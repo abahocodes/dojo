@@ -2,6 +2,10 @@
 name = "dojo"
 version = "0.1.0"
 edition = "2024"
+description = "Coding-interview practice in your terminal, solved in your own editor"
+repository = "https://github.com/abahocodes/dojo"
+homepage = "https://github.com/abahocodes/dojo"
+readme = "README.md"
 
 [features]
 # Also run every question in the bank as its own test (each question's
@@ -39,6 +43,11 @@ unicode-width = "0.2.2"
 # pool"). Affects compile-time artifacts only; the dojo binary is unchanged.
 [profile.release.build-override]
 strip = false
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
 
 [dev-dependencies]
 rstest = "0.27.0"
