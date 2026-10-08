@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 95,
+  "slug": "walls-and-gates",
+  "title": "Walls and Gates",
+  "difficulty": "medium",
+  "tags": [
+    "graphs",
+    "bfs",
+    "matrix"
+  ],
+  "companies": [
+    "meta",
+    "google",
+    "amazon",
+    "doordash"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "walls_and_gates",
+    "params": [
+      {
+        "name": "rooms",
+        "type": "int[][]"
+      }
+    ],
+    "returns": "int[][]"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

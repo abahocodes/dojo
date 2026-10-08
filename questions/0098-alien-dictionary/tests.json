@@ -1,0 +1,30 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"words": ["tk", "tr", "kt", "rtt", "rf"]}, "output": "tfkr"},
+    {"input": {"words": ["dc", "ad", "ac"]}, "output": "dac"},
+    {"input": {"words": ["abcd", "ab"]}, "output": ""},
+    {"input": {"words": ["ba", "bc", "ac", "cab"]}, "output": "bac"},
+    {"input": {"words": ["z"]}, "output": "z", "hidden": true},
+    {"input": {"words": ["zyx"]}, "output": "xyz", "hidden": true},
+    {"input": {"words": ["x", "y", "x"]}, "output": "", "hidden": true},
+    {"input": {"words": ["aa", "aa"]}, "output": "a", "hidden": true},
+    {"input": {"words": ["ab", "abc"]}, "output": "abc", "hidden": true},
+    {"input": {"words": ["q", "q", "p"]}, "output": "qp", "hidden": true},
+    {"input": {"words": ["cb", "ca", "ba", "bc", "ab"]}, "output": "", "hidden": true},
+    {"input": {"words": ["wrt", "wrf", "er", "ett", "rftt", "te"]}, "output": "wertf", "hidden": true},
+    {"input": {"words": ["mno", "mn"]}, "output": "", "hidden": true},
+    {"input": {"words": ["ab", "adc", "c", "c", "cd"]}, "output": "abcd", "hidden": true},
+    {"input": {"words": ["a", "ad", "da", "b", "bab", "bd"]}, "output": "adb", "hidden": true},
+    {"input": {"words": ["ttpt", "p", "q", "rp", "rqp", "s", "sp", "sqs"]}, "output": "tpqrs", "hidden": true},
+    {"input": {"words": ["w", "y", "z", "zy", "x"]}, "output": "wyzx", "hidden": true},
+    {"input": {"words": ["fada", "fb", "cefa", "cg", "cbbd", "a", "aee", "d", "ddd", "g", "bfcd", "bbd"]}, "output": "efcadgb", "hidden": true},
+    {"input": {"words": ["n", "nn", "i", "ih", "jl", "l", "ln", "li", "llh", "h", "hi", "m", "mhi", "mkk", "k"]}, "output": "nijlhmk", "hidden": true},
+    {"input": {"words": ["d", "de", "e", "b", "ee", "ecb", "edc", "bcb", "c", "cfa"]}, "output": "", "hidden": true},
+    {"input": {"words": ["tufen", "tvdjenogpdivvujgiluormsvl", "tjdcmviqkibtqpj", "srwzfztidikeczareahxnsigvnejn", "sdnbhckfvepqqrmgdrsvmpoto", "szdyooorj", "mthmismpppib", "moiic", "mciavmraydoyerrv", "myovafisyhnrusi", "uwmxbznrevqks", "uilia", "ufnlosw", "ukmplttckvbizqgnj", "htnlvppkuttcdyscyyvex", "hghkfze", "hbmdafjhlocuyizgfqtcswqpsudjw", "rrzvagyevylvfns", "rlkdgkxtrgdffnbm", "rvhl", "ghnoasjrfuexbjkboxjubatk", "grtzd", "gaknahjjrgoyafscvajnjcl", "wmqlqeo", "whousgvcwjz", "wkqllwddojygvbe", "qugr", "qgtigvurx", "qwuvgx", "qvalssnxpwavjtktcooz", "qyfhpvqnicsulhxvobminadtsp", "iuhoc", "irhhqjmblbainwzaeduf", "irlapvggdgz", "iwmcdjppprjvlatihwjqtpcibtgr", "iqelyswikaoxrziwhndvj", "iaroh", "iajnjjhqenny", "ifbrzghwzcnhcsyjdvr", "inyfzljdjbsyirxfgafvlj", "ipwodihosuvsuokzhrjbdyjsbqw", "ipbrrrizmaqivtotylxoxjwi", "a", "aongic", "akouusunvtlxmzmocw", "flxbudcoytaxnieqypdalkjwnscppo", "fypmdg", "l", "luxibomrtbwshx", "lvbqdcrinkdhpb", "vlxufjpkizkqculhgr", "vv", "vzmcjjebkfytlfpljc", "vbuah", "nuiewdqvvrbiznknljbcnrxh", "nrweajzyodlpmpoyqeyo", "ndq", "nesvpfczmibzndtfebuxanodpaakm", "nej", "chxgb", "ciwvwjyfxvxitggckhlmfxtgqxjggd", "cntkafbeqqajcuimlinmtjxvtkds", "cdomkdupd", "cytpwbuuzobb", "jtopcglkipgkbhfb", "jtwbtjfqmag", "jwwkyfpej", "jnhunwiosbbrhw", "jyugnzgekoetxkk", "puicitub", "phfcqqwfrnffrcquzxneraubaj", "prmlqonzxlpxlawciftzswougoa", "x", "xthwyzcsjwgzhmgjjsijbbf", "xqbmkdtrojrtf", "xzyi", "koihhaetybg", "krqkjvubcuzabtlvjejewhfqobtjk", "kigq", "kfhrcmmjvjnwgaqxtulorvzh", "kpifeiqpwxc", "dcdppyprxbu", "dytpeqwxwgvgaglhm", "etmdqldqy", "enxfmclrrnsrq", "ejwopxomucvayb", "ekfmkqdgegpruwkgvvijx", "zt", "zhyghciajv", "zifnnixypjnjnxwutklutkao", "zcwazafhyudcyshrdwuesyjfk", "zcpt", "zbppzshmcbolazbtstv", "b", "blhqimspuunyqy", "bjhspyupgatjpbgritwmbtqbd", "bjywissiceszjtjmozeneljkocjuhq", "by", "yqrwmipffebpgnsxmqkxxwxtpge", "ybzetndxjavpbyginatzxysfaqxmh"]}, "output": "tosmuhrgwqiaflvncjpxkdezby", "hidden": true},
+    {"input": {"words": ["a", "aok", "ai", "ams", "an", "tj", "tjk", "tqi", "roo", "rfj", "kt", "kdy", "km", "kmv", "kjb", "kvv", "o", "oup", "s", "sl", "sn", "x", "xrt", "xzq", "xda", "xip", "xfd", "z", "zaf", "zy", "zhq", "zu", "zql", "d", "dr", "i", "itf", "ik", "ii", "ih", "ihv", "ip", "iwd", "y", "yfa", "htz", "hz", "b", "boo", "bq", "uto", "m", "mi", "ml", "p", "pmx", "pp", "j", "jx", "jz", "jpf", "jf", "vaz", "vmr", "vl", "vn", "ve", "vg", "f", "ft", "fxt", "fi", "fh", "fcy", "l", "ls", "lzj", "woz", "wi", "n", "nan", "nd", "ny", "nj", "nn", "c", "cf", "cw", "ez", "ehi", "eby", "em", "efw", "ecy", "g", "gnr", "ge", "q", "qtg", "qoj"]}, "output": "atrkosxzdiyhbumpjvflwncegq", "hidden": true},
+    {"input": {"words": ["q", "qjz", "qgy", "qbic", "qv", "qd", "qfw", "qz", "ideb", "e", "d", "ext", "eudj", "epe", "j", "jr", "jpi", "jwq", "jzfr", "s", "o", "ompg", "a", "au", "awo", "g", "gud", "gc", "gyq", "gh", "gbj", "gn", "x", "xqc", "xo", "kqkc", "km", "kc", "r", "rdz", "tsle", "to", "tnax", "tlv", "u", "ukiy", "uhj", "m", "mir", "mad", "mbky", "mwkb", "mli", "cxrt", "cpl", "cv", "yoh", "yre", "yyf", "pame", "pxo", "pbp", "pvd", "pzdu", "he", "ha", "hynh", "b", "be", "box", "bkd", "bp", "bzb", "n", "nq", "nuwx", "nvym", "vi", "vaod", "vmbb", "ejrn", "dvj", "f", "fiza", "fyfp", "flj", "w", "wgt", "wxo", "wuxa", "wd", "zix", "zikm", "zm", "lipd", "ljm", "ls", "lcea", "lhmq", "ln"]}, "output": "", "hidden": true},
+    {"input": {"words": ["qqq", "www", "eee", "rrr", "ttt", "yyy", "uuu", "iii", "ooo", "ppp", "aaa", "sss", "ddd", "fff", "ggg", "hhh", "jjj", "kkk", "lll", "zzz", "xxx", "ccc", "vvv", "bbb", "nnn", "mmm"]}, "output": "qwertyuiopasdfghjklzxcvbnm", "hidden": true},
+    {"input": {"words": ["qqq", "www", "eee", "rrr", "ttt", "yyy", "uuu", "iii", "ooo", "ppp", "aaa", "sss", "ddd", "fff", "ggg", "hhh", "jjj", "kkk", "lll", "zzz", "xxx", "ccc", "vvv", "bbb", "nnn", "mmm", "qa"]}, "output": "", "hidden": true}
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 98,
+  "slug": "alien-dictionary",
+  "title": "Alien Dictionary",
+  "difficulty": "hard",
+  "tags": [
+    "graphs",
+    "topological-sort",
+    "strings"
+  ],
+  "companies": [
+    "airbnb",
+    "meta",
+    "google",
+    "amazon",
+    "uber"
+  ],
+  "target_minutes": 40,
+  "signature": {
+    "function": "alien_order",
+    "params": [
+      {
+        "name": "words",
+        "type": "string[]"
+      }
+    ],
+    "returns": "string"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 99,
+  "slug": "accounts-merge",
+  "title": "Accounts Merge",
+  "difficulty": "medium",
+  "tags": [
+    "graphs",
+    "union-find",
+    "hash-map",
+    "sorting"
+  ],
+  "companies": [
+    "meta",
+    "google",
+    "amazon",
+    "microsoft"
+  ],
+  "target_minutes": 30,
+  "signature": {
+    "function": "accounts_merge",
+    "params": [
+      {
+        "name": "accounts",
+        "type": "string[][]"
+      }
+    ],
+    "returns": "string[][]"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
