@@ -81,4 +81,6 @@ that every boilerplate loads, defines the function and does not already pass.
 It needs `python3` and `node` installed.
 
 The easiest way to add a question is `dojo contribute`: describe it, review
-the draft dojo builds and validates, then `/accept` to open the PR.
+the draft dojo builds and validates (reference solutions in all six languages,
+starter code generated with `dojo scaffold`'s templates), then `/accept` to
+open the PR.

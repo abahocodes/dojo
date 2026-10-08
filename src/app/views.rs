@@ -1192,17 +1192,59 @@ pub fn contrib_review(
     if ok {
         paras.push(check(
             true,
-            "Python and JavaScript solutions pass every test".into(),
-        ));
-        paras.push(check(
-            true,
-            "starter code loads in both languages and doesn't pass".into(),
-        ));
-        paras.push(check(
-            true,
             format!("{} hints, explanation, statement", d.hints.len()),
         ));
-    } else {
+    }
+    // One line per language: its reference solution and generated starter.
+    use crate::contribute::draft::LangStatus;
+    let width = b
+        .languages
+        .iter()
+        .map(|(l, _)| l.label().chars().count())
+        .max()
+        .unwrap_or(0);
+    paras.push(Para::plain("Languages", t.bold()));
+    for (lang, status) in &b.languages {
+        let (mark, style, text) = match status {
+            LangStatus::Passed => (
+                "✓ ",
+                t.ok(),
+                "solution passes every test  ·  starter code loads, doesn't pass".to_string(),
+            ),
+            LangStatus::Failed(n) => (
+                "✗ ",
+                t.err(),
+                format!("{n} problem{} (below)", if *n == 1 { "" } else { "s" }),
+            ),
+            LangStatus::Missing => (
+                "✗ ",
+                t.err(),
+                "no solution drafted  ·  ask to add it".to_string(),
+            ),
+            LangStatus::Unchecked => (
+                "· ",
+                t.dim(),
+                "not run yet  ·  fix the problems below first".to_string(),
+            ),
+        };
+        paras.push(
+            Para::new(vec![
+                Span::styled(mark, style),
+                Span::styled(format!("{:<width$}  ", lang.label()), t.bold()),
+                Span::styled(
+                    text,
+                    if *status == LangStatus::Passed {
+                        t.dim()
+                    } else {
+                        style
+                    },
+                ),
+            ])
+            .indent(2),
+        );
+    }
+    if !ok {
+        paras.push(Para::plain("Problems", t.bold()));
         for p in &b.problems {
             let mut lines = p.lines();
             paras.push(check(false, lines.next().unwrap_or_default().to_string()));
