@@ -42,13 +42,34 @@ pub fn install_plan() -> (String, String) {
     ];
     for (program, name, command) in candidates {
         if on_path(program) {
-            return (format!("with {name}: {command}"), command.to_string());
+            // root has no sudo on many servers and containers, nor needs it.
+            let command = if is_root() {
+                without_sudo(command)
+            } else {
+                command.to_string()
+            };
+            return (format!("with {name}: {command}"), command);
         }
     }
     (
         "from GitHub's releases into ~/.local/bin (no admin rights needed)".into(),
         release_install_script(),
     )
+}
+
+#[cfg(unix)]
+fn is_root() -> bool {
+    // SAFETY: geteuid has no preconditions and can't fail.
+    unsafe { libc::geteuid() == 0 }
+}
+
+#[cfg(not(unix))]
+fn is_root() -> bool {
+    false
+}
+
+fn without_sudo(command: &str) -> String {
+    command.replace("sudo ", "")
 }
 
 /// Downloads the latest official `gh` release into `~/.local/bin`.
@@ -63,14 +84,24 @@ fn release_install_script() -> String {
     } else {
         "amd64"
     };
-    let ext = if cfg!(target_os = "macos") {
-        "zip"
+    let (ext, unpack) = if cfg!(target_os = "macos") {
+        ("zip", "unzip")
     } else {
-        "tar.gz"
+        ("tar.gz", "tar")
     };
     format!(
         r#"set -e
+for tool in curl {unpack}; do
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    echo "Can't download gh: $tool isn't installed. Install $tool, or gh itself from https://cli.github.com" >&2
+    exit 1
+  fi
+done
 tag=$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)
+if [ -z "$tag" ]; then
+  echo "Couldn't find the latest gh release (offline, or GitHub's API rate limit?). Install it from https://cli.github.com" >&2
+  exit 1
+fi
 name="gh_${{tag}}_{os}_{arch}"
 tmp=$(mktemp -d)
 echo "Downloading gh ${{tag}}..."
@@ -129,10 +160,12 @@ pub struct Submission<'a> {
 pub fn submit(gh: &Path, sub: &Submission, progress: &dyn Fn(&str)) -> Result<String> {
     let (owner, name) = REPO.split_once('/').context("bad repo name")?;
     progress("checking your GitHub account…");
-    let login = run(
-        Command::new(gh).args(["api", "user", "--jq", ".login"]),
+    let user = run(
+        Command::new(gh).args(["api", "user", "--jq", r#".login + " " + (.id | tostring)"#]),
         "gh api user",
     )?;
+    let (login, user_id) = user.split_once(' ').unwrap_or((&user, ""));
+    let login = login.to_string();
 
     let work = tempfile::tempdir()?;
     let clone = work.path().join(name);
@@ -219,11 +252,14 @@ pub fn submit(gh: &Path, sub: &Submission, progress: &dyn Fn(&str)) -> Result<St
         "git add",
     )?;
     run(
-        Command::new("git").current_dir(&clone).args([
-            "commit",
-            "-m",
-            &format!("Add question #{id}: {}", sub.title),
-        ]),
+        Command::new("git")
+            .current_dir(&clone)
+            .args(identity_overrides(&clone, &login, user_id))
+            .args([
+                "commit",
+                "-m",
+                &format!("Add question #{id}: {}", sub.title),
+            ]),
         "git commit",
     )?;
     progress("pushing…");
@@ -260,6 +296,33 @@ pub fn submit(gh: &Path, sub: &Submission, progress: &dyn Fn(&str)) -> Result<St
         ]),
         "gh pr create",
     )
+}
+
+/// `-c user.name=… -c user.email=…` for whichever git hasn't been told
+/// (fresh servers), from the GitHub account and its noreply address.
+fn identity_overrides(repo: &Path, login: &str, user_id: &str) -> Vec<String> {
+    let configured = |key: &str| {
+        run(
+            Command::new("git")
+                .current_dir(repo)
+                .args(["config", "--get", key]),
+            "git config",
+        )
+        .is_ok_and(|v| !v.is_empty())
+    };
+    let email = if user_id.is_empty() {
+        format!("{login}@users.noreply.github.com")
+    } else {
+        format!("{user_id}+{login}@users.noreply.github.com")
+    };
+    let mut args = Vec::new();
+    if !configured("user.name") {
+        args.extend(["-c".to_string(), format!("user.name={login}")]);
+    }
+    if !configured("user.email") {
+        args.extend(["-c".to_string(), format!("user.email={email}")]);
+    }
+    args
 }
 
 /// Question ids claimed by open PRs (from the folders they add).
@@ -377,6 +440,25 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
+
+    #[test]
+    fn release_install_script_parses_in_sh() {
+        let status = Command::new("sh")
+            .args(["-n", "-c", &release_install_script()])
+            .status()
+            .unwrap();
+        assert!(status.success());
+    }
+
+    #[rstest]
+    #[case(
+        "sudo apt-get update && sudo apt-get install -y gh",
+        "apt-get update && apt-get install -y gh"
+    )]
+    #[case("brew install gh", "brew install gh")]
+    fn drops_sudo_for_root(#[case] command: &str, #[case] expected: &str) {
+        assert_eq!(without_sudo(command), expected);
+    }
 
     #[rstest]
     #[case::none("", &[])]

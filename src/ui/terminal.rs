@@ -4,6 +4,7 @@ use std::io::{self, Stdout, stdout};
 
 use ratatui::Terminal;
 use ratatui::backend::CrosstermBackend;
+use ratatui::crossterm::cursor;
 use ratatui::crossterm::event::{
     DisableBracketedPaste, DisableMouseCapture, EnableBracketedPaste, EnableMouseCapture,
 };
@@ -56,7 +57,9 @@ fn leave() -> io::Result<()> {
         stdout(),
         DisableBracketedPaste,
         DisableMouseCapture,
-        LeaveAlternateScreen
+        LeaveAlternateScreen,
+        // ratatui hides it while drawing; the next program needs it back.
+        cursor::Show
     )?;
     disable_raw_mode()
 }

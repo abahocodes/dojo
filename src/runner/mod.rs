@@ -42,18 +42,73 @@ fn install_hint(lang: Language) -> &'static str {
     }
 }
 
-/// Checks the language's toolchain is installed, returning its version.
+/// Checks the language's toolchain is installed and new enough, returning
+/// its version.
 pub fn toolchain(lang: Language) -> Result<String> {
     let program = interpreter(lang);
     let out = Command::new(&program)
         .arg("--version")
         .output()
         .map_err(|e| anyhow!("{program} not found ({e}); {}", install_hint(lang)))?;
-    let version = String::from_utf8_lossy(&out.stdout).trim().to_string();
-    Ok(match lang {
-        Language::JavaScript => format!("Node.js {version}"),
-        Language::Python => version,
-    })
+    // Python 2 printed its version to stderr.
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    let text = if stdout.trim().is_empty() {
+        stderr
+    } else {
+        stdout
+    };
+    check_version(lang, text.trim())
+}
+
+/// The oldest (major, minor) each harness runs on.
+fn min_version(lang: Language) -> (u32, u32) {
+    match lang {
+        Language::Python => (3, 10),
+        Language::JavaScript => (18, 0),
+    }
+}
+
+/// `major.minor.patch` from `--version` output (`Python 3.12.1`,
+/// `v18.19.0`, `Python 3.13.0rc1`).
+fn parse_version(text: &str) -> Option<(u32, u32, u32)> {
+    let word = text
+        .split_whitespace()
+        .map(|w| w.strip_prefix('v').unwrap_or(w))
+        .find(|w| w.starts_with(|c: char| c.is_ascii_digit()))?;
+    let mut parts = word.split('.').map(|p| {
+        let digits: String = p.chars().take_while(char::is_ascii_digit).collect();
+        digits.parse::<u32>().ok()
+    });
+    let major = parts.next()??;
+    let minor = parts.next().flatten().unwrap_or(0);
+    let patch = parts.next().flatten().unwrap_or(0);
+    Some((major, minor, patch))
+}
+
+/// The version to show, or an error when it's older than the harness
+/// supports. Output that can't be parsed is let through.
+fn check_version(lang: Language, text: &str) -> Result<String> {
+    let label = match lang {
+        Language::Python => "Python",
+        Language::JavaScript => "Node.js",
+    };
+    let Some((major, minor, patch)) = parse_version(text) else {
+        return Ok(match lang {
+            Language::JavaScript => format!("Node.js {text}"),
+            Language::Python => text.to_string(),
+        });
+    };
+    let shown = format!("{label} {major}.{minor}.{patch}");
+    let (min_major, min_minor) = min_version(lang);
+    if (major, minor) < (min_major, min_minor) {
+        let needs = match lang {
+            Language::Python => format!("{min_major}.{min_minor}+"),
+            Language::JavaScript => format!("{min_major}+"),
+        };
+        bail!("{shown} is too old; dojo needs {needs}");
+    }
+    Ok(shown)
 }
 
 /// Which test cases to run.
@@ -306,7 +361,7 @@ pub fn python_json(code: &str, limit: Duration) -> Result<Value> {
     std::fs::write(&script, code)?;
     let program = interpreter(Language::Python);
     let out = exec()
-        .cmd(Command::new(&program).arg(&script))
+        .cmd(Command::new(&program).args(["-X", "utf8"]).arg(&script))
         .limit(limit)
         .cancel(&AtomicBool::new(false))
         .call()
@@ -328,14 +383,22 @@ enum Stop {
     Crash(i32),
 }
 
+/// Signal numbers differ by OS (SIGBUS is 10 on macOS, 7 on Linux, where 10
+/// is SIGUSR1), so they come from libc.
+#[cfg(unix)]
 fn signal_name(sig: i32) -> &'static str {
     match sig {
-        6 => "aborted",
-        9 => "killed, often for using too much memory",
-        10 | 7 => "bus error",
-        11 => "segmentation fault",
+        libc::SIGABRT => "aborted",
+        libc::SIGKILL => "killed, often for using too much memory",
+        libc::SIGBUS => "bus error",
+        libc::SIGSEGV => "segmentation fault",
         _ => "terminated",
     }
+}
+
+#[cfg(not(unix))]
+fn signal_name(_sig: i32) -> &'static str {
+    "terminated"
 }
 
 /// Builds results for a run stopped at `step` (`load`, a case index, or
@@ -727,6 +790,51 @@ mod tests {
         #[case] same: bool,
     ) {
         assert_eq!(matches(mode, &expected, &got), same);
+    }
+
+    #[rstest]
+    #[case("Python 3.12.1", Some((3, 12, 1)))]
+    #[case("Python 3.13.0rc1", Some((3, 13, 0)))]
+    #[case("v18.19.0", Some((18, 19, 0)))]
+    #[case("v22.1", Some((22, 1, 0)))]
+    #[case("Python 2.7.18", Some((2, 7, 18)))]
+    #[case("", None)]
+    #[case("not a version", None)]
+    fn parses_versions(#[case] text: &str, #[case] expected: Option<(u32, u32, u32)>) {
+        assert_eq!(parse_version(text), expected);
+    }
+
+    #[rstest]
+    #[case(Language::Python, "Python 3.12.1", Ok("Python 3.12.1"))]
+    #[case(Language::Python, "Python 3.10.0", Ok("Python 3.10.0"))]
+    #[case(
+        Language::Python,
+        "Python 3.9.2",
+        Err("Python 3.9.2 is too old; dojo needs 3.10+")
+    )]
+    #[case(
+        Language::Python,
+        "Python 2.7.18",
+        Err("Python 2.7.18 is too old; dojo needs 3.10+")
+    )]
+    #[case(Language::JavaScript, "v18.0.0", Ok("Node.js 18.0.0"))]
+    #[case(Language::JavaScript, "v22.11.0", Ok("Node.js 22.11.0"))]
+    #[case(
+        Language::JavaScript,
+        "v16.20.2",
+        Err("Node.js 16.20.2 is too old; dojo needs 18+")
+    )]
+    #[case(Language::JavaScript, "weird", Ok("Node.js weird"))]
+    fn checks_versions(
+        #[case] lang: Language,
+        #[case] text: &str,
+        #[case] expected: Result<&str, &str>,
+    ) {
+        let got = check_version(lang, text).map_err(|e| e.to_string());
+        assert_eq!(
+            got.as_deref(),
+            expected.map_err(|e| e.to_string()).as_deref()
+        );
     }
 }
 

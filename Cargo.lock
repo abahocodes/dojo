@@ -972,6 +972,7 @@ dependencies = [
  "jiff",
  "jsonschema",
  "keyring",
+ "libc",
  "nucleo-matcher",
  "pulldown-cmark",
  "ratatui",

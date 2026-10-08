@@ -88,6 +88,13 @@ pub fn start_server(base: &str, log_dir: &std::path::Path) -> bool {
     let out = std::fs::File::create(&log).ok();
     let mut cmd = Command::new("ollama");
     cmd.arg("serve").stdin(Stdio::null());
+    // Its own process group, so Ctrl-C or closing the terminal doesn't stop
+    // the server along with dojo.
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::CommandExt;
+        cmd.process_group(0);
+    }
     match out.and_then(|f| f.try_clone().ok().map(|g| (f, g))) {
         Some((a, b)) => {
             cmd.stdout(a).stderr(b);
