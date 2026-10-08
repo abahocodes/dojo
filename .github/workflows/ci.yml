@@ -4,7 +4,7 @@ name: ci
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
     paths-ignore: ["questions/**"]
   pull_request:
     paths-ignore: ["questions/**"]
