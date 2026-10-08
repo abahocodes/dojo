@@ -441,8 +441,9 @@ fn content(q: &Question) -> Vec<String> {
     p
 }
 
-/// Code: every reference solution passes every case; every boilerplate
-/// loads, defines the function and does not already pass.
+/// Code: every reference solution passes every case; every boilerplate,
+/// as users get it (with the statement on top), loads, defines the
+/// function and does not already pass.
 fn code(q: &Question, folder: &Path) -> (Vec<String>, Vec<String>) {
     let mut p = Vec::new();
     let mut timings = Vec::new();
@@ -526,12 +527,19 @@ fn code(q: &Question, folder: &Path) -> (Vec<String>, Vec<String>) {
             }
         }
 
-        let boilerplate = runner::run()
-            .question(q)
-            .lang(*lang)
-            .solution(&folder.join(&files.boilerplate))
-            .which(Which::Visible)
-            .call();
+        // What users actually start from: the boilerplate with the problem
+        // statement as comments (`session::starter`).
+        let boilerplate = (|| {
+            let tmp = tempfile::tempdir()?;
+            let file = tmp.path().join(lang.solution_file());
+            std::fs::write(&file, crate::session::starter(q, *lang).unwrap_or_default())?;
+            runner::run()
+                .question(q)
+                .lang(*lang)
+                .solution(&file)
+                .which(Which::Visible)
+                .call()
+        })();
         match boilerplate {
             Err(e) => p.push(format!("{}: {e:#}", files.boilerplate)),
             Ok(report) => {

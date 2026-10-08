@@ -448,8 +448,8 @@ impl App {
         let line = self
             .bank
             .get(a.question_id)
-            .and_then(|q| q.boilerplate.get(&a.lang))
-            .map_or(1, |b| session::resume_line(b, &code));
+            .and_then(|q| session::starter(q, a.lang))
+            .map_or(1, |b| session::resume_line(&b, &code));
         let (template, _) = self.config.editor();
         let command = editor_command()
             .template(&template)

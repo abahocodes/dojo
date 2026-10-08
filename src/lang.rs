@@ -88,6 +88,14 @@ impl Language {
         format!("solution.{}", self.ext())
     }
 
+    /// What starts a line comment.
+    pub fn line_comment(self) -> &'static str {
+        match self {
+            Language::Python => "#",
+            _ => "//",
+        }
+    }
+
     /// The signature's snake_case name in this language's convention:
     /// snake_case in Python, camelCase everywhere else (as on LeetCode).
     pub fn function_name(self, snake: &str) -> String {

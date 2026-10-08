@@ -33,7 +33,8 @@ where you have gaps.
   file for the attempt in progress (override with `workspace` in config)
 
 A **session** is a period of practice, recorded only in the database. A work
-file starts as a copy of the question's boilerplate; finishing an attempt saves
+file starts as the question's boilerplate with the problem statement as
+comments on top (a terminal editor hides dojo's screen); finishing an attempt saves
 its code to the database and deletes the work folder.
 
 Closing dojo mid-question (`/quit`, Ctrl+C twice, Ctrl+D, a closed terminal)

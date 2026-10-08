@@ -192,9 +192,69 @@ pub fn work_paths(root: &Path, q: &Question, lang: Language) -> (PathBuf, PathBu
     (dir, file)
 }
 
+/// The code a fresh attempt starts from: the boilerplate with the problem
+/// statement as comments under its header, so the problem is in view in a
+/// terminal editor, where dojo's own screen is hidden.
+pub fn starter(q: &Question, lang: Language) -> Option<String> {
+    let boilerplate = q.boilerplate.get(&lang)?;
+    let mark = lang.line_comment();
+    let header = boilerplate
+        .lines()
+        .take_while(|l| l.trim_start().starts_with(mark))
+        .count();
+    let mut lines: Vec<String> = boilerplate.lines().map(str::to_string).collect();
+    let problem: Vec<String> = std::iter::once(String::new())
+        .chain(statement_text(&q.statement))
+        .map(|l| {
+            if l.is_empty() {
+                mark.to_string()
+            } else {
+                format!("{mark} {l}")
+            }
+        })
+        .collect();
+    lines.splice(header..header, problem);
+    let mut out = lines.join("\n");
+    if boilerplate.ends_with('\n') {
+        out.push('\n');
+    }
+    Some(out)
+}
+
+/// A statement's markdown as plain lines for a code comment: no fences,
+/// headings or emphasis markers; code indented; one blank line at most.
+fn statement_text(md: &str) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    let mut in_code = false;
+    for line in md.trim().lines() {
+        let line = line.trim_end();
+        if line.trim_start().starts_with("```") {
+            in_code = !in_code;
+            continue;
+        }
+        let text = if in_code {
+            format!("    {line}")
+        } else {
+            line.trim_start_matches('#')
+                .trim_start()
+                .replace("**", "")
+                .replace('`', "")
+        };
+        if text.is_empty() && out.last().is_none_or(|l| l.is_empty()) {
+            continue;
+        }
+        out.push(text);
+    }
+    while out.last().is_some_and(|l| l.is_empty()) {
+        out.pop();
+    }
+    out
+}
+
 /// Prepares the working file. Code already on disk is kept unless `fresh`;
 /// otherwise it's written from `saved` (code recorded for an open attempt)
-/// or the question's boilerplate. Returns `true` when existing code was kept.
+/// or the question's starter code. Returns `true` when existing code was
+/// kept.
 #[bon::builder]
 pub fn prepare_work(
     root: &Path,
@@ -204,20 +264,19 @@ pub fn prepare_work(
     fresh: bool,
 ) -> Result<(PathBuf, PathBuf, bool)> {
     let q = question;
-    let boilerplate = q
-        .boilerplate
-        .get(&lang)
+    let start = starter(q, lang)
         .with_context(|| format!("#{} has no {} boilerplate", q.meta.id, lang.label()))?;
     let (dir, file) = work_paths(root, q, lang);
     if !fresh
         && let Ok(existing) = std::fs::read_to_string(&file)
-        && existing.trim() != boilerplate.trim()
+        && existing.trim() != start.trim()
+        && Some(existing.trim()) != q.boilerplate.get(&lang).map(|b| b.trim())
     {
         return Ok((dir, file, true));
     }
     std::fs::create_dir_all(&dir).with_context(|| format!("creating {}", dir.display()))?;
     let code = if fresh { None } else { saved };
-    std::fs::write(&file, code.unwrap_or(boilerplate))?;
+    std::fs::write(&file, code.unwrap_or(&start))?;
     Ok((dir, file, code.is_some()))
 }
 
@@ -500,6 +559,66 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
+
+    /// The problem sits under the header as comments, without markdown,
+    /// and the code below is the boilerplate unchanged.
+    #[rstest]
+    fn starter_puts_the_problem_on_top(
+        #[values(Language::Python, Language::Go, Language::Java)] lang: Language,
+    ) {
+        let bank = crate::questions::Bank::embedded();
+        let q = bank.get(1).unwrap();
+        let start = starter(q, lang).unwrap();
+        let mark = lang.line_comment();
+        let lines: Vec<&str> = start.lines().collect();
+        assert!(lines[0].starts_with(&format!("{mark} 1. Two Sum")));
+        assert!(start.contains(&format!("{mark} You are given a list of integers nums")));
+        assert!(start.contains(&format!("{mark}     nums   = [3, 8, 11, 4]")));
+        assert!(start.contains(&format!("{mark} Constraints")));
+        assert!(!start.contains("```") && !start.contains("**") && !start.contains("## "));
+        let code: Vec<&str> = lines
+            .iter()
+            .copied()
+            .filter(|l| !l.starts_with(mark))
+            .collect();
+        let boilerplate: Vec<&str> = q.boilerplate[&lang]
+            .lines()
+            .filter(|l| !l.starts_with(mark))
+            .collect();
+        assert_eq!(code, boilerplate);
+    }
+
+    #[test]
+    fn untouched_starter_resumes_in_the_function_body() {
+        let bank = crate::questions::Bank::embedded();
+        let start = starter(bank.get(1).unwrap(), Language::Python).unwrap();
+        let line = resume_line(&start, &start);
+        assert_eq!(start.lines().nth(line - 1).map(str::trim), Some("pass"));
+    }
+
+    /// A work file holding the old bare boilerplate counts as untouched and
+    /// is rewritten with the problem on top.
+    #[test]
+    fn bare_boilerplate_is_replaced_by_the_starter() {
+        let bank = crate::questions::Bank::embedded();
+        let q = bank.get(1).unwrap();
+        let root = tempfile::tempdir().unwrap();
+        let (_, file) = work_paths(root.path(), q, Language::Python);
+        std::fs::create_dir_all(file.parent().unwrap()).unwrap();
+        std::fs::write(&file, &q.boilerplate[&Language::Python]).unwrap();
+        let (_, _, kept) = prepare_work()
+            .root(root.path())
+            .question(q)
+            .lang(Language::Python)
+            .fresh(false)
+            .call()
+            .unwrap();
+        assert!(!kept);
+        assert_eq!(
+            std::fs::read_to_string(&file).unwrap(),
+            starter(q, Language::Python).unwrap()
+        );
+    }
 
     #[test]
     fn pausing_at_a_past_moment_drops_the_time_since() {
