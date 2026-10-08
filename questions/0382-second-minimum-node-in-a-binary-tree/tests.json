@@ -1,0 +1,20 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"root": [3, 3, 7, null, null, 7, 9]}, "output": 7},
+    {"input": {"root": [4, 4, 4]}, "output": -1},
+    {"input": {"root": [2, 2, 5, 2, 3, 5, 6]}, "output": 3},
+    {"input": {"root": [1]}, "output": -1, "hidden": true},
+    {"input": {"root": [2147483647, 2147483647, 2147483647]}, "output": -1, "hidden": true},
+    {"input": {"root": [1, 1, 2147483647]}, "output": 2147483647, "hidden": true},
+    {"input": {"root": [5, 5, 5, 5, 5, 5, 5, null, null, 5, 6]}, "output": 6, "hidden": true},
+    {"input": {"root": [2147483646, 2147483647, 2147483646, null, null, 2147483646, 2147483646]}, "output": 2147483647, "hidden": true},
+    {"input": {"root": [2, 4, 2, 4, 4, 2, 5, 5, 4, null, null, 3, 2, 5, 5, null, null, null, null, 3, 3, null, null, 5, 5, null, null, 3, 5, 3, 3, null, null, null, null, null, null, 5, 5, null, null, null, null, 5, 5]}, "output": 3, "hidden": true},
+    {"input": {"root": [687600036, 1685059305, 687600036, 1685059305, 1863192125, null, null, 1685059305, 1685059305, 2077075142, 1863192125, 1685059305, 2095394787, 1966413135, 1685059305, 2082608886, 2077075142, 1863192125, 1950544769, 1712187464, 1685059305, null, null, null, null, 1685059305, 1685059305, null, null, null, null, null, null, null, null, null, null, 1873840679, 1685059305, 2137700433, 1685059305]}, "output": 1685059305, "hidden": true},
+    {"input": {"root": [2, 2, 2, null, null, 2, 2, null, null, 2, 2, null, null, 3, 2, null, null, 2, 2, null, null, 2, 2, 2, 2, null, null, 2, 2, null, null, 2, 2, null, null, null, null, 2, 2, 2, 2, null, null, null, null, 2, 2]}, "output": 3, "hidden": true},
+    {"input": {"root": [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, null, null, null, null, 10, 10, null, null, 10, 10, 10, 10, 10, 10, null, null, null, null, 10, 10, null, null, null, null, null, null, null, null, 10, 10, 10, 10]}, "output": -1, "hidden": true},
+    {"input": {"root": [564, 564, 564, null, null, 564, 856, 870, 564, null, null, null, null, 678, 564, 678, 813, null, null, 678, 1796, null, null, null, null, 1966, 1796, 1966, 1993, null, null, null, null, 1999, 1993, 1999, 2000, null, null, 1999, 2000]}, "output": 678, "hidden": true},
+    {"input": {"root": [1209051535, 1209051535, 1209051535, 1209051535, 1209051535, null, null, 1209051535, 1209051535, 1209051535, 1209051535, 1209051535, 1209051535, 1209051535, 1209051535, 1209051535, 1209051535, 1209051535, 1209051535, 1209051535, 1209051535, null, null, null, null, null, null, null, null, 1209051535, 1716907537, null, null, 1813521616, 1209051535, null, null, 1209051535, 1209051535]}, "output": 1716907537, "hidden": true},
+    {"input": {"root": [7, 8, 7, null, null, 7, 7, 7, 7, null, null, 7, 7, null, null, 7, 7, null, null, null, null, 7, 7, null, null, 7, 7, null, null, 7, 7, null, null, 7, 7, 7, 7, null, null, null, null, 7, 7, null, null, 7, 7]}, "output": 8, "hidden": true}
+  ]
+}
