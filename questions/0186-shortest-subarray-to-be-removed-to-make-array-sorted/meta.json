@@ -1,0 +1,57 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 186,
+  "slug": "shortest-subarray-to-be-removed-to-make-array-sorted",
+  "title": "Shortest Subarray to be Removed to Make Array Sorted",
+  "difficulty": "medium",
+  "tags": [
+    "arrays",
+    "two-pointers",
+    "binary-search"
+  ],
+  "companies": [
+    "google",
+    "amazon"
+  ],
+  "target_minutes": 30,
+  "signature": {
+    "function": "find_length_of_shortest_subarray",
+    "params": [
+      {
+        "name": "arr",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}
