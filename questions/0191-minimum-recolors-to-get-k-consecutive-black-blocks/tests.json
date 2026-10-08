@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input":{"blocks":"BBWBBWWB","k":5},"output":1},
+    {"input":{"blocks":"WBBBW","k":3},"output":0},
+    {"input":{"blocks":"WWWW","k":2},"output":2},
+    {"input":{"blocks":"B","k":1},"output":0,"hidden":true},
+    {"input":{"blocks":"W","k":1},"output":1,"hidden":true},
+    {"input":{"blocks":"WBWBWBWB","k":8},"output":4,"hidden":true},
+    {"input":{"blocks":"BWBWBWBWB","k":3},"output":1,"hidden":true},
+    {"input":{"blocks":"BBBBWWWWBBBB","k":4},"output":0,"hidden":true},
+    {"input":{"blocks":"BWBWBWBWBWWBBBWBBBWWBBBBWWBBWWBBWWWBBWWWBWBWWBBWBWBBBBWWWWWWBBWWWBBWWBWBWBWWBWWBBWBWWBBBWBBBBWWBBWBB","k":10},"output":3,"hidden":true},
+    {"input":{"blocks":"WWWWWWWBBWWWBWWWWWWWWBBWWBBBWWWWWBWWWWWBBWWBWWWWWBWBWWWWWWWWWWWBWWWWWBBBWWBWWWWWWWWWWWWWWWWBWBWWWWWW","k":37},"output":25,"hidden":true},
+    {"input":{"blocks":"BBBBBBBWBBBBWBBBBBBBBBBBWBBBWBBBBBBWBBBBWBBBBBBWWBWWBWBBBWBBBWBBBBBBBBWWBBWBBBBBBBBBBBBBWBWBBBBBBBBB","k":100},"output":18,"hidden":true},
+    {"input":{"blocks":"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW","k":100},"output":100,"hidden":true}
+  ]
+}
