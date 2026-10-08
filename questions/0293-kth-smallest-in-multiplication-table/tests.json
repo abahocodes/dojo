@@ -1,0 +1,25 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"m": 3, "n": 4, "k": 7}, "output": 4},
+    {"input": {"m": 2, "n": 5, "k": 10}, "output": 10},
+    {"input": {"m": 5, "n": 5, "k": 13}, "output": 8},
+    {"input": {"m": 1, "n": 1, "k": 1}, "output": 1, "hidden": true},
+    {"input": {"m": 1, "n": 30000, "k": 29999}, "output": 29999, "hidden": true},
+    {"input": {"m": 30000, "n": 1, "k": 12345}, "output": 12345, "hidden": true},
+    {"input": {"m": 7, "n": 3, "k": 1}, "output": 1, "hidden": true},
+    {"input": {"m": 9, "n": 9, "k": 81}, "output": 81, "hidden": true},
+    {"input": {"m": 30000, "n": 30000, "k": 900000000}, "output": 900000000, "hidden": true},
+    {"input": {"m": 30000, "n": 30000, "k": 450000000}, "output": 168028638, "hidden": true},
+    {"input": {"m": 30000, "n": 29999, "k": 1}, "output": 1, "hidden": true},
+    {"input": {"m": 12345, "n": 30000, "k": 77777777}, "output": 19802796, "hidden": true},
+    {"input": {"m": 18, "n": 24, "k": 275}, "output": 132, "hidden": true},
+    {"input": {"m": 42, "n": 148, "k": 231}, "output": 58, "hidden": true},
+    {"input": {"m": 289, "n": 51, "k": 12340}, "output": 7296, "hidden": true},
+    {"input": {"m": 118, "n": 95, "k": 1957}, "output": 504, "hidden": true},
+    {"input": {"m": 40, "n": 128, "k": 1752}, "output": 574, "hidden": true},
+    {"input": {"m": 114, "n": 135, "k": 4329}, "output": 1274, "hidden": true},
+    {"input": {"m": 73, "n": 246, "k": 9379}, "output": 3672, "hidden": true},
+    {"input": {"m": 210, "n": 79, "k": 3022}, "output": 780, "hidden": true}
+  ]
+}
