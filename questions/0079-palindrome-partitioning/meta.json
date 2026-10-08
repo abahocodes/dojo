@@ -1,0 +1,44 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 79,
+  "slug": "palindrome-partitioning",
+  "title": "Palindrome Partitioning",
+  "difficulty": "medium",
+  "tags": [
+    "backtracking",
+    "strings",
+    "dynamic-programming"
+  ],
+  "companies": [
+    "amazon",
+    "google",
+    "meta",
+    "bloomberg"
+  ],
+  "target_minutes": 25,
+  "signature": {
+    "function": "partition",
+    "params": [
+      {
+        "name": "s",
+        "type": "string"
+      }
+    ],
+    "returns": "string[][]"
+  },
+  "compare": "unordered",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}

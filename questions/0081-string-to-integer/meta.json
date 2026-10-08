@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 81,
+  "slug": "string-to-integer",
+  "title": "String to Integer",
+  "difficulty": "medium",
+  "tags": [
+    "strings",
+    "parsing"
+  ],
+  "companies": [
+    "amazon",
+    "microsoft",
+    "meta",
+    "bloomberg",
+    "apple"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "string_to_integer",
+    "params": [
+      {
+        "name": "s",
+        "type": "string"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
