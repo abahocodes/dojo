@@ -1,0 +1,57 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 320,
+  "slug": "minimum-remove-to-make-valid-parentheses",
+  "title": "Minimum Remove to Make Valid Parentheses",
+  "difficulty": "medium",
+  "tags": [
+    "stack",
+    "strings"
+  ],
+  "companies": [
+    "meta",
+    "amazon",
+    "bloomberg"
+  ],
+  "target_minutes": 20,
+  "signature": {
+    "function": "min_remove_to_make_valid",
+    "params": [
+      {
+        "name": "s",
+        "type": "string"
+      }
+    ],
+    "returns": "string"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}
