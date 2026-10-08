@@ -194,13 +194,19 @@ fn choices(bank: &Bank, command: &str, position: usize) -> Vec<String> {
     }
 }
 
-/// Whether Enter should run the line as typed rather than take a
-/// suggestion: the argument being typed is already a complete value (a
-/// known name or question id), or the line ends with a space after one.
-/// `/solve need` means `need`, not a fuzzy match like `indeed`.
-pub fn finished(bank: &Bank, line: &str, ctx: Context) -> bool {
-    let Some((name, args)) = line.strip_prefix('/').and_then(|r| r.split_once(' ')) else {
+/// Whether Enter should take the selected suggestion instead of running the
+/// line as typed. Only a partly typed command name, or a partly typed value
+/// from a fixed set (`/lang py`, `/help sol`, `/report gra`), completes.
+/// Everything else runs as typed, Tab being the way to take a suggestion:
+/// free text (`/solve two sum`, `/list dp`, `/show two`), editor commands
+/// (`/editor subl`), ids, counts and exact values. `/solve need` means
+/// `need`, not a fuzzy match like `indeed`.
+pub fn enter_completes(bank: &Bank, line: &str, ctx: Context) -> bool {
+    let Some(rest) = line.strip_prefix('/') else {
         return false;
+    };
+    let Some((name, args)) = rest.split_once(' ') else {
+        return true;
     };
     let Some(spec) = find(name) else {
         return false;
@@ -208,18 +214,14 @@ pub fn finished(bank: &Bank, line: &str, ctx: Context) -> bool {
     if !takes_args(spec, ctx) {
         return false;
     }
-    let (before, token) = args.rsplit_once(' ').unwrap_or(("", args));
-    if token.is_empty() {
-        return !before.trim().is_empty();
-    }
+    let token = args.rsplit_once(' ').map_or(args, |(_, t)| t);
     let position = args.split(' ').count() - 1;
-    let id = |t: &str| t.parse::<u32>().is_ok_and(|id| bank.get(id).is_some());
-    match spec.name {
-        "show" | "past" | "hint" | "solution" | "solve" if position == 0 && id(token) => true,
-        _ => choices(bank, spec.name, position)
+    let fixed_set = matches!((spec.name, position), ("lang" | "help" | "report", 0));
+    fixed_set
+        && !token.is_empty()
+        && !choices(bank, spec.name, position)
             .iter()
-            .any(|v| v == token),
-    }
+            .any(|v| v == token)
 }
 
 fn simple(values: Vec<&String>, replace: &dyn Fn(&str, bool) -> String) -> Vec<Item> {
@@ -392,24 +394,37 @@ mod tests {
         );
     }
 
-    /// Enter runs a finished line as typed instead of taking the top
-    /// suggestion (`/solve need` used to become `/solve indeed`).
+    /// Enter runs the line as typed unless it's finishing a partial command
+    /// name or fixed-set value (`/solve need` used to become `/solve
+    /// indeed`, `/solve two sum` became `/solve two prefix-sum`).
     #[rstest]
-    #[case::exact_keyword("/solve need", true)]
-    #[case::exact_keyword_then_space("/solve need ", true)]
-    #[case::exact_label("/list graphs", true)]
-    #[case::second_label("/report graphs hard", true)]
-    #[case::question_id("/show 42", true)]
-    #[case::solve_id("/solve 42", true)]
-    #[case::language("/lang go", true)]
-    #[case::editor("/editor nvim", true)]
-    #[case::partial_keyword("/solve nee", false)]
-    #[case::partial_language("/lang ja", false)]
-    #[case::no_argument_yet("/solve ", false)]
-    #[case::unknown_id("/show 99999", false)]
-    #[case::command_name("/sol", false)]
+    #[case::command_name("/sol", true)]
+    #[case::partial_language("/lang ja", true)]
+    #[case::partial_help("/help sol", true)]
+    #[case::partial_report_label("/report gra", true)]
+    #[case::keyword("/solve need", false)]
+    #[case::keyword_then_space("/solve need ", false)]
+    #[case::count("/solve need 3", false)]
+    #[case::random_count("/solve random 3", false)]
+    #[case::query("/solve two sum", false)]
+    #[case::short_query("/solve dp", false)]
+    #[case::partial_word_query("/solve nee", false)]
+    #[case::ids("/solve 42 43", false)]
+    #[case::list_query("/list two sum", false)]
+    #[case::list_partial("/list grap", false)]
+    #[case::show_search("/show two", false)]
+    #[case::show_slug("/show two-sum", false)]
+    #[case::show_id("/show 42", false)]
+    #[case::past_count("/past 6 3", false)]
+    #[case::hint_id("/hint 3", false)]
+    #[case::editor_command("/editor subl", false)]
+    #[case::editor_vi("/editor vi", false)]
+    #[case::editor_flags("/editor code --wait", false)]
+    #[case::exact_language("/lang go", false)]
+    #[case::exact_report_label("/report graphs", false)]
+    #[case::exact_help("/help solve", false)]
     #[case::plain_text("hello", false)]
-    fn knows_when_a_line_is_finished(#[case] line: &str, #[case] finished: bool) {
-        assert_eq!(super::finished(&Bank::embedded(), line, IDLE), finished);
+    fn enter_completes_only_partial_names(#[case] line: &str, #[case] completes: bool) {
+        assert_eq!(enter_completes(&Bank::embedded(), line, IDLE), completes);
     }
 }

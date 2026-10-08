@@ -511,10 +511,12 @@ impl App {
     }
 
     fn on_enter(&mut self) {
-        // A finished line runs as typed; the suggestions are only for Tab
-        // or an explicit pick with the arrow keys.
-        let finished = complete::finished(&self.bank, self.input.text(), self.completion_context());
-        if self.popup_open() && (self.chose || !finished) {
+        // Enter runs what was typed. It takes a suggestion only to finish a
+        // partial command name or fixed-set value, during setup, or when
+        // picked with the arrow keys; Tab always takes one.
+        let completes = self.setup.is_some()
+            || complete::enter_completes(&self.bank, self.input.text(), self.completion_context());
+        if self.popup_open() && (self.chose || completes) {
             let typed = self.input.text().trim_end().to_string();
             let item = &self.completions[self.selected];
             // Accept a suggestion that changes the line; submit if it's final.
