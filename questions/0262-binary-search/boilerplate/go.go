@@ -1,0 +1,7 @@
+// 262. Binary Search (easy)
+// /show to reread the problem · /test runs visible tests · /submit when done
+package main
+
+func search(nums []int, target int) int {
+	return 0
+}
