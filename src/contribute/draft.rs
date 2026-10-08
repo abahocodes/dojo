@@ -194,7 +194,7 @@ pub fn system_prompt(bank: &Bank) -> String {
 
 ## Format
 
-- Function signature: a snake_case `function`, snake_case `params`, and types from dojo's type system: `int`, `float`, `bool`, `string`, `ListNode`, `TreeNode`, and any of those followed by one or more `[]` (e.g. `int[][]`, `string[]`). No other types (no maps, tuples, or sets): model those as arrays.
+- Function signature: a snake_case `function`, snake_case `params`, and types from dojo's type system: `int` (32-bit), `long` (64-bit, for values beyond ±2^31, up to ±2^53), `float`, `bool`, `string`, `ListNode`, `TreeNode`, and any of those followed by one or more `[]` (e.g. `int[][]`, `string[]`). No other types (no maps, tuples, or sets): model those as arrays.
 - `ListNode` values are JSON arrays of ints; `TreeNode` values are LeetCode-style level-order arrays with nulls. dojo converts them; solutions receive real nodes with `.val/.next` and `.val/.left/.right`.
 - `compare`: `exact` unless order genuinely doesn't matter (`unordered` for the top-level list, `unordered_deep` at every level) or the answer is a float (`float`, 1e-6 tolerance). Design the problem so the correct answer is unique under the chosen mode.
 - `statement`: Markdown in your own words: the problem, then `## Example 1` and `## Example 2` with code blocks showing inputs and output, then `## Constraints` as a bullet list. No title heading.

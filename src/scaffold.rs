@@ -29,7 +29,7 @@ pub fn boilerplate(meta: &Meta, lang: Language) -> String {
 
 fn py_type(t: &Type) -> String {
     match t {
-        Type::Int => "int".into(),
+        Type::Int | Type::Long => "int".into(),
         Type::Float => "float".into(),
         Type::Bool => "bool".into(),
         Type::String => "str".into(),
@@ -77,7 +77,7 @@ fn python(meta: &Meta) -> String {
 
 fn js_type(t: &Type) -> String {
     match t {
-        Type::Int | Type::Float => "number".into(),
+        Type::Int | Type::Long | Type::Float => "number".into(),
         Type::Bool => "boolean".into(),
         Type::String => "string".into(),
         Type::ListNode => "ListNode | null".into(),

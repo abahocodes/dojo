@@ -4,12 +4,18 @@ use serde_json::Value;
 
 /// A language-agnostic type used in question signatures.
 ///
-/// Written in `meta.json` as strings: `int`, `float`, `bool`, `string`,
-/// `ListNode`, `TreeNode`, and any of those followed by one or more `[]`.
+/// Written in `meta.json` as strings: `int`, `long`, `float`, `bool`,
+/// `string`, `ListNode`, `TreeNode`, and any of those followed by one or more
+/// `[]`.
+///
+/// `int` is 32-bit (Java/C++ `int`); `long` is 64-bit for values that don't
+/// fit, limited to ±(2^53 − 1) so JavaScript represents them exactly. Node
+/// values are `int`s.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(try_from = "String", into = "String")]
 pub enum Type {
     Int,
+    Long,
     Float,
     Bool,
     String,
@@ -26,6 +32,7 @@ impl Type {
         }
         match s {
             "int" => Ok(Type::Int),
+            "long" => Ok(Type::Long),
             "float" => Ok(Type::Float),
             "bool" => Ok(Type::Bool),
             "string" => Ok(Type::String),
@@ -40,14 +47,17 @@ impl Type {
     /// array of ints and nulls (LeetCode style).
     pub fn check(&self, v: &Value) -> Result<(), String> {
         let ok = match self {
-            Type::Int => v.is_i64() || v.is_u64(),
+            Type::Int => is_int(v),
+            Type::Long => v
+                .as_i64()
+                .is_some_and(|n| n.unsigned_abs() <= MAX_SAFE_INTEGER),
             Type::Float => v.is_number(),
             Type::Bool => v.is_boolean(),
             Type::String => v.is_string(),
-            Type::ListNode => v.as_array().is_some_and(|a| a.iter().all(|x| x.is_i64())),
+            Type::ListNode => v.as_array().is_some_and(|a| a.iter().all(is_int)),
             Type::TreeNode => v
                 .as_array()
-                .is_some_and(|a| a.iter().all(|x| x.is_i64() || x.is_null())),
+                .is_some_and(|a| a.iter().all(|x| is_int(x) || x.is_null())),
             Type::List(inner) => {
                 let Some(items) = v.as_array() else {
                     return Err(format!("expected {self}, got {}", short(v)));
@@ -60,6 +70,10 @@ impl Type {
         };
         if ok {
             Ok(())
+        } else if matches!(self, Type::Int | Type::ListNode | Type::TreeNode)
+            && v.as_i64().is_some_and(|n| i32::try_from(n).is_err())
+        {
+            Err(format!("{} doesn't fit a 32-bit int; use `long`", short(v)))
         } else {
             Err(format!("expected {self}, got {}", short(v)))
         }
@@ -77,6 +91,7 @@ impl fmt::Display for Type {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Type::Int => write!(f, "int"),
+            Type::Long => write!(f, "long"),
             Type::Float => write!(f, "float"),
             Type::Bool => write!(f, "bool"),
             Type::String => write!(f, "string"),
@@ -95,8 +110,8 @@ impl schemars::JsonSchema for Type {
     fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
         schemars::json_schema!({
             "type": "string",
-            "description": "int, float, bool, string, ListNode, TreeNode, or any of those followed by one or more []",
-            "pattern": "^(int|float|bool|string|ListNode|TreeNode)(\\[\\])*$"
+            "description": "int (32-bit), long (64-bit), float, bool, string, ListNode, TreeNode, or any of those followed by one or more []",
+            "pattern": "^(int|long|float|bool|string|ListNode|TreeNode)(\\[\\])*$"
         })
     }
 }
@@ -112,6 +127,13 @@ impl From<Type> for String {
     fn from(t: Type) -> String {
         t.to_string()
     }
+}
+
+/// Largest integer JavaScript represents exactly (2^53 − 1).
+const MAX_SAFE_INTEGER: u64 = (1 << 53) - 1;
+
+fn is_int(v: &Value) -> bool {
+    v.as_i64().is_some_and(|n| i32::try_from(n).is_ok())
 }
 
 fn short(v: &Value) -> String {
@@ -136,6 +158,7 @@ mod tests {
 
     #[rstest]
     #[case("int", Type::Int)]
+    #[case("long", Type::Long)]
     #[case("float", Type::Float)]
     #[case("bool", Type::Bool)]
     #[case("string", Type::String)]
@@ -163,6 +186,15 @@ mod tests {
     #[rstest]
     #[case("int", json!(3), true)]
     #[case("int", json!(3.5), false)]
+    #[case("int", json!(2147483647), true)]
+    #[case("int", json!(-2147483648), true)]
+    #[case("int", json!(2147483648_i64), false)]
+    #[case("long", json!(2147483648_i64), true)]
+    #[case("long", json!(9007199254740991_i64), true)]
+    #[case("long", json!(9007199254740992_i64), false)]
+    #[case("long", json!(1.5), false)]
+    #[case("int[]", json!([1, 3000000000_i64]), false)]
+    #[case("ListNode", json!([1, 3000000000_i64]), false)]
     #[case("float", json!(1), true)]
     #[case("float", json!(1.5), true)]
     #[case("bool", json!(true), true)]
