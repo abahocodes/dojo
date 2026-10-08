@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 108,
+  "slug": "single-number",
+  "title": "Single Number",
+  "difficulty": "easy",
+  "tags": [
+    "bit-manipulation",
+    "arrays"
+  ],
+  "companies": [
+    "amazon",
+    "google",
+    "apple",
+    "microsoft",
+    "bloomberg"
+  ],
+  "target_minutes": 10,
+  "signature": {
+    "function": "single_number",
+    "params": [
+      {
+        "name": "nums",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    }
+  }
+}
