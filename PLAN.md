@@ -12,10 +12,10 @@ where you have gaps.
 | Language | Rust (edition 2024) |
 | UI | ratatui fullscreen (alternate screen), crossterm backend. No inline mode. |
 | Storage | SQLite via sqlx (bundled SQLite — no user-installed deps). **All SQL uses sqlx's compile-time checked macros**: `query_as!` for rows, `query!` for statements without rows. Migrations in `migrations/` (`sqlx::migrate!`). |
-| Questions | Self-contained asset folders with a schema, embedded in the binary (`rust-embed`). See `questions/README.md`. JSON Schemas in `schema/` are generated from the serde types (`dojo schema`). |
-| Solve languages | Python 3 and JavaScript (Node). A language = a harness in `src/runner/` + `boilerplate/` and `solutions/` files in every question. |
+| Questions | Self-contained asset folders with a schema, packed by `build.rs` into one zstd-compressed blob in the binary. 500 questions; ids 501–1000 are planned in `questions/CURRICULUM.md` (about 25% easy, 55% medium, 20% hard). See `questions/README.md`. JSON Schemas in `schema/` are generated from the serde types (`dojo schema`). |
+| Solve languages | Python 3, JavaScript (Node), TypeScript (Node), Java, C++ and Go; every question has all six. A language = a harness in `src/runner/` (compiled languages get a per-question driver, `src/runner/compiled/`) + `boilerplate/` and `solutions/` files in every question. |
 | Content updates | Ship with releases (revisit `/update` packs later). |
-| Platforms | macOS (arm64, x86_64), Linux (musl static). Released with cargo-dist. |
+| Platforms | macOS (arm64, x86_64), Linux (arm64, x86_64). Released with cargo-dist: shell installer, GitHub Releases, Homebrew (`brew install abahocodes/tap/dojo`). |
 
 ## Development
 
@@ -52,8 +52,9 @@ submit, next question).
 
 See `questions/README.md`. `meta.json` is the manifest: metadata plus the path of every other file
 (statement, hints, explanation, tests, and per-language boilerplate +
-solution). Questions are not versioned; attempts record the dojo release.
-Each question folder has its own generated `cargo test`.
+solution). Questions are not versioned; they are edited in place.
+Each question folder has its own generated `cargo test` (behind
+`--features question-tests`).
 
 ## App
 
@@ -69,7 +70,13 @@ Commands (a deliberately tight set; the prompt always suggests the next one):
 | Browse | `/list`, `/show`, `/past [id] [n]` |
 | Insight | `/report [tag \| company \| difficulty]` (includes history) |
 | Settings | `/editor`, `/lang`, `/config` |
-| App | `/copy`, `/clear`, `/donate`, `/help`, `/quit` (`/exit`, `/q`), `/contribute` (M6) |
+| App | `/copy`, `/clear`, `/donate`, `/help`, `/quit` (`/exit`, `/q`), `/contribute`, `/accept` |
+
+First run (no config file) walks through picking an editor and a language,
+then saves the config. Idle pause: no key, scroll or save for
+`idle_pause_minutes` (default 15) pauses the timer, and the idle time isn't
+counted. Closing dojo shows the end-of-session review (each question, outcome,
+time) and prints it to the normal terminal.
 
 A **session** is the period the dojo window is open: it starts with the first
 question and ends when dojo closes. `/solve` always starts fresh. `/edit` is
@@ -129,8 +136,8 @@ happened during an attempt, JSON payloads) and `input_history`.
 ## Contribute
 
 `/contribute` (or `dojo contribute`): describe a question → dojo drafts it
-with Claude (`claude-opus-5-5` by default) or OpenAI using the contributor's
-API key (OS keychain; `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` override) →
+in all six languages with Claude (`claude-opus-5-5` by default), OpenAI or a
+local model through Ollama, using the contributor's API key (OS keychain; `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` override) →
 writes the asset folder, runs an optional stress-case generator, computes
 expected outputs by running the Python reference solution, and runs the full
 validator; problems go back to the model (up to 3 rounds). The draft shows in
@@ -154,17 +161,27 @@ Two separate workflows:
   The per-question tests exist behind `--features question-tests`.
 - `question.yml`, for contributed questions (PRs touching `questions/`):
   builds dojo and runs `dojo validate --question <folder>` on only the
-  folders the PR adds or changes, plus the id/slug uniqueness check.
+  folders the PR adds or changes (split into up to 8 parallel shards), plus
+  the id/slug uniqueness check. Validation checks the schema and that the
+  question can't break the runner.
+- `release.yml` (cargo-dist): a `v*` tag builds every platform, publishes the
+  GitHub Release and pushes the Homebrew formula with a deploy key
+  (`HOMEBREW_TAP_DEPLOY_KEY`). Release by bumping the version in a PR, then
+  tagging the merge.
 
 ## Milestones
 
 | # | Scope | Status |
 |---|---|---|
-| M0 | Cargo project, question schema, `dojo validate`, seed questions, Python adapter | done (17 questions) |
+| M0 | Cargo project, question schema, `dojo validate`, seed questions, Python adapter | done (now 500 questions) |
 | M1 | Fullscreen shell: layout, transcript, input + autocomplete, status bar, markdown, `/help` `/list` `/show` | done |
 | M2 | Session core: `/solve <id>`, editor launch/suspend, timer, `/test` `/submit` `/hint` `/solution` `/skip`, SQLite recording | done (also multi-question queues, `/next`, `/giveup`, `/pause`, save-triggered tests) |
-| M3 | end-of-session review, idle detection | `/solve random`, `/past` done |
+| M3 | End-of-session review, idle detection | done (also `/solve random`, `/past`, first-run setup) |
 | M4 | Grading, mastery, tabbed `/report`, `dojo report --json`, `/solve need` | done |
-| M5 | More languages (Go, TypeScript, Rust, Java, C++) | Python + JavaScript done |
-| M6 | `/contribute` + repo CI | done (PR flow untested until the GitHub repo exists) |
-| M7 | cargo-dist releases, Homebrew tap | |
+| M5 | More languages | done: TypeScript, Java, C++, Go (Rust dropped) |
+| M6 | `/contribute` + repo CI | done (the fork → PR flow hasn't been run end to end by an outside contributor) |
+| M7 | cargo-dist releases, Homebrew tap | done (v0.3.0) |
+| M8 | Bank to 1000 questions | 500 done; 501–1000 planned |
+
+Open: run `/contribute` end to end as an outside contributor; `/update`
+question packs if releases stop being enough.
