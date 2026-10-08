@@ -1,0 +1,27 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"sentence": "the quick fox quietly quits", "search_word": "qui"}, "output": 2},
+    {"input": {"sentence": "nobody here knows", "search_word": "now"}, "output": -1},
+    {"input": {"sentence": "tea teapot steam", "search_word": "team"}, "output": -1},
+    {"input": {"sentence": "a", "search_word": "a"}, "output": 1, "hidden": true},
+    {"input": {"sentence": "a", "search_word": "ab"}, "output": -1, "hidden": true},
+    {"input": {"sentence": "abc abc", "search_word": "abc"}, "output": 1, "hidden": true},
+    {"input": {"sentence": "xab ab", "search_word": "ab"}, "output": 2, "hidden": true},
+    {"input": {"sentence": "hello world", "search_word": "world"}, "output": 2, "hidden": true},
+    {"input": {"sentence": "cat dog bird", "search_word": "birds"}, "output": -1, "hidden": true},
+    {"input": {"sentence": "b ccbac acb acaaaa baaa babac aca bcba", "search_word": "c"}, "output": 2, "hidden": true},
+    {"input": {"sentence": "b", "search_word": "b"}, "output": 1, "hidden": true},
+    {"input": {"sentence": "bcbcaa ba cb caac cbacca a", "search_word": "c"}, "output": 3, "hidden": true},
+    {"input": {"sentence": "cbccba abbcbb bacbc aa ccbbbb caa ab bc bbbb", "search_word": "c"}, "output": 1, "hidden": true},
+    {"input": {"sentence": "ccbab aaabc bb a aaab c c", "search_word": "ccc"}, "output": -1, "hidden": true},
+    {"input": {"sentence": "c cac aaaacc c bbaba cc aacacc abb abcbc cabb bcab ca cac", "search_word": "ab"}, "output": 8, "hidden": true},
+    {"input": {"sentence": "cbcabb bbb aaaca cab", "search_word": "ca"}, "output": 4, "hidden": true},
+    {"input": {"sentence": "ccba c a aaa caac baba aabacb ab caa b bc baaab ccabbc cc cabb", "search_word": "a"}, "output": 3, "hidden": true},
+    {"input": {"sentence": "cc cac aacac", "search_word": "c"}, "output": 1, "hidden": true},
+    {"input": {"sentence": "cbbbc cbaa acab ab", "search_word": "b"}, "output": -1, "hidden": true},
+    {"input": {"sentence": "aa a c aa ccbc", "search_word": "aab"}, "output": -1, "hidden": true},
+    {"input": {"sentence": "aa ba aaaca caabba", "search_word": "ab"}, "output": -1, "hidden": true},
+    {"input": {"sentence": "a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a ab", "search_word": "ab"}, "output": 50, "hidden": true}
+  ]
+}
