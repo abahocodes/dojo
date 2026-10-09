@@ -5,7 +5,7 @@ use super::*;
 use crate::questions::Difficulty::{Easy, Hard, Medium};
 
 fn labels() -> Vec<String> {
-    ["google", "meta", "dfs", "graphs", "arrays"]
+    ["google", "meta", "amazon", "dfs", "graphs", "arrays"]
         .map(String::from)
         .to_vec()
 }
@@ -234,6 +234,39 @@ fn the_same_question_isnt_offered_twice_running() {
     assert_eq!(ids(&need(&library, "google")), [3]);
     library.questions[2] = solved(library.questions[2].clone(), 1.0, 0);
     assert_eq!(ids(&need(&library, "google")), [1]);
+}
+
+#[test]
+fn the_open_question_isnt_picked_again() {
+    // Mid-question, `/solve amazon 3` again: the open one is still
+    // unfinished, so it looks untried, but it's being left behind.
+    let mut library = MockLibrary::with(vec![
+        asked(question(1, Medium, &["arrays"]), "amazon", 5),
+        asked(question(2, Medium, &["arrays"]), "amazon", 3),
+        asked(question(3, Easy, &["arrays"]), "amazon", 3),
+    ]);
+    library.open = Some(1);
+    assert_eq!(ids(&need(&library, "amazon 3")), [2, 3]);
+    let s = select(
+        &parse("random amazon 3").unwrap(),
+        &library,
+        &MockDice::default(),
+        now(),
+    )
+    .unwrap();
+    assert!(!s.ids.contains(&1));
+    // Asked for by id, it restarts.
+    assert_eq!(ids(&need(&library, "1")), [1]);
+}
+
+#[test]
+fn the_open_question_stays_when_its_all_that_matches() {
+    let mut library = MockLibrary::with(vec![
+        question(1, Medium, &["dfs"]),
+        question(2, Easy, &["arrays"]),
+    ]);
+    library.open = Some(1);
+    assert_eq!(ids(&need(&library, "dfs")), [1]);
 }
 
 // ── random ───────────────────────────────────────────────────────────

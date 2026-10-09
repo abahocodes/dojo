@@ -82,6 +82,8 @@ pub struct MockLibrary {
     /// What `search` returns, whatever the text.
     pub matches: Vec<u32>,
     pub broken: bool,
+    /// The question open now.
+    pub open: Option<u32>,
     pub history_calls: Cell<usize>,
     pub searched: RefCell<Vec<String>>,
 }
@@ -113,6 +115,10 @@ impl Library for MockLibrary {
             anyhow::bail!("disk on fire");
         }
         Ok((self.questions.clone(), self.topics.clone()))
+    }
+
+    fn open(&self) -> Option<u32> {
+        self.open
     }
 
     fn search(&self, text: &str) -> Vec<u32> {

@@ -848,6 +848,11 @@ impl select::Library for AppLibrary<'_> {
         Ok((questions, report.topics))
     }
 
+    fn open(&self) -> Option<u32> {
+        let s = self.app.session.as_ref()?;
+        s.attempt.as_ref().map(|a| a.question_id)
+    }
+
     fn search(&self, text: &str) -> Vec<u32> {
         match self.app.bank.by_slug(text) {
             Some(q) => vec![q.meta.id],
