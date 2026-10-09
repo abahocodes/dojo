@@ -132,7 +132,11 @@ happened during an attempt, JSON payloads) and `input_history`.
 - Suggestions: gap topics (< 60%) first, then due reviews (solved, not
   cleanly, a week+ ago), then never-practiced topics.
 - `/solve need` order: gap topics, due reviews, unpracticed topics, then
-  unsolved questions (easiest first), then the weakest solved ones.
+  unsolved questions (easiest first, ones tried in the last day after),
+  then the weakest solved ones.
+- `/solve need` and `/solve random` take tag, company and difficulty words
+  plus a count (`/solve need google dfs 3`); filter words alone
+  (`/solve google`) mean `need` within them.
 
 ## Contribute
 
