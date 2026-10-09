@@ -8,9 +8,9 @@
     "strings",
     "trie"
   ],
-  "companies": [
-    "microsoft"
-  ],
+  "companies": {
+    "microsoft": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "count_prefixes",

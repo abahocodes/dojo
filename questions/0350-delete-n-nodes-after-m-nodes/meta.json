@@ -7,9 +7,9 @@
   "tags": [
     "linked-list"
   ],
-  "companies": [
-    "microsoft"
-  ],
+  "companies": {
+    "microsoft": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "delete_nodes",

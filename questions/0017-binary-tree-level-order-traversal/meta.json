@@ -8,12 +8,12 @@
     "trees",
     "bfs"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "microsoft",
-    "linkedin"
-  ],
+  "companies": {
+    "amazon": 4,
+    "meta": 3,
+    "microsoft": 4,
+    "linkedin": 4
+  },
   "target_minutes": 15,
   "signature": {
     "function": "level_order",

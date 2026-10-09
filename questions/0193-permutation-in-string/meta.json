@@ -9,11 +9,11 @@
     "sliding-window",
     "hash-map"
   ],
-  "companies": [
-    "microsoft",
-    "meta",
-    "amazon"
-  ],
+  "companies": {
+    "microsoft": 4,
+    "meta": 3,
+    "amazon": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "check_inclusion",

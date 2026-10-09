@@ -9,10 +9,10 @@
     "bfs",
     "dfs"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 2,
+    "amazon": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "deepest_leaves_sum",

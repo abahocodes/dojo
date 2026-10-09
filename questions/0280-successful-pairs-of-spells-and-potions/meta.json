@@ -9,10 +9,10 @@
     "sorting",
     "two-pointers"
   ],
-  "companies": [
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "amazon": 3,
+    "google": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "successful_pairs",

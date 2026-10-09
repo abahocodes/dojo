@@ -9,10 +9,10 @@
     "sorting",
     "counting"
   ],
-  "companies": [
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 2,
+    "microsoft": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "relative_sort_array",

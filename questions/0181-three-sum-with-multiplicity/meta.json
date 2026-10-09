@@ -10,10 +10,10 @@
     "counting",
     "hash-map"
   ],
-  "companies": [
-    "quora",
-    "amazon"
-  ],
+  "companies": {
+    "quora": 2,
+    "amazon": 1
+  },
   "target_minutes": 25,
   "signature": {
     "function": "three_sum_multi",

@@ -8,11 +8,11 @@
     "trees",
     "dfs"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 3,
+    "meta": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "has_path_sum",

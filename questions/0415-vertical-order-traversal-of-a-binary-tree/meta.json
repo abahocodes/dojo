@@ -11,12 +11,12 @@
     "sorting",
     "hash-map"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "microsoft",
-    "bloomberg"
-  ],
+  "companies": {
+    "meta": 5,
+    "amazon": 3,
+    "microsoft": 3,
+    "bloomberg": 3
+  },
   "target_minutes": 40,
   "signature": {
     "function": "vertical_traversal",

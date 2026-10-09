@@ -8,11 +8,11 @@
     "stack",
     "strings"
   ],
-  "companies": [
-    "meta",
-    "bloomberg",
-    "amazon"
-  ],
+  "companies": {
+    "meta": 3,
+    "bloomberg": 4,
+    "amazon": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "remove_k_duplicates",

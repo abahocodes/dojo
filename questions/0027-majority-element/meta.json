@@ -9,11 +9,11 @@
     "counting",
     "voting"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "adobe"
-  ],
+  "companies": {
+    "amazon": 2,
+    "google": 2,
+    "adobe": 3
+  },
   "target_minutes": 15,
   "signature": {
     "function": "majority_element",

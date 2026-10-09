@@ -9,10 +9,10 @@
     "binary-search",
     "sorting"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "book_calendar",

@@ -9,10 +9,10 @@
     "strings",
     "hash-set"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 2,
+    "amazon": 1
+  },
   "target_minutes": 20,
   "signature": {
     "function": "minimum_length_encoding",

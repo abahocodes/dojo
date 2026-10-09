@@ -8,10 +8,10 @@
     "arrays",
     "two-pointers"
   ],
-  "companies": [
-    "google",
-    "apple"
-  ],
+  "companies": {
+    "google": 2,
+    "apple": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "duplicate_zeros",

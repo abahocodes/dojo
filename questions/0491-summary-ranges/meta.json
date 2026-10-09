@@ -8,11 +8,11 @@
     "intervals",
     "arrays"
   ],
-  "companies": [
-    "google",
-    "meta",
-    "yandex"
-  ],
+  "companies": {
+    "google": 3,
+    "meta": 2,
+    "yandex": 4
+  },
   "target_minutes": 15,
   "signature": {
     "function": "summary_ranges",

@@ -8,10 +8,10 @@
     "arrays",
     "prefix-sum"
   ],
-  "companies": [
-    "swiggy",
-    "amazon"
-  ],
+  "companies": {
+    "swiggy": 2,
+    "amazon": 1
+  },
   "target_minutes": 10,
   "signature": {
     "function": "min_start_value",

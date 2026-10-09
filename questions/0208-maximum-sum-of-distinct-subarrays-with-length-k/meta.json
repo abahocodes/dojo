@@ -9,10 +9,10 @@
     "sliding-window",
     "hash-map"
   ],
-  "companies": [
-    "amazon",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 3,
+    "meta": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "maximum_subarray_sum_distinct",

@@ -8,10 +8,10 @@
     "arrays",
     "prefix-sum"
   ],
-  "companies": [
-    "amazon",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 2,
+    "meta": 3
+  },
   "target_minutes": 12,
   "signature": {
     "function": "range_sums",

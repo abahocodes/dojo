@@ -9,10 +9,10 @@
     "hash-map",
     "counting"
   ],
-  "companies": [
-    "tripadvisor",
-    "amazon"
-  ],
+  "companies": {
+    "tripadvisor": 2,
+    "amazon": 1
+  },
   "target_minutes": 15,
   "signature": {
     "function": "common_chars",

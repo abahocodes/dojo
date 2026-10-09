@@ -9,10 +9,10 @@
     "stack",
     "monotonic-stack"
   ],
-  "companies": [
-    "google",
-    "meta"
-  ],
+  "companies": {
+    "google": 2,
+    "meta": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "verify_preorder",

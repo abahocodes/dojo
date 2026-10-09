@@ -9,10 +9,10 @@
     "hash-map",
     "strings"
   ],
-  "companies": [
-    "yelp",
-    "amazon"
-  ],
+  "companies": {
+    "yelp": 3,
+    "amazon": 1
+  },
   "target_minutes": 15,
   "signature": {
     "function": "find_restaurant",

@@ -10,11 +10,11 @@
     "binary-search-tree",
     "divide-and-conquer"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "meta": 2,
+    "amazon": 3,
+    "microsoft": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "sorted_list_to_bst",

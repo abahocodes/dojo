@@ -10,10 +10,10 @@
     "greedy",
     "counting"
   ],
-  "companies": [
-    "adobe",
-    "amazon"
-  ],
+  "companies": {
+    "adobe": 2,
+    "amazon": 1
+  },
   "target_minutes": 15,
   "signature": {
     "function": "array_pair_sum",

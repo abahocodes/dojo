@@ -9,12 +9,12 @@
     "quickselect",
     "sorting"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "microsoft",
-    "google"
-  ],
+  "companies": {
+    "meta": 5,
+    "amazon": 4,
+    "microsoft": 3,
+    "google": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "find_kth_largest",

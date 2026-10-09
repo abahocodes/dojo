@@ -8,11 +8,11 @@
     "binary-search",
     "arrays"
   ],
-  "companies": [
-    "google",
-    "microsoft",
-    "amazon"
-  ],
+  "companies": {
+    "google": 3,
+    "microsoft": 3,
+    "amazon": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "single_non_duplicate",

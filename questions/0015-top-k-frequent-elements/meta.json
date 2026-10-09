@@ -9,12 +9,12 @@
     "hash-map",
     "bucket-sort"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "google",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 5,
+    "meta": 4,
+    "google": 3,
+    "microsoft": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "top_k_frequent",

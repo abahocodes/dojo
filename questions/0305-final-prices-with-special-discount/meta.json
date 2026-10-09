@@ -9,10 +9,10 @@
     "monotonic-stack",
     "arrays"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 1,
+    "amazon": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "final_prices",

@@ -9,9 +9,9 @@
     "hash-map",
     "counting"
   ],
-  "companies": [
-    "amazon"
-  ],
+  "companies": {
+    "amazon": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "num_equiv_domino_pairs",

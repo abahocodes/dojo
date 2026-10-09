@@ -8,10 +8,10 @@
     "trees",
     "bfs"
   ],
-  "companies": [
-    "meta",
-    "amazon"
-  ],
+  "companies": {
+    "meta": 3,
+    "amazon": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "is_complete_tree",

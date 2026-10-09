@@ -10,10 +10,10 @@
     "bucket-sort",
     "radix-sort"
   ],
-  "companies": [
-    "amazon",
-    "apple"
-  ],
+  "companies": {
+    "amazon": 2,
+    "apple": 2
+  },
   "target_minutes": 40,
   "signature": {
     "function": "maximum_gap",

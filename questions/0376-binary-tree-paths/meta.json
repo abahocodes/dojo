@@ -10,11 +10,11 @@
     "backtracking",
     "strings"
   ],
-  "companies": [
-    "google",
-    "meta",
-    "apple"
-  ],
+  "companies": {
+    "google": 2,
+    "meta": 3,
+    "apple": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "binary_tree_paths",

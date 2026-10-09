@@ -8,11 +8,11 @@
     "linked-list",
     "two-pointers"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 3,
+    "meta": 2,
+    "microsoft": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "delete_all_duplicates",

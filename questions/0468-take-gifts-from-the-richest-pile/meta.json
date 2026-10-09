@@ -8,9 +8,9 @@
     "heap",
     "simulation"
   ],
-  "companies": [
-    "amazon"
-  ],
+  "companies": {
+    "amazon": 1
+  },
   "target_minutes": 15,
   "signature": {
     "function": "pick_gifts",

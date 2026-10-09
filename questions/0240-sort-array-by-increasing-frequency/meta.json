@@ -9,10 +9,10 @@
     "sorting",
     "hash-map"
   ],
-  "companies": [
-    "ebay",
-    "twitter"
-  ],
+  "companies": {
+    "ebay": 2,
+    "twitter": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "frequency_sort_numbers",

@@ -8,10 +8,10 @@
     "trees",
     "dfs"
   ],
-  "companies": [
-    "amazon",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 2,
+    "meta": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "max_ancestor_diff",

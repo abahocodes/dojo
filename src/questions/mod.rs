@@ -39,6 +39,75 @@ impl fmt::Display for Difficulty {
     }
 }
 
+/// How often a company asks a question, estimated: 1 rarely, 2
+/// occasionally, 3 regularly, 4 frequently, 5 one of their most asked.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(transparent)]
+pub struct Frequency(#[schemars(range(min = 1, max = 5))] pub u8);
+
+impl Frequency {
+    pub fn words(self) -> &'static str {
+        match self.0 {
+            0 | 1 => "rarely",
+            2 => "sometimes",
+            3 => "regularly",
+            4 => "often",
+            _ => "very often",
+        }
+    }
+}
+
+/// Companies that ask a question and how often, by name.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(transparent)]
+pub struct Companies(pub BTreeMap<String, Frequency>);
+
+impl Companies {
+    pub fn contains(&self, name: &str) -> bool {
+        self.0.contains_key(name)
+    }
+
+    pub fn get(&self, name: &str) -> Option<Frequency> {
+        self.0.get(name).copied()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    pub fn names(&self) -> impl Iterator<Item = &String> {
+        self.0.keys()
+    }
+
+    /// How often the company that asks it most does.
+    pub fn top(&self) -> Option<Frequency> {
+        self.0.values().max().copied()
+    }
+
+    /// `amazon (very often), google (often)`: most often first.
+    pub fn describe(&self) -> String {
+        let mut all: Vec<(&String, &Frequency)> = self.0.iter().collect();
+        all.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
+        all.iter()
+            .map(|(name, f)| format!("{name} ({})", f.words()))
+            .collect::<Vec<_>>()
+            .join(", ")
+    }
+}
+
+impl<const N: usize> From<[(&str, u8); N]> for Companies {
+    fn from(pairs: [(&str, u8); N]) -> Companies {
+        Companies(
+            pairs
+                .into_iter()
+                .map(|(n, f)| (n.to_string(), Frequency(f)))
+                .collect(),
+        )
+    }
+}
+
 /// How a returned value is compared against the expected output.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -93,9 +162,10 @@ pub struct Meta {
     /// Topics (`arrays`, `dfs`, ...), lowercase kebab-case.
     #[schemars(length(min = 1))]
     pub tags: Vec<String>,
-    /// Companies known to ask this kind of question, lowercase kebab-case.
+    /// Companies known to ask this question (lowercase kebab-case), each
+    /// with an estimate of how often: 1 rarely, 5 one of their most asked.
     #[serde(default)]
-    pub companies: Vec<String>,
+    pub companies: Companies,
     /// Time a well-prepared candidate should need.
     #[schemars(range(min = 1))]
     pub target_minutes: u32,
@@ -286,7 +356,7 @@ impl Bank {
         let mut out: Vec<String> = self
             .questions
             .iter()
-            .flat_map(|q| q.meta.tags.iter().chain(&q.meta.companies).cloned())
+            .flat_map(|q| q.meta.tags.iter().chain(q.meta.companies.names()).cloned())
             .collect();
         out.sort();
         out.dedup();

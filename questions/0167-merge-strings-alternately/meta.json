@@ -8,10 +8,10 @@
     "strings",
     "two-pointers"
   ],
-  "companies": [
-    "amazon",
-    "uber"
-  ],
+  "companies": {
+    "amazon": 2,
+    "uber": 1
+  },
   "target_minutes": 15,
   "signature": {
     "function": "merge_alternately",

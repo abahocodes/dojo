@@ -8,12 +8,12 @@
     "trees",
     "dfs"
   ],
-  "companies": [
-    "meta",
-    "google",
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "meta": 5,
+    "google": 3,
+    "amazon": 3,
+    "microsoft": 3
+  },
   "target_minutes": 15,
   "signature": {
     "function": "diameter_of_binary_tree",

@@ -8,10 +8,10 @@
     "linked-list",
     "sorting"
   ],
-  "companies": [
-    "microsoft",
-    "amazon"
-  ],
+  "companies": {
+    "microsoft": 2,
+    "amazon": 1
+  },
   "target_minutes": 20,
   "signature": {
     "function": "insertion_sort_list",

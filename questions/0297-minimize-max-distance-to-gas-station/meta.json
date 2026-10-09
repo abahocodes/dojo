@@ -8,9 +8,9 @@
     "binary-search",
     "arrays"
   ],
-  "companies": [
-    "google"
-  ],
+  "companies": {
+    "google": 4
+  },
   "target_minutes": 40,
   "signature": {
     "function": "minmax_gas_dist",

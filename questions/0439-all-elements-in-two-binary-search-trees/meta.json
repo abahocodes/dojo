@@ -10,10 +10,10 @@
     "two-pointers",
     "sorting"
   ],
-  "companies": [
-    "meta",
-    "amazon"
-  ],
+  "companies": {
+    "meta": 3,
+    "amazon": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "get_all_elements",

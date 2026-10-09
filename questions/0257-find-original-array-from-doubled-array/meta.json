@@ -10,10 +10,10 @@
     "hash-map",
     "greedy"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 4,
+    "amazon": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "find_original_array",

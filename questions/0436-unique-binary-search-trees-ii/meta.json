@@ -11,11 +11,11 @@
     "dynamic-programming",
     "backtracking"
   ],
-  "companies": [
-    "amazon",
-    "bloomberg",
-    "apple"
-  ],
+  "companies": {
+    "amazon": 2,
+    "bloomberg": 2,
+    "apple": 2
+  },
   "target_minutes": 30,
   "signature": {
     "function": "generate_trees",

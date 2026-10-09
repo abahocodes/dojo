@@ -9,10 +9,10 @@
     "hash-set",
     "sorting"
   ],
-  "companies": [
-    "ibm",
-    "amazon"
-  ],
+  "companies": {
+    "ibm": 2,
+    "amazon": 1
+  },
   "target_minutes": 20,
   "signature": {
     "function": "longest_square_streak",

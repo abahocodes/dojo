@@ -10,12 +10,12 @@
     "deque",
     "arrays"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "microsoft",
-    "citadel"
-  ],
+  "companies": {
+    "amazon": 4,
+    "google": 3,
+    "microsoft": 2,
+    "citadel": 3
+  },
   "target_minutes": 30,
   "signature": {
     "function": "max_sliding_window",

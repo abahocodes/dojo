@@ -9,9 +9,9 @@
     "trie",
     "sorting"
   ],
-  "companies": [
-    "amazon"
-  ],
+  "companies": {
+    "amazon": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "index_pairs",

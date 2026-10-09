@@ -9,12 +9,12 @@
     "matrix",
     "divide-and-conquer"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "apple",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 4,
+    "microsoft": 4,
+    "apple": 3,
+    "meta": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "search_matrix_sorted",

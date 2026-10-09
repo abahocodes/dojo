@@ -10,10 +10,10 @@
     "bit-manipulation",
     "hash-map"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 1,
+    "amazon": 1
+  },
   "target_minutes": 40,
   "signature": {
     "function": "count_palindrome_paths",

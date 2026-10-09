@@ -9,11 +9,11 @@
     "dfs",
     "hash-set"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "meta"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 3,
+    "meta": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "del_nodes",

@@ -9,10 +9,10 @@
     "sliding-window",
     "prefix-sum"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "max_score_cards",

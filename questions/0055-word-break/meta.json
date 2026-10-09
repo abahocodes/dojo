@@ -9,12 +9,12 @@
     "strings",
     "hash-set"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "meta",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 4,
+    "google": 3,
+    "meta": 4,
+    "bloomberg": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "word_break",

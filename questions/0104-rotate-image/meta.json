@@ -9,12 +9,12 @@
     "matrix",
     "math"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "apple",
-    "google"
-  ],
+  "companies": {
+    "amazon": 4,
+    "microsoft": 4,
+    "apple": 4,
+    "google": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "rotate",

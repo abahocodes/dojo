@@ -9,10 +9,10 @@
     "bfs",
     "dfs"
   ],
-  "companies": [
-    "linkedin",
-    "meta"
-  ],
+  "companies": {
+    "linkedin": 3,
+    "meta": 3
+  },
   "target_minutes": 15,
   "signature": {
     "function": "largest_values",

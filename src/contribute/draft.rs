@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 
 use crate::lang::Language;
-use crate::questions::{Bank, Compare, Difficulty, Question};
+use crate::questions::{Bank, Companies, Compare, Difficulty, Frequency, Question};
 use crate::runner::{self, Status, Which};
 use crate::{scaffold, validate};
 
@@ -38,6 +38,32 @@ pub struct Test {
     pub hidden: bool,
 }
 
+/// A company that asks the question, and how often (1 to 5). A list
+/// rather than a map so the schema stays closed for strict output. Drafts
+/// saved before ratings existed hold bare names; those count as 3.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(from = "RatingOrName")]
+pub struct CompanyRating {
+    pub name: String,
+    pub frequency: u8,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum RatingOrName {
+    Rating { name: String, frequency: u8 },
+    Name(String),
+}
+
+impl From<RatingOrName> for CompanyRating {
+    fn from(r: RatingOrName) -> CompanyRating {
+        match r {
+            RatingOrName::Rating { name, frequency } => CompanyRating { name, frequency },
+            RatingOrName::Name(name) => CompanyRating { name, frequency: 3 },
+        }
+    }
+}
+
 /// What the model returns. Every field is required and every object closed,
 /// so one schema works with strict structured output on every provider.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -46,7 +72,7 @@ pub struct Draft {
     pub title: String,
     pub difficulty: Difficulty,
     pub tags: Vec<String>,
-    pub companies: Vec<String>,
+    pub companies: Vec<CompanyRating>,
     pub target_minutes: u32,
     pub function: String,
     pub params: Vec<Param>,
@@ -110,7 +136,21 @@ pub fn schema() -> Value {
         "title": s("short title"),
         "difficulty": { "type": "string", "enum": ["easy", "medium", "hard"] },
         "tags": { "type": "array", "items": s("topic, lowercase kebab-case") },
-        "companies": { "type": "array", "items": s("company, lowercase kebab-case") },
+        "companies": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["name", "frequency"],
+                "properties": {
+                    "name": s("company, lowercase kebab-case"),
+                    "frequency": {
+                        "type": "integer",
+                        "description": "how often they ask it: 1 rarely, 3 regularly, 5 one of their most asked"
+                    }
+                }
+            }
+        },
         "target_minutes": { "type": "integer", "description": "minutes a prepared candidate needs" },
         "function": s("snake_case function name"),
         "params": {
@@ -216,6 +256,16 @@ impl Draft {
             .collect()
     }
 
+    /// The companies as stored in meta.json.
+    pub fn companies(&self) -> Companies {
+        Companies(
+            self.companies
+                .iter()
+                .map(|c| (c.name.clone(), Frequency(c.frequency)))
+                .collect(),
+        )
+    }
+
     /// An existing question in draft form: the worked example in the prompt.
     pub fn from_question(q: &Question) -> Draft {
         let m = &q.meta;
@@ -224,7 +274,15 @@ impl Draft {
             title: m.title.clone(),
             difficulty: m.difficulty,
             tags: m.tags.clone(),
-            companies: m.companies.clone(),
+            companies: m
+                .companies
+                .0
+                .iter()
+                .map(|(name, f)| CompanyRating {
+                    name: name.clone(),
+                    frequency: f.0,
+                })
+                .collect(),
             target_minutes: m.target_minutes,
             function: m.signature.function.clone(),
             params: m
@@ -305,7 +363,7 @@ pub fn system_prompt(bank: &Bank) -> String {
 - `tests`: each `args_json` is a JSON object mapping every parameter name to a value. Do NOT include expected outputs: dojo computes them by running the Python solution. Include the statement's examples and at least 3 visible tests, plus at least 5 hidden tests covering edge cases (smallest inputs, duplicates, negatives, extremes). Keep each literal test small (under ~200 values).
 - `stress_generator_python`: when performance matters, Python source defining `generate()` that returns a list of at most {MAX_GENERATED} argument objects for large hidden tests (use `random.Random(<fixed seed>)` so it's deterministic; stay within the stated constraints and keep each case under ~10,000 values). Otherwise an empty string.
 - `tags`: reuse existing tags when they fit: {tags}.
-- `companies`: companies well known to ask this kind of question, lowercase kebab-case; empty if unsure.
+- `companies`: companies well known to ask this question, lowercase kebab-case, each with how often they ask it: 1 rarely, 2 occasionally, 3 regularly, 4 frequently, 5 one of their most asked. Be calibrated; empty if unsure.
 - Don't duplicate an existing question: {existing}.
 
 ## Reference solutions (all six languages)
@@ -615,7 +673,7 @@ fn write_files(draft: &Draft, dir: &Path, id: u32, cases: &[Value]) -> Result<Ve
         "title": draft.title,
         "difficulty": draft.difficulty,
         "tags": draft.tags,
-        "companies": draft.companies,
+        "companies": draft.companies(),
         "target_minutes": draft.target_minutes,
         "signature": signature,
         "compare": draft.compare,
@@ -677,6 +735,27 @@ fn write_files(draft: &Draft, dir: &Path, id: u32, cases: &[Value]) -> Result<Ve
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn company_ratings_load_old_and_new_drafts() {
+        let new: Vec<CompanyRating> =
+            serde_json::from_str(r#"[{"name": "google", "frequency": 5}]"#).unwrap();
+        let old: Vec<CompanyRating> = serde_json::from_str(r#"["meta"]"#).unwrap();
+        assert_eq!(
+            new[0],
+            CompanyRating {
+                name: "google".into(),
+                frequency: 5
+            }
+        );
+        assert_eq!(
+            old[0],
+            CompanyRating {
+                name: "meta".into(),
+                frequency: 3
+            }
+        );
+    }
 
     /// Climbing Stairs (#13) as a new question, `count_climbs`, with a
     /// reference solution in every language.

@@ -9,10 +9,10 @@
     "strings",
     "simulation"
   ],
-  "companies": [
-    "mercari",
-    "amazon"
-  ],
+  "companies": {
+    "mercari": 1,
+    "amazon": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "min_operations_to_main",

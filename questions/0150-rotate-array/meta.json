@@ -9,11 +9,11 @@
     "two-pointers",
     "math"
   ],
-  "companies": [
-    "microsoft",
-    "amazon",
-    "bloomberg"
-  ],
+  "companies": {
+    "microsoft": 4,
+    "amazon": 3,
+    "bloomberg": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "rotate",

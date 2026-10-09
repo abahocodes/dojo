@@ -8,10 +8,10 @@
     "trees",
     "dfs"
   ],
-  "companies": [
-    "amazon",
-    "adobe"
-  ],
+  "companies": {
+    "amazon": 1,
+    "adobe": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "sum_of_left_leaves",

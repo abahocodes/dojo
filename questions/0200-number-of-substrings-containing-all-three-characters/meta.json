@@ -9,10 +9,10 @@
     "sliding-window",
     "hash-map"
   ],
-  "companies": [
-    "amazon",
-    "dream11"
-  ],
+  "companies": {
+    "amazon": 2,
+    "dream11": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "number_of_substrings",

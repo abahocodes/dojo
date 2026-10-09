@@ -9,12 +9,12 @@
     "dfs",
     "string-matching"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "microsoft",
-    "google"
-  ],
+  "companies": {
+    "amazon": 3,
+    "meta": 2,
+    "microsoft": 3,
+    "google": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "is_subtree",

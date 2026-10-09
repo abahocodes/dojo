@@ -10,11 +10,11 @@
     "strings",
     "dfs"
   ],
-  "companies": [
-    "amazon",
-    "apple",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 4,
+    "apple": 2,
+    "meta": 2
+  },
   "target_minutes": 40,
   "signature": {
     "function": "find_all_concatenated_words",

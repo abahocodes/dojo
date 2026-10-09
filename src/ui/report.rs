@@ -440,7 +440,7 @@ fn questions(r: &Report, filter: Option<&str>) -> Vec<Para> {
         .filter(|q| {
             filter.is_none_or(|f| {
                 q.tags.iter().any(|x| x == f)
-                    || q.companies.iter().any(|x| x == f)
+                    || q.companies.contains(f)
                     || q.difficulty.to_string() == f
             })
         })

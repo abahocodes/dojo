@@ -9,10 +9,10 @@
     "binary-lifting",
     "dfs"
   ],
-  "companies": [
-    "google",
-    "uber"
-  ],
+  "companies": {
+    "google": 1,
+    "uber": 1
+  },
   "target_minutes": 40,
   "signature": {
     "function": "lca_queries",

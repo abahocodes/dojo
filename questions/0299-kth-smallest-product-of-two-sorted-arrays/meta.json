@@ -8,10 +8,10 @@
     "binary-search",
     "arrays"
   ],
-  "companies": [
-    "google",
-    "linkedin"
-  ],
+  "companies": {
+    "google": 2,
+    "linkedin": 2
+  },
   "target_minutes": 45,
   "signature": {
     "function": "kth_smallest_product",

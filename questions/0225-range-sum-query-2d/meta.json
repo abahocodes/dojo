@@ -8,11 +8,11 @@
     "matrix",
     "prefix-sum"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "meta": 3,
+    "amazon": 3,
+    "google": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "region_sums",

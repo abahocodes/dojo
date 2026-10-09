@@ -9,11 +9,11 @@
     "sorting",
     "counting"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "bloomberg"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 3,
+    "bloomberg": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "h_index",

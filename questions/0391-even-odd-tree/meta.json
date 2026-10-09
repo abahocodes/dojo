@@ -8,10 +8,10 @@
     "trees",
     "bfs"
   ],
-  "companies": [
-    "amazon",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 1,
+    "bloomberg": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "is_even_odd_tree",

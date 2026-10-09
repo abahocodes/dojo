@@ -8,12 +8,12 @@
     "linked-list",
     "recursion"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "meta",
-    "apple"
-  ],
+  "companies": {
+    "amazon": 4,
+    "microsoft": 5,
+    "meta": 3,
+    "apple": 3
+  },
   "target_minutes": 40,
   "signature": {
     "function": "reverse_k_group",

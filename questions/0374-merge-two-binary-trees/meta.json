@@ -9,10 +9,10 @@
     "dfs",
     "recursion"
   ],
-  "companies": [
-    "amazon",
-    "adobe"
-  ],
+  "companies": {
+    "amazon": 2,
+    "adobe": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "merge_trees",

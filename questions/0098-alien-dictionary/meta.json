@@ -9,13 +9,13 @@
     "topological-sort",
     "strings"
   ],
-  "companies": [
-    "airbnb",
-    "meta",
-    "google",
-    "amazon",
-    "uber"
-  ],
+  "companies": {
+    "airbnb": 5,
+    "meta": 4,
+    "google": 4,
+    "amazon": 3,
+    "uber": 3
+  },
   "target_minutes": 40,
   "signature": {
     "function": "alien_order",

@@ -9,10 +9,10 @@
     "dfs",
     "strings"
   ],
-  "companies": [
-    "amazon",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 2,
+    "meta": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "tree2str",

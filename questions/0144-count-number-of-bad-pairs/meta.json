@@ -9,10 +9,10 @@
     "hash-map",
     "math"
   ],
-  "companies": [
-    "amazon",
-    "salesforce"
-  ],
+  "companies": {
+    "amazon": 2,
+    "salesforce": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "count_bad_pairs",

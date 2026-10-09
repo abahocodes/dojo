@@ -38,12 +38,9 @@
       "minItems": 1
     },
     "companies": {
-      "description": "Companies known to ask this kind of question, lowercase kebab-case.",
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "default": []
+      "description": "Companies known to ask this question (lowercase kebab-case), each\nwith an estimate of how often: 1 rarely, 5 one of their most asked.",
+      "$ref": "#/$defs/Companies",
+      "default": {}
     },
     "target_minutes": {
       "description": "Time a well-prepared candidate should need.",
@@ -124,6 +121,20 @@
         "medium",
         "hard"
       ]
+    },
+    "Companies": {
+      "description": "Companies that ask a question and how often, by name.",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/Frequency"
+      }
+    },
+    "Frequency": {
+      "description": "How often a company asks a question, estimated: 1 rarely, 2\noccasionally, 3 regularly, 4 frequently, 5 one of their most asked.",
+      "type": "integer",
+      "format": "uint8",
+      "minimum": 1,
+      "maximum": 5
     },
     "Signature": {
       "type": "object",

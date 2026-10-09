@@ -9,11 +9,11 @@
     "divide-and-conquer",
     "hash-map"
   ],
-  "companies": [
-    "microsoft",
-    "amazon",
-    "bloomberg"
-  ],
+  "companies": {
+    "microsoft": 3,
+    "amazon": 3,
+    "bloomberg": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "build_tree_in_post",

@@ -8,11 +8,11 @@
     "graphs",
     "union-find"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 2,
+    "google": 3,
+    "microsoft": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "find_redundant_connection",

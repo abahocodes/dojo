@@ -9,10 +9,10 @@
     "two-pointers",
     "sorting"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "find_unsorted_subarray",

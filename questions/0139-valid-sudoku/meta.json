@@ -9,12 +9,12 @@
     "hash-set",
     "matrix"
   ],
-  "companies": [
-    "amazon",
-    "apple",
-    "uber",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 4,
+    "apple": 3,
+    "uber": 3,
+    "microsoft": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "is_valid_sudoku",

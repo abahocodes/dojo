@@ -10,12 +10,12 @@
     "sorting",
     "greedy"
   ],
-  "companies": [
-    "google",
-    "meta",
-    "amazon",
-    "bloomberg"
-  ],
+  "companies": {
+    "google": 5,
+    "meta": 4,
+    "amazon": 4,
+    "bloomberg": 4
+  },
   "target_minutes": 20,
   "signature": {
     "function": "min_meeting_rooms",

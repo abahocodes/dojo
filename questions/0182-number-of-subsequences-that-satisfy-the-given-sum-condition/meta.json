@@ -10,10 +10,10 @@
     "sorting",
     "math"
   ],
-  "companies": [
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "amazon": 2,
+    "google": 1
+  },
   "target_minutes": 25,
   "signature": {
     "function": "num_subseq",

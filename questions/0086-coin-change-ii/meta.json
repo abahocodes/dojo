@@ -8,12 +8,12 @@
     "dynamic-programming",
     "knapsack"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "bloomberg",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 3,
+    "google": 2,
+    "bloomberg": 3,
+    "microsoft": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "count_combinations",

@@ -9,11 +9,11 @@
     "two-pointers",
     "sorting"
   ],
-  "companies": [
-    "meta",
-    "microsoft",
-    "bloomberg"
-  ],
+  "companies": {
+    "meta": 5,
+    "microsoft": 4,
+    "bloomberg": 3
+  },
   "target_minutes": 15,
   "signature": {
     "function": "merge_sorted",

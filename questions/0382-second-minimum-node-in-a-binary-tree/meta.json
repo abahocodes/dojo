@@ -8,10 +8,10 @@
     "trees",
     "dfs"
   ],
-  "companies": [
-    "linkedin",
-    "amazon"
-  ],
+  "companies": {
+    "linkedin": 3,
+    "amazon": 1
+  },
   "target_minutes": 15,
   "signature": {
     "function": "find_second_minimum_value",

@@ -8,11 +8,11 @@
     "intervals",
     "sorting"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "google"
-  ],
+  "companies": {
+    "amazon": 3,
+    "meta": 3,
+    "google": 3
+  },
   "target_minutes": 15,
   "signature": {
     "function": "can_attend_meetings",

@@ -10,10 +10,10 @@
     "math",
     "greedy"
   ],
-  "companies": [
-    "google",
-    "wish"
-  ],
+  "companies": {
+    "google": 2,
+    "wish": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "num_rabbits",

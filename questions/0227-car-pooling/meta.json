@@ -10,11 +10,11 @@
     "difference-array",
     "sorting"
   ],
-  "companies": [
-    "amazon",
-    "uber",
-    "lyft"
-  ],
+  "companies": {
+    "amazon": 3,
+    "uber": 3,
+    "lyft": 4
+  },
   "target_minutes": 25,
   "signature": {
     "function": "car_pooling",

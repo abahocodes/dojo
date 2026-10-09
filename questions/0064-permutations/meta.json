@@ -8,12 +8,12 @@
     "backtracking",
     "recursion"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "microsoft",
-    "linkedin"
-  ],
+  "companies": {
+    "meta": 3,
+    "amazon": 3,
+    "microsoft": 3,
+    "linkedin": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "permute",

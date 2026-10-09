@@ -9,11 +9,11 @@
     "binary-search-tree",
     "binary-search"
   ],
-  "companies": [
-    "meta",
-    "google",
-    "microsoft"
-  ],
+  "companies": {
+    "meta": 4,
+    "google": 3,
+    "microsoft": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "closest_value",

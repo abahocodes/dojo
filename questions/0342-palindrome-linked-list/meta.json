@@ -9,11 +9,11 @@
     "two-pointers",
     "stack"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "meta": 4,
+    "amazon": 3,
+    "microsoft": 4
+  },
   "target_minutes": 12,
   "signature": {
     "function": "is_palindrome_list",

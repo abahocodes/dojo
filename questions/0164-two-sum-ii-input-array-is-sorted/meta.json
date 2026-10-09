@@ -8,11 +8,11 @@
     "arrays",
     "two-pointers"
   ],
-  "companies": [
-    "amazon",
-    "apple",
-    "adobe"
-  ],
+  "companies": {
+    "amazon": 3,
+    "apple": 2,
+    "adobe": 3
+  },
   "target_minutes": 15,
   "signature": {
     "function": "two_sum_sorted",

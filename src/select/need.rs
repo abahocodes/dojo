@@ -2,21 +2,66 @@
 
 use jiff::Timestamp;
 
-use super::{Strategy, untried_rank};
+use std::cmp::Reverse;
+
+use super::Strategy;
 use crate::model::{GAP, LabelStat, QuestionStat, Suggestion, age_days};
+use crate::questions::Difficulty;
 
 /// In order: a question in each gap topic (practiced, under the mastery
 /// bar), due reviews (solved, not cleanly, a week or more ago), a question
 /// in each topic never practiced, unsolved questions (ones tried in the last
 /// day waiting, so a skip isn't offered straight back), then the weakest
-/// solved ones. Untried questions come mediums first.
+/// solved ones. Among untried and unsolved questions the most asked come
+/// first, then mediums, easies and hards.
 pub struct Need {
     now: Timestamp,
+    focus: Vec<String>,
 }
 
 impl Need {
     pub fn new(now: Timestamp) -> Need {
-        Need { now }
+        Need {
+            now,
+            focus: Vec::new(),
+        }
+    }
+
+    /// Judge how often a question is asked by these companies when they
+    /// ask it (`/solve google`), not by whoever asks it most.
+    pub fn focus(self, labels: &[String]) -> Need {
+        Need {
+            focus: labels.to_vec(),
+            ..self
+        }
+    }
+
+    /// 1 to 5; 0 when no company is known to ask it.
+    fn frequency(&self, q: &QuestionStat) -> u8 {
+        self.focus
+            .iter()
+            .filter_map(|l| q.companies.get(l))
+            .max()
+            .or_else(|| q.companies.top())
+            .map_or(0, |f| f.0)
+    }
+
+    /// Most asked first, then by difficulty, then by id.
+    fn priority(&self, q: &QuestionStat) -> (Reverse<u8>, u8, u32) {
+        (
+            Reverse(self.frequency(q)),
+            difficulty_rank(q.difficulty),
+            q.id,
+        )
+    }
+}
+
+/// Mediums are asked most, then easies, then hards.
+fn difficulty_rank(d: Difficulty) -> u8 {
+    match d {
+        Difficulty::Medium => 0,
+        Difficulty::Easy => 1,
+        Difficulty::Hard => 2,
     }
 }
 
@@ -35,15 +80,19 @@ impl Strategy for Need {
                 );
             }
         };
-        let untried_first = |q: &&QuestionStat| (untried_rank(q.difficulty), q.id);
+        let untried_first = |q: &&QuestionStat| self.priority(q);
 
         // 1. Gaps: prefer an untried question there, else the weakest one.
+        //    Each topic gets its own question, not one already picked.
+        let fresh =
+            |q: &&QuestionStat, out: &[Suggestion]| !out.iter().any(|s| s.question_id == q.id);
         for t in topics.iter().filter(|t| t.attempted > 0 && t.mastery < GAP) {
             let pick = in_topic(pool, &t.label)
-                .filter(|q| q.attempts == 0)
+                .filter(|q| q.attempts == 0 && fresh(q, &out))
                 .min_by_key(untried_first)
                 .or_else(|| {
                     in_topic(pool, &t.label)
+                        .filter(|q| fresh(q, &out))
                         .min_by(|a, b| a.score.unwrap_or(0.0).total_cmp(&b.score.unwrap_or(0.0)))
                 });
             if let Some(q) = pick {
@@ -64,17 +113,32 @@ impl Strategy for Need {
         for q in due {
             push(q, "due for review".into(), &mut out);
         }
-        // 3. Coverage.
-        for t in topics.iter().filter(|t| t.attempted == 0) {
-            if let Some(q) = in_topic(pool, &t.label).min_by_key(untried_first) {
-                push(q, format!("{} not practiced yet", t.label), &mut out);
+        // 3. Coverage: a question in each topic never practiced, topics
+        //    whose best question is asked most first (not alphabetically),
+        //    each with its own question.
+        let mut new_topics: Vec<(&QuestionStat, &str)> = topics
+            .iter()
+            .filter(|t| t.attempted == 0)
+            .filter_map(|t| {
+                in_topic(pool, &t.label)
+                    .min_by_key(untried_first)
+                    .map(|q| (q, t.label.as_str()))
+            })
+            .collect();
+        new_topics.sort_by_key(|(q, _)| self.priority(q));
+        for (_, label) in new_topics {
+            if let Some(q) = in_topic(pool, label)
+                .filter(|q| fresh(q, &out))
+                .min_by_key(untried_first)
+            {
+                push(q, format!("{label} not practiced yet"), &mut out);
             }
         }
         // 4. Unsolved.
         let mut rest: Vec<&QuestionStat> = pool.iter().filter(|q| !q.solved).collect();
         rest.sort_by_key(|q| {
             let recent = q.last_attempt.is_some_and(|t| age_days(t, now) < 1.0);
-            (recent, untried_rank(q.difficulty), q.id)
+            (recent, self.priority(q))
         });
         for q in rest {
             let reason = if q.attempts == 0 {

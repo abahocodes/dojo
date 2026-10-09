@@ -9,10 +9,10 @@
     "two-pointers",
     "binary-search"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 2,
+    "amazon": 1
+  },
   "target_minutes": 30,
   "signature": {
     "function": "find_length_of_shortest_subarray",

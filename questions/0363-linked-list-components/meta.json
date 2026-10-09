@@ -8,10 +8,10 @@
     "linked-list",
     "hash-set"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 2,
+    "amazon": 1
+  },
   "target_minutes": 20,
   "signature": {
     "function": "num_components",

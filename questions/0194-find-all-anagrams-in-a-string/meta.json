@@ -9,11 +9,11 @@
     "sliding-window",
     "hash-map"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "meta": 4,
+    "amazon": 4,
+    "microsoft": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "find_anagrams",

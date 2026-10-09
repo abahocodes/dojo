@@ -8,11 +8,11 @@
     "binary-search",
     "arrays"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "meta"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 3,
+    "meta": 4
+  },
   "target_minutes": 15,
   "signature": {
     "function": "peak_index_in_mountain",

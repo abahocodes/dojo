@@ -9,9 +9,9 @@
     "sorting",
     "hash-map"
   ],
-  "companies": [
-    "amazon"
-  ],
+  "companies": {
+    "amazon": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "array_rank_transform",

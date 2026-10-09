@@ -8,9 +8,10 @@ mod need;
 mod random;
 
 use jiff::Timestamp;
+use serde::{Deserialize, Serialize};
 
 use crate::model::{LabelStat, QuestionStat, Suggestion};
-use crate::questions::{Difficulty, Question};
+use crate::questions::{Companies, Difficulty, Question};
 
 pub use need::Need;
 pub use random::{Clock, Random};
@@ -39,9 +40,10 @@ pub trait Strategy {
 }
 
 /// The strategies `/solve` can name.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Kind {
-    /// Where you need practice; the default.
+    /// Where you need practice.
     Need,
     Random,
 }
@@ -98,7 +100,8 @@ pub enum ParseError {
 
 impl Request {
     /// `/solve` arguments, given the known tag and company names.
-    pub fn parse(args: &[&str], labels: &[String]) -> Result<Request, ParseError> {
+    /// Filter words or a count alone use `default`.
+    pub fn parse(args: &[&str], labels: &[String], default: Kind) -> Result<Request, ParseError> {
         let mut n: Option<usize> = None;
         let mut words: Vec<&str> = Vec::new();
         let mut it = args.iter();
@@ -172,7 +175,7 @@ impl Request {
             _ => return Err(ParseError::TwoCounts),
         };
         Ok(Request::Pick {
-            kind: kinds.first().copied().unwrap_or(Kind::Need),
+            kind: kinds.first().copied().unwrap_or(default),
             filter,
             count,
         })
@@ -192,7 +195,7 @@ pub fn looks_numeric(word: &str) -> bool {
 pub trait Labeled {
     fn difficulty(&self) -> Difficulty;
     fn tags(&self) -> &[String];
-    fn companies(&self) -> &[String];
+    fn companies(&self) -> &Companies;
 }
 
 impl Labeled for Question {
@@ -202,7 +205,7 @@ impl Labeled for Question {
     fn tags(&self) -> &[String] {
         &self.meta.tags
     }
-    fn companies(&self) -> &[String] {
+    fn companies(&self) -> &Companies {
         &self.meta.companies
     }
 }
@@ -214,7 +217,7 @@ impl Labeled for QuestionStat {
     fn tags(&self) -> &[String] {
         &self.tags
     }
-    fn companies(&self) -> &[String] {
+    fn companies(&self) -> &Companies {
         &self.companies
     }
 }
@@ -279,13 +282,20 @@ fn difficulty(word: &str) -> Option<Difficulty> {
     }
 }
 
-/// Untried questions come mediums first (asked most), then easies, then
-/// hards.
-pub fn untried_rank(d: Difficulty) -> u8 {
-    match d {
-        Difficulty::Medium => 0,
-        Difficulty::Easy => 1,
-        Difficulty::Hard => 2,
+/// How `/solve` picks: `[solve]` in the config file.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Preferences {
+    /// What `/solve` does with only tags or a count (`/solve google`):
+    /// `need` or `random`.
+    pub strategy: Kind,
+}
+
+impl Default for Preferences {
+    fn default() -> Self {
+        Preferences {
+            strategy: Kind::Need,
+        }
     }
 }
 
@@ -353,7 +363,9 @@ pub fn select(
                 return Err(SelectError::NoMatch(filter.words()));
             }
             let picks = match kind {
-                Kind::Need => Need::new(now).pick(&pool, &topics, *count),
+                Kind::Need => Need::new(now)
+                    .focus(&filter.labels)
+                    .pick(&pool, &topics, *count),
                 Kind::Random => Random::new(dice).pick(&pool, &topics, *count),
             };
             Ok(Selection {

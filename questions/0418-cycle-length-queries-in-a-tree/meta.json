@@ -9,9 +9,9 @@
     "math",
     "bit-manipulation"
   ],
-  "companies": [
-    "google"
-  ],
+  "companies": {
+    "google": 1
+  },
   "target_minutes": 40,
   "signature": {
     "function": "cycle_length_queries",

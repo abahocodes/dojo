@@ -9,10 +9,10 @@
     "hash-map",
     "prefix-sum"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 2,
+    "amazon": 1
+  },
   "target_minutes": 40,
   "signature": {
     "function": "count_subarrays_median_k",

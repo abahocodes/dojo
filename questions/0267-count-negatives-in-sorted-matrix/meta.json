@@ -9,10 +9,10 @@
     "matrix",
     "arrays"
   ],
-  "companies": [
-    "amazon",
-    "apple"
-  ],
+  "companies": {
+    "amazon": 2,
+    "apple": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "count_negatives",

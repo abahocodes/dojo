@@ -9,11 +9,11 @@
     "dfs",
     "recursion"
   ],
-  "companies": [
-    "amazon",
-    "linkedin",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 2,
+    "linkedin": 2,
+    "microsoft": 3
+  },
   "target_minutes": 10,
   "signature": {
     "function": "max_depth",

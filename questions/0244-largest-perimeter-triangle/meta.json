@@ -10,10 +10,10 @@
     "greedy",
     "math"
   ],
-  "companies": [
-    "c3-ai",
-    "amazon"
-  ],
+  "companies": {
+    "c3-ai": 2,
+    "amazon": 1
+  },
   "target_minutes": 15,
   "signature": {
     "function": "largest_perimeter",

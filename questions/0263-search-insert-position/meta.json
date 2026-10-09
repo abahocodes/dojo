@@ -8,11 +8,11 @@
     "binary-search",
     "arrays"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "adobe"
-  ],
+  "companies": {
+    "amazon": 3,
+    "google": 2,
+    "adobe": 3
+  },
   "target_minutes": 12,
   "signature": {
     "function": "search_insert",

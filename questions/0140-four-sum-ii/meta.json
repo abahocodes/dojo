@@ -8,10 +8,10 @@
     "arrays",
     "hash-map"
   ],
-  "companies": [
-    "amazon",
-    "adobe"
-  ],
+  "companies": {
+    "amazon": 2,
+    "adobe": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "four_sum_count",

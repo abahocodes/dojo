@@ -10,11 +10,11 @@
     "strings",
     "greedy"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "apple"
-  ],
+  "companies": {
+    "amazon": 4,
+    "microsoft": 3,
+    "apple": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "largest_number",

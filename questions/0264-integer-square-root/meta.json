@@ -8,11 +8,11 @@
     "binary-search",
     "math"
   ],
-  "companies": [
-    "amazon",
-    "bloomberg",
-    "apple"
-  ],
+  "companies": {
+    "amazon": 3,
+    "bloomberg": 4,
+    "apple": 3
+  },
   "target_minutes": 12,
   "signature": {
     "function": "my_sqrt",

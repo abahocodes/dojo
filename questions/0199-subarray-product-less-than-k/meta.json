@@ -8,11 +8,11 @@
     "arrays",
     "sliding-window"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "yatra"
-  ],
+  "companies": {
+    "amazon": 3,
+    "google": 2,
+    "yatra": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "num_subarray_product_less_than_k",

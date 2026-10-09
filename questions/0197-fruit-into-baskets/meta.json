@@ -9,10 +9,10 @@
     "sliding-window",
     "hash-map"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 4,
+    "amazon": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "total_fruit",

@@ -10,11 +10,11 @@
     "stack",
     "monotonic-stack"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 2,
+    "meta": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "bst_from_preorder",

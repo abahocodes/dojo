@@ -9,10 +9,10 @@
     "hash-map",
     "counting"
   ],
-  "companies": [
-    "microsoft",
-    "apple"
-  ],
+  "companies": {
+    "microsoft": 2,
+    "apple": 2
+  },
   "target_minutes": 10,
   "signature": {
     "function": "can_construct",

@@ -63,6 +63,8 @@ pub struct Config {
     /// Pause the timer after this many minutes without a key press in dojo
     /// or a save; that time isn't counted. 0 turns it off.
     pub idle_pause_minutes: u64,
+    /// How `/solve` picks questions.
+    pub solve: crate::select::Preferences,
     /// `/contribute` settings.
     pub contribute: ContributeConfig,
 }
@@ -99,6 +101,7 @@ impl Default for Config {
             workspace: None,
             auto_test: true,
             idle_pause_minutes: 15,
+            solve: crate::select::Preferences::default(),
             contribute: ContributeConfig::default(),
         }
     }

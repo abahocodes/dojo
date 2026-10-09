@@ -9,12 +9,12 @@
     "bfs",
     "matrix"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "microsoft",
-    "uber"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 3,
+    "microsoft": 3,
+    "uber": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "capture_regions",

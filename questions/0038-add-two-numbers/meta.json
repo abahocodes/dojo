@@ -8,12 +8,12 @@
     "linked-list",
     "math"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "bloomberg",
-    "adobe"
-  ],
+  "companies": {
+    "amazon": 4,
+    "microsoft": 4,
+    "bloomberg": 4,
+    "adobe": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "add_two_numbers",

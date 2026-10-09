@@ -9,12 +9,12 @@
     "arrays",
     "simulation"
   ],
-  "companies": [
-    "amazon",
-    "uber",
-    "meta",
-    "lyft"
-  ],
+  "companies": {
+    "amazon": 4,
+    "uber": 3,
+    "meta": 3,
+    "lyft": 4
+  },
   "target_minutes": 20,
   "signature": {
     "function": "asteroid_collision",

@@ -9,11 +9,11 @@
     "two-pointers",
     "sorting"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "uber"
-  ],
+  "companies": {
+    "meta": 4,
+    "amazon": 2,
+    "uber": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "sorted_squares",

@@ -9,10 +9,10 @@
     "arrays",
     "simulation"
   ],
-  "companies": [
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "amazon": 1,
+    "google": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "find_poisoned_duration",

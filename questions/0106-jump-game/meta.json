@@ -9,12 +9,12 @@
     "greedy",
     "dynamic-programming"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "meta",
-    "google"
-  ],
+  "companies": {
+    "amazon": 4,
+    "microsoft": 3,
+    "meta": 3,
+    "google": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "can_jump",

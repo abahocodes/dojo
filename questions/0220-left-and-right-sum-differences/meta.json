@@ -8,9 +8,9 @@
     "arrays",
     "prefix-sum"
   ],
-  "companies": [
-    "amazon"
-  ],
+  "companies": {
+    "amazon": 1
+  },
   "target_minutes": 15,
   "signature": {
     "function": "left_right_difference",

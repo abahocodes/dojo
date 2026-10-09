@@ -9,10 +9,10 @@
     "math",
     "number-theory"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 2,
+    "amazon": 1
+  },
   "target_minutes": 25,
   "signature": {
     "function": "nth_ugly_number",

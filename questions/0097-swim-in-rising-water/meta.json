@@ -10,12 +10,12 @@
     "binary-search",
     "matrix"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "meta",
-    "uber"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 2,
+    "meta": 2,
+    "uber": 2
+  },
   "target_minutes": 35,
   "signature": {
     "function": "swim_in_water",

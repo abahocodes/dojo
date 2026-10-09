@@ -8,10 +8,10 @@
     "arrays",
     "two-pointers"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "longest_mountain",

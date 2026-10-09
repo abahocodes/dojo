@@ -9,10 +9,10 @@
     "two-pointers",
     "stack"
   ],
-  "companies": [
-    "amazon",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 2,
+    "meta": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "pair_sum",

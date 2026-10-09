@@ -9,11 +9,11 @@
     "strings",
     "hash-map"
   ],
-  "companies": [
-    "uber",
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "uber": 2,
+    "amazon": 2,
+    "google": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "replace_words",

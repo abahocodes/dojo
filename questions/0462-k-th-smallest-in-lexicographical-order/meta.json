@@ -8,11 +8,11 @@
     "trie",
     "math"
   ],
-  "companies": [
-    "google",
-    "tiktok",
-    "hulu"
-  ],
+  "companies": {
+    "google": 2,
+    "tiktok": 3,
+    "hulu": 3
+  },
   "target_minutes": 40,
   "signature": {
     "function": "find_kth_number",

@@ -204,7 +204,7 @@ pub fn pr_body(draft: &Draft, built: &Built, model: &str) -> String {
         if draft.companies.is_empty() {
             "—".into()
         } else {
-            draft.companies.join(", ")
+            draft.companies().describe()
         },
         built.visible,
         built.hidden,

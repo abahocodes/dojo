@@ -9,10 +9,10 @@
     "hash-map",
     "strings"
   ],
-  "companies": [
-    "amazon",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 1,
+    "bloomberg": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "kth_distinct",

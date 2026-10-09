@@ -1,6 +1,6 @@
 use rstest::rstest;
 
-use super::mock::{MockDice, MockLibrary, now, question, solved, topic, tried};
+use super::mock::{MockDice, MockLibrary, asked, now, question, solved, topic, tried};
 use super::*;
 use crate::questions::Difficulty::{Easy, Hard, Medium};
 
@@ -12,7 +12,7 @@ fn labels() -> Vec<String> {
 
 fn parse(line: &str) -> Result<Request, ParseError> {
     let args: Vec<&str> = line.split_whitespace().collect();
-    Request::parse(&args, &labels())
+    Request::parse(&args, &labels(), Kind::Need)
 }
 
 fn ids(s: &Selection) -> Vec<u32> {
@@ -98,6 +98,33 @@ fn untried_questions_come_mediums_first() {
 }
 
 #[test]
+fn most_asked_questions_come_first() {
+    let library = MockLibrary::with(vec![
+        question(1, Medium, &["arrays"]), // no company known: 0
+        question(2, Medium, &["arrays", "google"]),
+        asked(question(3, Hard, &["arrays"]), "amazon", 5),
+        asked(question(4, Easy, &["arrays"]), "meta", 3),
+    ]);
+    // 5, then the 3s by difficulty (medium before easy), then unknown.
+    assert_eq!(ids(&need(&library, "need 4")), [3, 2, 4, 1]);
+}
+
+#[test]
+fn a_company_filter_judges_frequency_by_that_company() {
+    let library = MockLibrary::with(vec![
+        asked(
+            asked(question(1, Medium, &["arrays"]), "google", 2),
+            "amazon",
+            5,
+        ),
+        asked(question(2, Medium, &["arrays"]), "google", 4),
+    ]);
+    // Overall #1 is asked more (Amazon 5), but Google asks #2 more.
+    assert_eq!(ids(&need(&library, "need 2")), [1, 2]);
+    assert_eq!(ids(&need(&library, "google 2")), [2, 1]);
+}
+
+#[test]
 fn solved_questions_go_last_weakest_first() {
     let library = MockLibrary::with(vec![
         solved(question(1, Medium, &["arrays"]), 1.0, 2),
@@ -146,6 +173,35 @@ fn gaps_then_due_reviews_then_new_topics() {
             "not solved yet"
         ]
     );
+}
+
+#[test]
+fn each_gap_topic_gets_its_own_question() {
+    let mut library = MockLibrary::with(vec![
+        asked(question(1, Medium, &["dfs", "graphs"]), "google", 5),
+        question(2, Medium, &["graphs"]),
+        question(3, Medium, &["dfs"]),
+        tried(question(4, Easy, &["dfs", "graphs"]), 48),
+    ]);
+    library.topics = vec![topic("dfs", 0.0, 1), topic("graphs", 0.0, 1)];
+    let s = need(&library, "need 2");
+    // #1 is the best for both; graphs gets the next best rather than none.
+    assert_eq!(ids(&s), [1, 2]);
+    assert_eq!(s.reasons[1].reason, "graphs is a gap (0% mastery)");
+}
+
+#[test]
+fn each_new_topic_gets_its_own_question() {
+    let mut library = MockLibrary::with(vec![
+        asked(question(1, Medium, &["dfs", "graphs"]), "google", 5),
+        question(2, Medium, &["graphs"]),
+        question(3, Medium, &["dfs"]),
+    ]);
+    library.topics = vec![topic("dfs", 0.0, 0), topic("graphs", 0.0, 0)];
+    let s = need(&library, "need 2");
+    // Both topics' best is #1; dfs takes it and graphs gets the next best.
+    assert_eq!(ids(&s), [1, 2]);
+    assert_eq!(s.reasons[1].reason, "graphs not practiced yet");
 }
 
 #[test]
@@ -292,4 +348,36 @@ fn ids_pass_through_untouched() {
     assert_eq!(ids(&s), [5, 2]);
     assert_eq!(library.history_calls.get(), 0);
     assert!(library.searched.borrow().is_empty());
+}
+
+// ── preferences ──────────────────────────────────────────────────────
+
+#[test]
+fn the_configured_strategy_is_the_default() {
+    let args = ["google", "2"];
+    let Ok(Request::Pick { kind, .. }) = Request::parse(&args, &labels(), Kind::Random) else {
+        panic!()
+    };
+    assert_eq!(kind, Kind::Random);
+    // Naming one still wins.
+    let args = ["need", "google"];
+    let Ok(Request::Pick { kind, .. }) = Request::parse(&args, &labels(), Kind::Random) else {
+        panic!()
+    };
+    assert_eq!(kind, Kind::Need);
+}
+
+#[rstest]
+#[case("", Ok(Preferences::default()))]
+#[case(
+    "strategy = \"random\"",
+    Ok(Preferences { strategy: Kind::Random })
+)]
+#[case("strategy = \"hardest\"", Err("unknown variant `hardest`"))]
+fn reads_from_config(#[case] toml_text: &str, #[case] expected: Result<Preferences, &str>) {
+    let got: Result<Preferences, _> = toml::from_str(toml_text);
+    match expected {
+        Ok(p) => assert_eq!(got.unwrap(), p),
+        Err(msg) => assert!(got.unwrap_err().to_string().contains(msg)),
+    }
 }

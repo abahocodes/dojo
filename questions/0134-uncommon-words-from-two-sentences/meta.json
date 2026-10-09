@@ -8,10 +8,10 @@
     "strings",
     "hash-map"
   ],
-  "companies": [
-    "amazon",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 1,
+    "bloomberg": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "uncommon_from_sentences",

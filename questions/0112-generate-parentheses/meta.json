@@ -9,13 +9,13 @@
     "recursion",
     "strings"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "meta",
-    "microsoft",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 4,
+    "google": 4,
+    "meta": 3,
+    "microsoft": 3,
+    "bloomberg": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "generate_parenthesis",

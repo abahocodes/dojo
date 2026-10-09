@@ -9,11 +9,11 @@
     "bfs",
     "dfs"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 2,
+    "meta": 3,
+    "bloomberg": 3
+  },
   "target_minutes": 12,
   "signature": {
     "function": "is_cousins",

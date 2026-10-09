@@ -7,11 +7,11 @@
   "tags": [
     "linked-list"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 3,
+    "meta": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "odd_even_list",

@@ -9,12 +9,12 @@
     "dfs",
     "backtracking"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "bloomberg",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 3,
+    "meta": 2,
+    "bloomberg": 3,
+    "microsoft": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "path_sum",

@@ -8,10 +8,10 @@
     "linked-list",
     "math"
   ],
-  "companies": [
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "amazon": 2,
+    "google": 1
+  },
   "target_minutes": 20,
   "signature": {
     "function": "double_it",

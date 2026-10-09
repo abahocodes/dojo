@@ -10,11 +10,11 @@
     "prefix-sum",
     "sliding-window"
   ],
-  "companies": [
-    "google",
-    "goldman-sachs",
-    "amazon"
-  ],
+  "companies": {
+    "google": 3,
+    "goldman-sachs": 3,
+    "amazon": 2
+  },
   "target_minutes": 40,
   "signature": {
     "function": "shortest_subarray",

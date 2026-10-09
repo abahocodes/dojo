@@ -50,6 +50,11 @@ fn haystack(q: &Question) -> String {
         q.meta.title,
         q.meta.slug,
         q.meta.tags.join(" "),
-        q.meta.companies.join(" ")
+        q.meta
+            .companies
+            .names()
+            .cloned()
+            .collect::<Vec<_>>()
+            .join(" ")
     )
 }

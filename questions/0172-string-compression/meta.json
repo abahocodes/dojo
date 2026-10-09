@@ -8,11 +8,11 @@
     "strings",
     "two-pointers"
   ],
-  "companies": [
-    "microsoft",
-    "goldman-sachs",
-    "amazon"
-  ],
+  "companies": {
+    "microsoft": 3,
+    "goldman-sachs": 4,
+    "amazon": 3
+  },
   "target_minutes": 12,
   "signature": {
     "function": "compress",

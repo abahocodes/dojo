@@ -9,11 +9,11 @@
     "sliding-window",
     "divide-and-conquer"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "meta": 2,
+    "amazon": 3,
+    "google": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "longest_substring_k_repeating",

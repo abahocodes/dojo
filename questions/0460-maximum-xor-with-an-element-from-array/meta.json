@@ -9,10 +9,10 @@
     "bit-manipulation",
     "sorting"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 1,
+    "amazon": 1
+  },
   "target_minutes": 40,
   "signature": {
     "function": "maximize_xor",

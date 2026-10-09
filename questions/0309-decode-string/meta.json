@@ -9,12 +9,12 @@
     "strings",
     "recursion"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "bloomberg",
-    "meta"
-  ],
+  "companies": {
+    "google": 5,
+    "amazon": 4,
+    "bloomberg": 4,
+    "meta": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "decode_string",

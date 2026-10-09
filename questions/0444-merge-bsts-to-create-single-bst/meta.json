@@ -10,9 +10,9 @@
     "hash-map",
     "dfs"
   ],
-  "companies": [
-    "google"
-  ],
+  "companies": {
+    "google": 1
+  },
   "target_minutes": 40,
   "signature": {
     "function": "can_merge",

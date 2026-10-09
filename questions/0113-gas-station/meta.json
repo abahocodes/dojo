@@ -8,12 +8,12 @@
     "greedy",
     "arrays"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "microsoft",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 3,
+    "google": 3,
+    "microsoft": 2,
+    "bloomberg": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "can_complete_circuit",

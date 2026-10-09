@@ -9,10 +9,10 @@
     "strings",
     "counting"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 2,
+    "amazon": 2
+  },
   "target_minutes": 40,
   "signature": {
     "function": "sum_prefix_scores",

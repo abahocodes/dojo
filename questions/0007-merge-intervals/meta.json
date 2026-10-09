@@ -9,14 +9,14 @@
     "sorting",
     "arrays"
   ],
-  "companies": [
-    "meta",
-    "google",
-    "amazon",
-    "microsoft",
-    "bloomberg",
-    "salesforce"
-  ],
+  "companies": {
+    "meta": 5,
+    "google": 5,
+    "amazon": 4,
+    "microsoft": 3,
+    "bloomberg": 4,
+    "salesforce": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "merge",

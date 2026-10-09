@@ -10,10 +10,10 @@
     "bit-manipulation",
     "hash-map"
   ],
-  "companies": [
-    "directi",
-    "google"
-  ],
+  "companies": {
+    "directi": 2,
+    "google": 1
+  },
   "target_minutes": 40,
   "signature": {
     "function": "longest_awesome",

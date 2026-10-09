@@ -8,11 +8,11 @@
     "trees",
     "dfs"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 3,
+    "meta": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "boundary_of_binary_tree",

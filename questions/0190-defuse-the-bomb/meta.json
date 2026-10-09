@@ -8,9 +8,9 @@
     "arrays",
     "sliding-window"
   ],
-  "companies": [
-    "amazon"
-  ],
+  "companies": {
+    "amazon": 1
+  },
   "target_minutes": 15,
   "signature": {
     "function": "decrypt",

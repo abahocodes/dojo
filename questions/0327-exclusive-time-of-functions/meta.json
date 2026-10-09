@@ -9,11 +9,11 @@
     "strings",
     "simulation"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "linkedin"
-  ],
+  "companies": {
+    "meta": 4,
+    "amazon": 2,
+    "linkedin": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "exclusive_time",

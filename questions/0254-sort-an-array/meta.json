@@ -10,11 +10,11 @@
     "divide-and-conquer",
     "merge-sort"
   ],
-  "companies": [
-    "google",
-    "microsoft",
-    "amazon"
-  ],
+  "companies": {
+    "google": 2,
+    "microsoft": 3,
+    "amazon": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "sort_array",

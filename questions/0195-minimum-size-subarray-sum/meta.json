@@ -9,11 +9,11 @@
     "sliding-window",
     "prefix-sum"
   ],
-  "companies": [
-    "meta",
-    "goldman-sachs",
-    "amazon"
-  ],
+  "companies": {
+    "meta": 3,
+    "goldman-sachs": 4,
+    "amazon": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "min_sub_array_len",

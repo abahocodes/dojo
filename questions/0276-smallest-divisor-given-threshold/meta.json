@@ -8,10 +8,10 @@
     "binary-search",
     "arrays"
   ],
-  "companies": [
-    "google",
-    "salesforce"
-  ],
+  "companies": {
+    "google": 3,
+    "salesforce": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "smallest_divisor",

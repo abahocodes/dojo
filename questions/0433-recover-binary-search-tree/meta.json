@@ -9,11 +9,11 @@
     "binary-search-tree",
     "dfs"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "bytedance"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 3,
+    "bytedance": 2
+  },
   "target_minutes": 30,
   "signature": {
     "function": "recover_tree",

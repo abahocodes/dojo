@@ -8,10 +8,10 @@
     "binary-search",
     "arrays"
   ],
-  "companies": [
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "minimum_time",

@@ -8,13 +8,13 @@
     "arrays",
     "greedy"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "microsoft",
-    "goldman-sachs",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 5,
+    "meta": 3,
+    "microsoft": 4,
+    "goldman-sachs": 4,
+    "bloomberg": 5
+  },
   "target_minutes": 10,
   "signature": {
     "function": "max_profit",

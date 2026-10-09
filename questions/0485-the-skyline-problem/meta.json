@@ -9,12 +9,12 @@
     "sweep-line",
     "divide-and-conquer"
   ],
-  "companies": [
-    "google",
-    "microsoft",
-    "amazon",
-    "uber"
-  ],
+  "companies": {
+    "google": 4,
+    "microsoft": 3,
+    "amazon": 3,
+    "uber": 3
+  },
   "target_minutes": 40,
   "signature": {
     "function": "get_skyline",

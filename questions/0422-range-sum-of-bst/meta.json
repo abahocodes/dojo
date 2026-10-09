@@ -9,11 +9,11 @@
     "binary-search-tree",
     "dfs"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "meta": 4,
+    "amazon": 2,
+    "google": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "range_sum_bst",

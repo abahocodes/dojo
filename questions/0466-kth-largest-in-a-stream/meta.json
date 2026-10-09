@@ -8,11 +8,11 @@
     "heap",
     "arrays"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 3,
+    "meta": 3,
+    "microsoft": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "kth_largest_stream",

@@ -9,11 +9,11 @@
     "union-find",
     "dfs"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "linkedin"
-  ],
+  "companies": {
+    "amazon": 3,
+    "google": 3,
+    "linkedin": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "count_components",

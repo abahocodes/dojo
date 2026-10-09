@@ -8,10 +8,10 @@
     "intervals",
     "arrays"
   ],
-  "companies": [
-    "google",
-    "meta"
-  ],
+  "companies": {
+    "google": 3,
+    "meta": 4
+  },
   "target_minutes": 12,
   "signature": {
     "function": "find_missing_ranges",

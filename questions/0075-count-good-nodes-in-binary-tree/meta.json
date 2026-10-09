@@ -9,12 +9,12 @@
     "dfs",
     "bfs"
   ],
-  "companies": [
-    "microsoft",
-    "amazon",
-    "google",
-    "salesforce"
-  ],
+  "companies": {
+    "microsoft": 3,
+    "amazon": 2,
+    "google": 2,
+    "salesforce": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "good_nodes",

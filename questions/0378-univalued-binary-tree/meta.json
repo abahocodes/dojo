@@ -8,9 +8,9 @@
     "trees",
     "dfs"
   ],
-  "companies": [
-    "amazon"
-  ],
+  "companies": {
+    "amazon": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "is_unival_tree",
