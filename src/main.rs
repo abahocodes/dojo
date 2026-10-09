@@ -8,6 +8,7 @@ mod questions;
 mod runner;
 mod scaffold;
 mod schema;
+mod select;
 mod session;
 mod store;
 mod ui;

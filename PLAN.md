@@ -131,12 +131,17 @@ happened during an attempt, JSON payloads) and `input_history`.
   same over all its questions, untried counting as 0.
 - Suggestions: gap topics (< 60%) first, then due reviews (solved, not
   cleanly, a week+ ago), then never-practiced topics.
-- `/solve need` order: gap topics, due reviews, unpracticed topics, then
-  unsolved questions (easiest first, ones tried in the last day after),
-  then the weakest solved ones.
-- `/solve need` and `/solve random` take tag, company and difficulty words
-  plus a count (`/solve need google dfs 3`); filter words alone
-  (`/solve google`) mean `need` within them.
+- Selection lives in `src/select/`: `/solve` words parse into one
+  `Request` whatever their order (`google need 3` = `need google 3`), a
+  `Filter` (tags, companies, difficulties) narrows the pool, and a
+  `Strategy` (`Need`, `Random`) orders it. Questions and history come
+  through a `Library` trait and chance through `Dice`, so tests use mocks.
+- Filter words alone (`/solve google`) mean `need` within them; free text
+  (`/solve two sum`) searches titles.
+- `Need` order: gap topics, due reviews, unpracticed topics, then unsolved
+  questions (ones tried in the last day after), then the weakest solved
+  ones. Untried questions come mediums first (asked most), then easies,
+  then hards.
 
 ## Contribute
 

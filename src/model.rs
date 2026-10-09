@@ -10,6 +10,7 @@ use jiff::{Timestamp, ToSpan};
 use serde::Serialize;
 
 use crate::questions::{Bank, Difficulty, Question};
+use crate::select::{Need, Strategy};
 use crate::session::Outcome;
 
 /// Older attempts count less: a grade's weight halves every this many days.
@@ -80,7 +81,7 @@ fn difficulty_weight(d: Difficulty) -> f64 {
     }
 }
 
-fn age_days(then: Timestamp, now: Timestamp) -> f64 {
+pub(crate) fn age_days(then: Timestamp, now: Timestamp) -> f64 {
     ((now.as_second() - then.as_second()).max(0) as f64) / 86_400.0
 }
 
@@ -220,12 +221,7 @@ pub fn build(bank: &Bank, attempts: &[Attempt], now: Timestamp, tz: &TimeZone) -
 
     let topics = label_stats(&questions, |q| &q.tags, false);
     let companies = label_stats(&questions, |q| &q.companies, true);
-    let suggestions = suggest()
-        .questions(&questions)
-        .topics(&topics)
-        .now(now)
-        .limit(3)
-        .call();
+    let suggestions = Need::new(now).pick(&questions, &topics, 3);
 
     Report::builder()
         .generated_at(now)
@@ -444,93 +440,6 @@ fn sessions(bank: &Bank, attempts: &[Attempt]) -> Vec<SessionStat> {
     out
 }
 
-/// What to practice next: weak topics first, then due reviews, then topics
-/// never practiced. Up to three, each with a reason.
-#[bon::builder]
-pub fn suggest(
-    questions: &[QuestionStat],
-    topics: &[LabelStat],
-    now: Timestamp,
-    limit: usize,
-) -> Vec<Suggestion> {
-    let mut out: Vec<Suggestion> = Vec::new();
-    let push = |q: &QuestionStat, reason: String, out: &mut Vec<Suggestion>| {
-        if out.len() < limit && !out.iter().any(|s| s.question_id == q.id) {
-            out.push(
-                Suggestion::builder()
-                    .question_id(q.id)
-                    .title(q.title.clone())
-                    .reason(reason)
-                    .build(),
-            );
-        }
-    };
-    fn in_topic<'a>(qs: &'a [QuestionStat], t: &'a str) -> impl Iterator<Item = &'a QuestionStat> {
-        qs.iter().filter(move |q| q.tags.iter().any(|x| x == t))
-    }
-
-    // 1. Gaps: practiced topics below the mastery bar. Prefer an untried
-    //    question there, else the weakest one.
-    for t in topics.iter().filter(|t| t.attempted > 0 && t.mastery < GAP) {
-        let pick = in_topic(questions, &t.label)
-            .filter(|q| q.attempts == 0)
-            .min_by_key(|q| q.difficulty)
-            .or_else(|| {
-                in_topic(questions, &t.label)
-                    .min_by(|a, b| a.score.unwrap_or(0.0).total_cmp(&b.score.unwrap_or(0.0)))
-            });
-        if let Some(q) = pick {
-            push(
-                q,
-                format!("{} is a gap ({:.0}% mastery)", t.label, t.mastery * 100.0),
-                &mut out,
-            );
-        }
-    }
-    // 2. Due reviews: solved a while ago, not cleanly.
-    let mut due: Vec<&QuestionStat> = questions
-        .iter()
-        .filter(|q| q.solved && q.score.unwrap_or(1.0) < 0.85)
-        .filter(|q| q.last_attempt.is_some_and(|t| age_days(t, now) >= 7.0))
-        .collect();
-    due.sort_by(|a, b| a.score.unwrap_or(0.0).total_cmp(&b.score.unwrap_or(0.0)));
-    for q in due {
-        push(q, "due for review".into(), &mut out);
-    }
-    // 3. Coverage: topics never practiced, easiest question first.
-    for t in topics.iter().filter(|t| t.attempted == 0) {
-        if let Some(q) = in_topic(questions, &t.label).min_by_key(|q| q.difficulty) {
-            push(q, format!("{} not practiced yet", t.label), &mut out);
-        }
-    }
-    // 4. Still short (asked for many): unsolved questions, easiest first
-    //    (one tried in the last day waits, so a skip isn't offered straight
-    //    back), then the weakest solved ones.
-    let mut rest: Vec<&QuestionStat> = questions.iter().filter(|q| !q.solved).collect();
-    rest.sort_by_key(|q| {
-        let recent = q.last_attempt.is_some_and(|t| age_days(t, now) < 1.0);
-        (recent, q.difficulty, q.id)
-    });
-    for q in rest {
-        let reason = if q.attempts == 0 {
-            "not tried yet"
-        } else {
-            "not solved yet"
-        };
-        push(q, reason.into(), &mut out);
-    }
-    let mut weakest: Vec<&QuestionStat> = questions.iter().filter(|q| q.solved).collect();
-    weakest.sort_by(|a, b| a.score.unwrap_or(0.0).total_cmp(&b.score.unwrap_or(0.0)));
-    for q in weakest {
-        push(
-            q,
-            format!("weakest solved ({:.0}%)", q.score.unwrap_or(0.0) * 100.0),
-            &mut out,
-        );
-    }
-    out
-}
-
 #[cfg(test)]
 mod tests {
     use rstest::rstest;
@@ -611,61 +520,11 @@ mod tests {
         assert_eq!(r.activity.last().unwrap().1, 2);
         assert_eq!(r.sessions.len(), 1);
         // Asking for more than the gaps fills up with untried questions.
-        let many = suggest()
-            .questions(&r.questions)
-            .topics(&r.topics)
-            .now(now)
-            .limit(10)
-            .call();
+        let many = Need::new(now).pick(&r.questions, &r.topics, 10);
         assert_eq!(many.len(), 10);
         assert_eq!(many[0].question_id, r.suggestions[0].question_id);
-        let all = suggest()
-            .questions(&r.questions)
-            .topics(&r.topics)
-            .now(now)
-            .limit(bank.all().len() + 1)
-            .call();
+        let all = Need::new(now).pick(&r.questions, &r.topics, bank.all().len() + 1);
         assert_eq!(all.len(), bank.all().len());
-    }
-
-    #[test]
-    fn solved_and_just_skipped_questions_wait_their_turn() {
-        let bank = Bank::embedded();
-        let now = at(0);
-        let google: Vec<u32> = bank
-            .all()
-            .iter()
-            .filter(|q| q.meta.companies.iter().any(|c| c == "google"))
-            .map(|q| q.meta.id)
-            .collect();
-        let (solved, skipped) = (google[0], google[1]);
-        let attempts = vec![
-            attempt(solved, 0, Outcome::Pass, 60),
-            attempt(skipped, 0, Outcome::Skip, 10),
-        ];
-        let r = build()
-            .bank(&bank)
-            .attempts(&attempts)
-            .now(now)
-            .tz(&TimeZone::UTC)
-            .call();
-        let questions: Vec<QuestionStat> = r
-            .questions
-            .into_iter()
-            .filter(|q| google.contains(&q.id))
-            .collect();
-        let order: Vec<u32> = suggest()
-            .questions(&questions)
-            .topics(&r.topics)
-            .now(now)
-            .limit(usize::MAX)
-            .call()
-            .iter()
-            .map(|s| s.question_id)
-            .collect();
-        assert_eq!(order.len(), google.len());
-        assert_eq!(order.last(), Some(&solved));
-        assert_eq!(order[order.len() - 2], skipped);
     }
 
     #[test]

@@ -16,9 +16,11 @@ use serde_json::json;
 
 use super::views;
 use super::{App, Entry, Msg};
+use crate::model::{LabelStat, QuestionStat};
 use crate::questions::Question;
-use crate::questions::search::{Filter, search};
+use crate::questions::search::search;
 use crate::runner::{self, Language, Which};
+use crate::select;
 use crate::session::{
     self, Attempt, Done, Outcome, Session, Timer, editor_command, is_terminal_editor,
 };
@@ -64,88 +66,45 @@ impl App {
             return Some(views::error(format!("{e:#}")));
         }
 
-        // Parse `-n N`; the rest is ids, `random [N]`, or a search query.
-        let mut n: Option<usize> = None;
-        let mut words: Vec<&str> = Vec::new();
-        let mut it = args.iter();
-        while let Some(&a) = it.next() {
-            if a == "-n" {
-                match it.next().and_then(|v| v.parse().ok()) {
-                    Some(v) if v > 0 => n = Some(v),
-                    _ => return Some(views::error("-n needs a positive number")),
-                }
-            } else {
-                words.push(a);
+        let library = AppLibrary { app: self, lang };
+        let request = match select::Request::parse(args, &select::Library::labels(&library)) {
+            Ok(r) => r,
+            Err(e) => return Some(views::error(e.to_string())),
+        };
+        if let select::Request::Ids(ids) = &request {
+            if let Some(missing) = ids.iter().find(|id| self.bank.get(**id).is_none()) {
+                return Some(views::error(format!("no question #{missing}  ·  /list")));
+            }
+            if let Some(q) = ids
+                .iter()
+                .filter_map(|id| self.bank.get(*id))
+                .find(|q| !q.supports(lang))
+            {
+                return Some(views::error(format!(
+                    "#{} isn't available in {} yet  ·  /lang to switch",
+                    q.meta.id,
+                    lang.label()
+                )));
             }
         }
-        if words.is_empty() {
-            return Some(views::error(
-                "what should we practice?  ·  /solve 12, /solve need, /solve google dfs 2",
-            ));
+        let chosen = match select::select(
+            &request,
+            &library,
+            &select::Clock::new(),
+            jiff::Timestamp::now(),
+        ) {
+            Ok(c) => c,
+            Err(e) => return Some(views::error(e.to_string())),
+        };
+        if !chosen.reasons.is_empty() {
+            let scope = chosen.query.clone().unwrap_or_default();
+            self.transcript
+                .push(views::need_picks(&chosen.reasons, &scope));
         }
-
-        // Numbers are ids, never search words: `/solve -1` used to start
-        // whichever title contained "1".
-        if words.iter().all(|w| super::looks_numeric(w))
-            && !words.iter().all(|w| w.parse::<u32>().is_ok())
-        {
-            let bad = words.iter().find(|w| w.parse::<u32>().is_err()).unwrap();
-            return Some(views::error(format!(
-                "`{bad}` isn't a question id  ·  /list"
-            )));
+        if chosen.ids.len() < chosen.wanted {
+            self.notify(format!("only {} question(s) match", chosen.ids.len()));
         }
-        let (queue, mode, query): (Vec<u32>, &str, Option<String>) =
-            if words.iter().all(|w| w.parse::<u32>().is_ok()) {
-                // `/solve 3 3` practices #3 once.
-                let mut ids: Vec<u32> = Vec::new();
-                for id in words.iter().map(|w| w.parse().unwrap()) {
-                    if !ids.contains(&id) {
-                        ids.push(id);
-                    }
-                }
-                if let Some(missing) = ids.iter().find(|id| self.bank.get(**id).is_none()) {
-                    return Some(views::error(format!("no question #{missing}  ·  /list")));
-                }
-                if let Some(q) = ids
-                    .iter()
-                    .filter_map(|id| self.bank.get(*id))
-                    .find(|q| !q.supports(lang))
-                {
-                    return Some(views::error(format!(
-                        "#{} isn't available in {} yet  ·  /lang to switch",
-                        q.meta.id,
-                        lang.label()
-                    )));
-                }
-                (ids, "id", None)
-            } else {
-                match self.select(lang, &words, n) {
-                    Ok(Some(selected)) => selected,
-                    Ok(None) => {
-                        // Free text: the best title match (or `-n` of them).
-                        let query = words.join(" ");
-                        let found: Vec<u32> = match self.bank.by_slug(&query) {
-                            Some(q) => vec![q.meta.id],
-                            None => search(&self.bank, &query)
-                                .into_iter()
-                                .filter(|q| q.supports(lang))
-                                .take(n.unwrap_or(1))
-                                .map(|q| q.meta.id)
-                                .collect(),
-                        };
-                        if found.is_empty() {
-                            return Some(views::error(format!("no question matches `{query}`")));
-                        }
-                        if let Some(n) = n
-                            && found.len() < n
-                        {
-                            self.notify(format!("only {} question(s) match", found.len()));
-                        }
-                        (found, "search", Some(query))
-                    }
-                    Err(e) => return Some(e),
-                }
-            };
+        let (queue, mode, query) = (chosen.ids, chosen.mode, chosen.query);
 
         // Starting something else skips whatever is open (the selection
         // above is already validated, so a typo never skips anything).
@@ -191,98 +150,6 @@ impl App {
             }
         }
         self.start_question(lang, None)
-    }
-
-    /// `need` or `random`, each narrowed by tag, company and difficulty
-    /// words, with an optional count: `/solve need google dfs 3`. Filter
-    /// words alone (`/solve google`, `/solve graphs 3`) mean `need`. `None`
-    /// when the words are free text to search.
-    fn select(
-        &mut self,
-        lang: Language,
-        words: &[&str],
-        n: Option<usize>,
-    ) -> Result<Option<Selection>, Entry> {
-        let (mode, rest) = match words[0] {
-            "need" => ("need", &words[1..]),
-            "random" => ("random", &words[1..]),
-            _ => ("", words),
-        };
-        let usage = || {
-            views::error(format!(
-                "usage: /solve {mode} [tag | company | difficulty …] [N]"
-            ))
-        };
-        let (body, trailing) = match rest.split_last() {
-            Some((last, body)) if super::looks_numeric(last) => match last.parse::<usize>() {
-                Ok(v) if v > 0 => (body, Some(v)),
-                _ if mode.is_empty() => return Ok(None),
-                _ => return Err(usage()),
-            },
-            _ => (rest, None),
-        };
-        let filter = match Filter::parse(&self.bank, body) {
-            Ok(f) => f,
-            Err(_) if mode.is_empty() => return Ok(None),
-            Err(word) => {
-                return Err(views::error(format!(
-                    "`{word}` isn't a tag, company or difficulty  ·  {}",
-                    if mode == "need" {
-                        "/solve need google dfs 3"
-                    } else {
-                        "/solve random graphs 2"
-                    }
-                )));
-            }
-        };
-        if mode.is_empty() && body.is_empty() {
-            return Ok(None);
-        }
-        let mode = if mode.is_empty() { "need" } else { mode };
-        let count = match (trailing, n) {
-            (Some(a), Some(b)) if a != b => {
-                return Err(views::error("give the count once: `3` or `-n 3`"));
-            }
-            (Some(c), _) | (None, Some(c)) => c,
-            (None, None) => 1,
-        };
-        let scope = body.join(" ");
-        let pool: Vec<u32> = self
-            .bank
-            .all()
-            .iter()
-            .filter(|q| q.supports(lang) && filter.matches(q))
-            .map(|q| q.meta.id)
-            .collect();
-        if pool.is_empty() {
-            return Err(views::error(format!(
-                "no {} question matches `{scope}`  ·  /list {scope}",
-                lang.label()
-            )));
-        }
-        let queue = if mode == "need" {
-            let report = super::build_report(&self.store, &self.bank)
-                .map_err(|e| views::error(format!("could not read your history: {e:#}")))?;
-            let questions: Vec<crate::model::QuestionStat> = report
-                .questions
-                .into_iter()
-                .filter(|q| pool.contains(&q.id))
-                .collect();
-            let picks: Vec<crate::model::Suggestion> = crate::model::suggest()
-                .questions(&questions)
-                .topics(&report.topics)
-                .now(jiff::Timestamp::now())
-                .limit(count)
-                .call();
-            self.transcript.push(views::need_picks(&picks, &scope));
-            picks.iter().map(|p| p.question_id).collect()
-        } else {
-            pick_random(pool, count)
-        };
-        if queue.len() < count {
-            self.notify(format!("only {} question(s) match", queue.len()));
-        }
-        Ok(Some((queue, mode, (!scope.is_empty()).then_some(scope))))
     }
 
     /// Opens the current queue question: a fresh attempt from the
@@ -950,27 +817,42 @@ fn a_lang(session: &Option<Session>) -> Option<Language> {
     Some(session.as_ref()?.attempt.as_ref()?.lang)
 }
 
-/// The queue, how it was chosen, and the words that chose it.
-type Selection = (Vec<u32>, &'static str, Option<String>);
+/// The bank and your history, in the language you solve in.
+struct AppLibrary<'a> {
+    app: &'a App,
+    lang: Language,
+}
 
-/// Up to `count` distinct ids from `pool`, in random order.
-fn pick_random(mut pool: Vec<u32>, count: usize) -> Vec<u32> {
-    // xorshift seeded from the clock; good enough for picking practice.
-    let mut x = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map_or(0x9e37_79b9, |d| d.as_nanos() as u64)
-        | 1;
-    let mut next = || {
-        x ^= x << 13;
-        x ^= x >> 7;
-        x ^= x << 17;
-        x
-    };
-    for i in (1..pool.len()).rev() {
-        pool.swap(i, (next() % (i as u64 + 1)) as usize);
+impl select::Library for AppLibrary<'_> {
+    fn labels(&self) -> Vec<String> {
+        self.app.bank.labels()
     }
-    pool.truncate(count);
-    pool
+
+    fn history(&self) -> anyhow::Result<(Vec<QuestionStat>, Vec<LabelStat>)> {
+        let report = super::build_report(&self.app.store, &self.app.bank)?;
+        let questions = report
+            .questions
+            .into_iter()
+            .filter(|q| {
+                self.app
+                    .bank
+                    .get(q.id)
+                    .is_some_and(|b| b.supports(self.lang))
+            })
+            .collect();
+        Ok((questions, report.topics))
+    }
+
+    fn search(&self, text: &str) -> Vec<u32> {
+        match self.app.bank.by_slug(text) {
+            Some(q) => vec![q.meta.id],
+            None => search(&self.app.bank, text)
+                .into_iter()
+                .filter(|q| q.supports(self.lang))
+                .map(|q| q.meta.id)
+                .collect(),
+        }
+    }
 }
 
 /// Not completed: a fail if tests were run (it was tried), a skip otherwise.
@@ -1003,17 +885,5 @@ mod tests {
     #[case(125 * 60, "2 h 05 min")]
     fn away_for_reads_well(#[case] secs: u64, #[case] expected: &str) {
         assert_eq!(super::away_for(Duration::from_secs(secs)), expected);
-    }
-
-    #[test]
-    fn picks_distinct_random_ids() {
-        let picked = super::pick_random((1..=17).collect(), 5);
-        assert_eq!(picked.len(), 5);
-        let mut sorted = picked.clone();
-        sorted.sort();
-        sorted.dedup();
-        assert_eq!(sorted.len(), 5);
-        assert!(picked.iter().all(|id| (1..=17).contains(id)));
-        assert_eq!(super::pick_random(vec![1, 2], 9).len(), 2);
     }
 }

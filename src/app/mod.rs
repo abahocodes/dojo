@@ -21,6 +21,7 @@ use crate::config::{Config, Paths, editor_preset};
 use crate::questions::search::search;
 use crate::questions::{Bank, Question};
 use crate::runner::{Language, RunReport, Which};
+use crate::select::looks_numeric;
 use crate::session::{Done, Outcome, Session};
 use crate::store::Store;
 use crate::ui;
@@ -989,15 +990,6 @@ fn id_and_count_usage(command: &str, args: &[&str]) -> Option<Entry> {
         _ => false,
     };
     (!ok).then(|| views::error(format!("usage: /{command} [id] [n]")))
-}
-
-/// A number-like word (`12`, `-1`, `1.5`): meant as an id or count, so
-/// never used as search words.
-pub(super) fn looks_numeric(word: &str) -> bool {
-    word.chars().any(|c| c.is_ascii_digit())
-        && word
-            .chars()
-            .all(|c| c.is_ascii_digit() || matches!(c, '-' | '+' | '.'))
 }
 
 /// Questions that ended failed or skipped, once each, minus those already
