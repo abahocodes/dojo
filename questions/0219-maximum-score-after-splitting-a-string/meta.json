@@ -8,9 +8,9 @@
     "strings",
     "prefix-sum"
   ],
-  "companies": [
-    "google"
-  ],
+  "companies": {
+    "google": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "max_score_split",

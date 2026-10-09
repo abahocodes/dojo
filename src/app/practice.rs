@@ -96,7 +96,6 @@ impl App {
             &request,
             &library,
             &select::Clock::new(),
-            prefs,
             jiff::Timestamp::now(),
         ) {
             Ok(c) => c,

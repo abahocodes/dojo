@@ -8,11 +8,11 @@
     "intervals",
     "two-pointers"
   ],
-  "companies": [
-    "meta",
-    "uber",
-    "doordash"
-  ],
+  "companies": {
+    "meta": 5,
+    "uber": 3,
+    "doordash": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "interval_intersection",

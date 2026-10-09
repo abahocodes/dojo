@@ -8,11 +8,11 @@
     "arrays",
     "two-pointers"
   ],
-  "companies": [
-    "meta",
-    "apple",
-    "bloomberg"
-  ],
+  "companies": {
+    "meta": 4,
+    "apple": 2,
+    "bloomberg": 3
+  },
   "target_minutes": 10,
   "signature": {
     "function": "move_zeroes",

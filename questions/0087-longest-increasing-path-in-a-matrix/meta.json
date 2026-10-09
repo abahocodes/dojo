@@ -11,13 +11,13 @@
     "topological-sort",
     "memoization"
   ],
-  "companies": [
-    "google",
-    "meta",
-    "amazon",
-    "uber",
-    "bytedance"
-  ],
+  "companies": {
+    "google": 4,
+    "meta": 3,
+    "amazon": 3,
+    "uber": 3,
+    "bytedance": 3
+  },
   "target_minutes": 35,
   "signature": {
     "function": "longest_increasing_path",

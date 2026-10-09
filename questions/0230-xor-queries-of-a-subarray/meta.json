@@ -9,10 +9,10 @@
     "prefix-sum",
     "bit-manipulation"
   ],
-  "companies": [
-    "airbnb",
-    "amazon"
-  ],
+  "companies": {
+    "airbnb": 1,
+    "amazon": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "xor_queries",

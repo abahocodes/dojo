@@ -9,10 +9,10 @@
     "trie",
     "two-pointers"
   ],
-  "companies": [
-    "yelp",
-    "amazon"
-  ],
+  "companies": {
+    "yelp": 2,
+    "amazon": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "is_prefix_of_word",

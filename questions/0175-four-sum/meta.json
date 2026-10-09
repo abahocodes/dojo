@@ -9,11 +9,11 @@
     "two-pointers",
     "sorting"
   ],
-  "companies": [
-    "amazon",
-    "apple",
-    "adobe"
-  ],
+  "companies": {
+    "amazon": 3,
+    "apple": 2,
+    "adobe": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "four_sum",

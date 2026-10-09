@@ -8,12 +8,12 @@
     "backtracking",
     "arrays"
   ],
-  "companies": [
-    "amazon",
-    "airbnb",
-    "meta",
-    "uber"
-  ],
+  "companies": {
+    "amazon": 3,
+    "airbnb": 4,
+    "meta": 3,
+    "uber": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "combination_sum",

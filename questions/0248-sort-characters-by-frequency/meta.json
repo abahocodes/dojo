@@ -10,11 +10,11 @@
     "hash-map",
     "bucket-sort"
   ],
-  "companies": [
-    "amazon",
-    "bloomberg",
-    "google"
-  ],
+  "companies": {
+    "amazon": 4,
+    "bloomberg": 3,
+    "google": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "frequency_sort",

@@ -9,12 +9,12 @@
     "dfs",
     "bfs"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "linkedin",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 4,
+    "linkedin": 4,
+    "bloomberg": 4
+  },
   "target_minutes": 12,
   "signature": {
     "function": "is_symmetric",

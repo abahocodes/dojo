@@ -10,13 +10,13 @@
     "matrix",
     "strings"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "google",
-    "uber",
-    "airbnb"
-  ],
+  "companies": {
+    "amazon": 4,
+    "microsoft": 3,
+    "google": 3,
+    "uber": 3,
+    "airbnb": 3
+  },
   "target_minutes": 40,
   "signature": {
     "function": "find_words",

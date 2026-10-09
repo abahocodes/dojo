@@ -8,10 +8,10 @@
     "linked-list",
     "simulation"
   ],
-  "companies": [
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "amazon": 1,
+    "google": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "merge_nodes",

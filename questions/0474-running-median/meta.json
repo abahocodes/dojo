@@ -9,12 +9,12 @@
     "two-heaps",
     "arrays"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "microsoft",
-    "apple"
-  ],
+  "companies": {
+    "google": 4,
+    "amazon": 5,
+    "microsoft": 3,
+    "apple": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "running_median",

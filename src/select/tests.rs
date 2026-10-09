@@ -1,6 +1,6 @@
 use rstest::rstest;
 
-use super::mock::{MockDice, MockLibrary, now, question, solved, topic, tried};
+use super::mock::{MockDice, MockLibrary, asked, now, question, solved, topic, tried};
 use super::*;
 use crate::questions::Difficulty::{Easy, Hard, Medium};
 
@@ -82,14 +82,7 @@ fn rejects(#[case] line: &str, #[case] expected: ParseError) {
 // ── need ─────────────────────────────────────────────────────────────
 
 fn need(library: &MockLibrary, line: &str) -> Selection {
-    select(
-        &parse(line).unwrap(),
-        library,
-        &MockDice::default(),
-        &Preferences::default(),
-        now(),
-    )
-    .unwrap()
+    select(&parse(line).unwrap(), library, &MockDice::default(), now()).unwrap()
 }
 
 #[test]
@@ -102,6 +95,33 @@ fn untried_questions_come_mediums_first() {
         question(5, Medium, &["arrays"]),
     ]);
     assert_eq!(ids(&need(&library, "need 5")), [3, 5, 1, 4, 2]);
+}
+
+#[test]
+fn most_asked_questions_come_first() {
+    let library = MockLibrary::with(vec![
+        question(1, Medium, &["arrays"]), // no company known: 0
+        question(2, Medium, &["arrays", "google"]),
+        asked(question(3, Hard, &["arrays"]), "amazon", 5),
+        asked(question(4, Easy, &["arrays"]), "meta", 3),
+    ]);
+    // 5, then the 3s by difficulty (medium before easy), then unknown.
+    assert_eq!(ids(&need(&library, "need 4")), [3, 2, 4, 1]);
+}
+
+#[test]
+fn a_company_filter_judges_frequency_by_that_company() {
+    let library = MockLibrary::with(vec![
+        asked(
+            asked(question(1, Medium, &["arrays"]), "google", 2),
+            "amazon",
+            5,
+        ),
+        asked(question(2, Medium, &["arrays"]), "google", 4),
+    ]);
+    // Overall #1 is asked more (Amazon 5), but Google asks #2 more.
+    assert_eq!(ids(&need(&library, "need 2")), [1, 2]);
+    assert_eq!(ids(&need(&library, "google 2")), [2, 1]);
 }
 
 #[test]
@@ -156,6 +176,21 @@ fn gaps_then_due_reviews_then_new_topics() {
 }
 
 #[test]
+fn each_gap_topic_gets_its_own_question() {
+    let mut library = MockLibrary::with(vec![
+        asked(question(1, Medium, &["dfs", "graphs"]), "google", 5),
+        question(2, Medium, &["graphs"]),
+        question(3, Medium, &["dfs"]),
+        tried(question(4, Easy, &["dfs", "graphs"]), 48),
+    ]);
+    library.topics = vec![topic("dfs", 0.0, 1), topic("graphs", 0.0, 1)];
+    let s = need(&library, "need 2");
+    // #1 is the best for both; graphs gets the next best rather than none.
+    assert_eq!(ids(&s), [1, 2]);
+    assert_eq!(s.reasons[1].reason, "graphs is a gap (0% mastery)");
+}
+
+#[test]
 fn filters_narrow_need() {
     let library = MockLibrary::with(vec![
         question(1, Medium, &["arrays", "google"]),
@@ -198,14 +233,7 @@ fn random_draws_from_the_filtered_pool() {
         question(4, Easy, &["graphs"]),
     ]);
     let dice = MockDice::rolling(&[2, 0]);
-    let s = select(
-        &parse("graphs random 2").unwrap(),
-        &library,
-        &dice,
-        &Preferences::default(),
-        now(),
-    )
-    .unwrap();
+    let s = select(&parse("graphs random 2").unwrap(), &library, &dice, now()).unwrap();
     // Pool [1, 3, 4]: roll 2 swaps 4 to the front, roll 0 keeps 3 second.
     assert_eq!(ids(&s), [4, 3]);
     assert_eq!(*dice.asked.borrow(), [3, 2]);
@@ -220,14 +248,7 @@ fn random_never_repeats_and_stops_at_the_pool() {
         question(2, Medium, &["graphs"]),
     ]);
     let dice = MockDice::rolling(&[7, 7, 7]);
-    let s = select(
-        &parse("random 5").unwrap(),
-        &library,
-        &dice,
-        &Preferences::default(),
-        now(),
-    )
-    .unwrap();
+    let s = select(&parse("random 5").unwrap(), &library, &dice, now()).unwrap();
     let mut got = ids(&s);
     got.sort();
     assert_eq!(got, [1, 2]);
@@ -246,7 +267,6 @@ fn search_asks_the_library_and_skips_history() {
         &parse("two sum -n 2").unwrap(),
         &library,
         &MockDice::default(),
-        &Preferences::default(),
         now(),
     )
     .unwrap();
@@ -262,7 +282,6 @@ fn search_with_no_match_is_an_error() {
         &parse("nothing").unwrap(),
         &library,
         &MockDice::default(),
-        &Preferences::default(),
         now(),
     )
     .unwrap_err();
@@ -279,7 +298,6 @@ fn a_filter_nothing_matches_is_an_error() {
         &parse("google hard").unwrap(),
         &library,
         &MockDice::default(),
-        &Preferences::default(),
         now(),
     )
     .unwrap_err();
@@ -296,7 +314,6 @@ fn history_failures_surface() {
         &parse("need").unwrap(),
         &library,
         &MockDice::default(),
-        &Preferences::default(),
         now(),
     )
     .unwrap_err();
@@ -311,7 +328,6 @@ fn ids_pass_through_untouched() {
         &parse("5 2").unwrap(),
         &library,
         &MockDice::default(),
-        &Preferences::default(),
         now(),
     )
     .unwrap();
@@ -337,41 +353,13 @@ fn the_configured_strategy_is_the_default() {
     assert_eq!(kind, Kind::Need);
 }
 
-#[test]
-fn the_configured_difficulty_order_is_used() {
-    let library = MockLibrary::with(vec![
-        question(1, Medium, &["arrays"]),
-        question(2, Hard, &["arrays"]),
-        question(3, Easy, &["arrays"]),
-    ]);
-    let prefs = Preferences {
-        difficulty_order: vec![Hard, Easy],
-        ..Preferences::default()
-    };
-    let s = select(
-        &parse("need 3").unwrap(),
-        &library,
-        &MockDice::default(),
-        &prefs,
-        now(),
-    )
-    .unwrap();
-    // Medium isn't listed, so it comes last.
-    assert_eq!(ids(&s), [2, 3, 1]);
-}
-
 #[rstest]
 #[case("", Ok(Preferences::default()))]
 #[case(
     "strategy = \"random\"",
-    Ok(Preferences { strategy: Kind::Random, ..Preferences::default() })
-)]
-#[case(
-    "difficulty_order = [\"easy\", \"medium\", \"hard\"]",
-    Ok(Preferences { difficulty_order: vec![Easy, Medium, Hard], ..Preferences::default() })
+    Ok(Preferences { strategy: Kind::Random })
 )]
 #[case("strategy = \"hardest\"", Err("unknown variant `hardest`"))]
-#[case("difficulty_order = [\"tricky\"]", Err("unknown variant `tricky`"))]
 fn reads_from_config(#[case] toml_text: &str, #[case] expected: Result<Preferences, &str>) {
     let got: Result<Preferences, _> = toml::from_str(toml_text);
     match expected {

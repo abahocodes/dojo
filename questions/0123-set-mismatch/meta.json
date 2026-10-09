@@ -9,10 +9,10 @@
     "hash-map",
     "math"
   ],
-  "companies": [
-    "amazon",
-    "apple"
-  ],
+  "companies": {
+    "amazon": 2,
+    "apple": 1
+  },
   "target_minutes": 10,
   "signature": {
     "function": "find_error_nums",

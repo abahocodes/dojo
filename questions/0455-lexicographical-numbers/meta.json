@@ -8,11 +8,11 @@
     "trie",
     "dfs"
   ],
-  "companies": [
-    "bloomberg",
-    "google",
-    "tiktok"
-  ],
+  "companies": {
+    "bloomberg": 3,
+    "google": 2,
+    "tiktok": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "lexical_order",

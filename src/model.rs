@@ -9,7 +9,7 @@ use jiff::tz::TimeZone;
 use jiff::{Timestamp, ToSpan};
 use serde::Serialize;
 
-use crate::questions::{Bank, Difficulty, Question};
+use crate::questions::{Bank, Companies, Difficulty, Question};
 use crate::select::{Need, Strategy};
 use crate::session::Outcome;
 
@@ -91,7 +91,7 @@ pub struct QuestionStat {
     pub title: String,
     pub difficulty: Difficulty,
     pub tags: Vec<String>,
-    pub companies: Vec<String>,
+    pub companies: Companies,
     /// Finished attempts.
     pub attempts: u32,
     pub solved: bool,
@@ -219,8 +219,8 @@ pub fn build(bank: &Bank, attempts: &[Attempt], now: Timestamp, tz: &TimeZone) -
             )
             .build();
 
-    let topics = label_stats(&questions, |q| &q.tags, false);
-    let companies = label_stats(&questions, |q| &q.companies, true);
+    let topics = label_stats(&questions, |q| q.tags.iter().collect(), false);
+    let companies = label_stats(&questions, |q| q.companies.names().collect(), true);
     let suggestions = Need::new(now).pick(&questions, &topics, 3);
 
     Report::builder()
@@ -279,7 +279,7 @@ fn question_stat(q: &Question, attempts: Option<&[&Attempt]>, now: Timestamp) ->
 
 fn label_stats<'a>(
     questions: &'a [QuestionStat],
-    labels: impl Fn(&'a QuestionStat) -> &'a Vec<String>,
+    labels: impl Fn(&'a QuestionStat) -> Vec<&'a String>,
     unattempted_count: bool,
 ) -> Vec<LabelStat> {
     let mut groups: BTreeMap<&str, Vec<&QuestionStat>> = BTreeMap::new();

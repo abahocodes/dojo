@@ -8,12 +8,12 @@
     "backtracking",
     "bit-manipulation"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "microsoft",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 2,
+    "google": 2,
+    "microsoft": 2,
+    "meta": 1
+  },
   "target_minutes": 30,
   "signature": {
     "function": "total_n_queens",

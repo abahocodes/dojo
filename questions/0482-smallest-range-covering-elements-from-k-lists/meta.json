@@ -9,11 +9,11 @@
     "sliding-window",
     "sorting"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "snapchat"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 3,
+    "snapchat": 3
+  },
   "target_minutes": 40,
   "signature": {
     "function": "smallest_range",

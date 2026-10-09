@@ -9,10 +9,10 @@
     "hash-map",
     "counting"
   ],
-  "companies": [
-    "paypal",
-    "amazon"
-  ],
+  "companies": {
+    "paypal": 2,
+    "amazon": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "find_lhs",

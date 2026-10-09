@@ -7,12 +7,12 @@
   "tags": [
     "linked-list"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "microsoft",
-    "apple"
-  ],
+  "companies": {
+    "amazon": 3,
+    "meta": 3,
+    "microsoft": 4,
+    "apple": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "reverse_between",

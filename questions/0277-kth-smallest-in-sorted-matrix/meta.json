@@ -9,11 +9,11 @@
     "matrix",
     "heap"
   ],
-  "companies": [
-    "meta",
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "meta": 3,
+    "google": 4,
+    "amazon": 4
+  },
   "target_minutes": 30,
   "signature": {
     "function": "kth_smallest_matrix",

@@ -9,10 +9,10 @@
     "hash-set",
     "strings"
   ],
-  "companies": [
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "amazon": 2,
+    "google": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "longest_common_prefix_numbers",

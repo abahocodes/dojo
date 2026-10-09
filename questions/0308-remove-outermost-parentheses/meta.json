@@ -8,10 +8,10 @@
     "stack",
     "strings"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 1,
+    "amazon": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "remove_outer_parentheses",

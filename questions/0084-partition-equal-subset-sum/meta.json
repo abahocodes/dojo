@@ -9,12 +9,12 @@
     "knapsack",
     "arrays"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "google",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 3,
+    "meta": 3,
+    "google": 3,
+    "microsoft": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "can_partition",

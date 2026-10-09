@@ -8,9 +8,9 @@
     "intervals",
     "sweep-line"
   ],
-  "companies": [
-    "google"
-  ],
+  "companies": {
+    "google": 3
+  },
   "target_minutes": 30,
   "signature": {
     "function": "book_calendar_double",

@@ -9,11 +9,11 @@
     "sliding-window",
     "hash-map"
   ],
-  "companies": [
-    "meta",
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "meta": 4,
+    "google": 4,
+    "amazon": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "length_of_longest_substring_k_distinct",

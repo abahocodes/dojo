@@ -10,12 +10,12 @@
     "dfs",
     "graphs"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "microsoft",
-    "google"
-  ],
+  "companies": {
+    "amazon": 4,
+    "meta": 5,
+    "microsoft": 3,
+    "google": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "distance_k",

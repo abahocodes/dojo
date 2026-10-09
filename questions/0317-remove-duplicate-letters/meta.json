@@ -10,11 +10,11 @@
     "greedy",
     "strings"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "bytedance"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 2,
+    "bytedance": 3
+  },
   "target_minutes": 30,
   "signature": {
     "function": "remove_duplicate_letters",

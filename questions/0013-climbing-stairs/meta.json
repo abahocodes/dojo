@@ -7,12 +7,12 @@
   "tags": [
     "dynamic-programming"
   ],
-  "companies": [
-    "amazon",
-    "apple",
-    "adobe",
-    "google"
-  ],
+  "companies": {
+    "amazon": 3,
+    "apple": 2,
+    "adobe": 3,
+    "google": 2
+  },
   "target_minutes": 10,
   "signature": {
     "function": "climb_stairs",

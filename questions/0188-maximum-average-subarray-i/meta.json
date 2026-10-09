@@ -8,10 +8,10 @@
     "arrays",
     "sliding-window"
   ],
-  "companies": [
-    "meta",
-    "google"
-  ],
+  "companies": {
+    "meta": 3,
+    "google": 1
+  },
   "target_minutes": 15,
   "signature": {
     "function": "find_max_average",

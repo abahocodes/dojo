@@ -9,10 +9,10 @@
     "hash-map",
     "counting"
   ],
-  "companies": [
-    "wayfair",
-    "microsoft"
-  ],
+  "companies": {
+    "wayfair": 2,
+    "microsoft": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "max_number_of_balloons",

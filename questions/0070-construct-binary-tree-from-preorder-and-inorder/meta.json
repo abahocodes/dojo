@@ -9,12 +9,12 @@
     "divide-and-conquer",
     "hash-map"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "google",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 3,
+    "google": 2,
+    "bloomberg": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "build_tree",

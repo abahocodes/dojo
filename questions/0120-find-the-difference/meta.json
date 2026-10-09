@@ -9,10 +9,10 @@
     "hash-map",
     "bit-manipulation"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 2,
+    "amazon": 1
+  },
   "target_minutes": 10,
   "signature": {
     "function": "find_the_difference",

@@ -8,10 +8,10 @@
     "arrays",
     "hash-set"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 2,
+    "amazon": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "check_if_exist",

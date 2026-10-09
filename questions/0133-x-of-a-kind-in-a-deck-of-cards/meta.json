@@ -10,9 +10,9 @@
     "math",
     "counting"
   ],
-  "companies": [
-    "google"
-  ],
+  "companies": {
+    "google": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "has_groups_size_x",

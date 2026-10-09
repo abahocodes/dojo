@@ -9,12 +9,12 @@
     "dfs",
     "dynamic-programming"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "google",
-    "microsoft"
-  ],
+  "companies": {
+    "meta": 4,
+    "amazon": 3,
+    "google": 3,
+    "microsoft": 3
+  },
   "target_minutes": 30,
   "signature": {
     "function": "max_path_sum",

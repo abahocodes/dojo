@@ -9,11 +9,11 @@
     "bfs",
     "dfs"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 3,
+    "microsoft": 2
+  },
   "target_minutes": 30,
   "signature": {
     "function": "amount_of_time",

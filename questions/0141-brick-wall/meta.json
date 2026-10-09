@@ -8,10 +8,10 @@
     "arrays",
     "hash-map"
   ],
-  "companies": [
-    "meta",
-    "google"
-  ],
+  "companies": {
+    "meta": 3,
+    "google": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "least_bricks",

@@ -7,7 +7,7 @@ use jiff::{Timestamp, ToSpan};
 
 use super::{Dice, Library};
 use crate::model::{LabelStat, QuestionStat};
-use crate::questions::Difficulty;
+use crate::questions::{Companies, Difficulty, Frequency};
 
 pub fn now() -> Timestamp {
     "2026-10-09T12:00:00Z".parse().unwrap()
@@ -17,19 +17,22 @@ pub fn hours_ago(h: i64) -> Timestamp {
     now().checked_sub(h.hours()).unwrap()
 }
 
-/// An untried question; known company names in `labels` become companies,
-/// the rest topics.
+/// An untried question. Known company names in `labels` become companies
+/// asking it regularly (3); the rest are topics.
 pub fn question(id: u32, difficulty: Difficulty, labels: &[&str]) -> QuestionStat {
-    let (companies, tags): (Vec<String>, Vec<String>) = labels
-        .iter()
-        .map(|l| l.to_string())
-        .partition(|l| COMPANIES.contains(&l.as_str()));
+    let (companies, tags): (Vec<&str>, Vec<&str>) =
+        labels.iter().partition(|l| COMPANIES.contains(l));
     QuestionStat::builder()
         .id(id)
         .title(format!("Q{id}"))
         .difficulty(difficulty)
-        .tags(tags)
-        .companies(companies)
+        .tags(tags.into_iter().map(String::from).collect())
+        .companies(Companies(
+            companies
+                .into_iter()
+                .map(|c| (c.to_string(), Frequency(3)))
+                .collect(),
+        ))
         .attempts(0)
         .solved(false)
         .target_secs(900)
@@ -37,6 +40,12 @@ pub fn question(id: u32, difficulty: Difficulty, labels: &[&str]) -> QuestionSta
 }
 
 const COMPANIES: &[&str] = &["google", "meta", "amazon"];
+
+/// `company` asks `q` this often.
+pub fn asked(mut q: QuestionStat, company: &str, frequency: u8) -> QuestionStat {
+    q.companies.0.insert(company.into(), Frequency(frequency));
+    q
+}
 
 /// Passed with `score`, last tried `hours` ago.
 pub fn solved(mut q: QuestionStat, score: f64, hours: i64) -> QuestionStat {
@@ -91,7 +100,7 @@ impl Library for MockLibrary {
         let mut out: Vec<String> = self
             .questions
             .iter()
-            .flat_map(|q| q.tags.iter().chain(&q.companies).cloned())
+            .flat_map(|q| q.tags.iter().chain(q.companies.names()).cloned())
             .collect();
         out.sort();
         out.dedup();

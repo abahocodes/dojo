@@ -10,12 +10,12 @@
     "two-pointers",
     "hash-map"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "google",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 5,
+    "meta": 2,
+    "google": 2,
+    "microsoft": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "partition_labels",

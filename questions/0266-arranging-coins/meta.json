@@ -8,10 +8,10 @@
     "binary-search",
     "math"
   ],
-  "companies": [
-    "bloomberg",
-    "amazon"
-  ],
+  "companies": {
+    "bloomberg": 2,
+    "amazon": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "arrange_coins",

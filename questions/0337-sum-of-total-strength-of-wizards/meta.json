@@ -9,10 +9,10 @@
     "monotonic-stack",
     "prefix-sum"
   ],
-  "companies": [
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "amazon": 3,
+    "google": 1
+  },
   "target_minutes": 45,
   "signature": {
     "function": "total_strength",

@@ -7,10 +7,10 @@
   "tags": [
     "arrays"
   ],
-  "companies": [
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "amazon": 2,
+    "google": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "find_max_consecutive_ones",

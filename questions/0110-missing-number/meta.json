@@ -9,12 +9,12 @@
     "arrays",
     "math"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "meta",
-    "apple"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 4,
+    "meta": 3,
+    "apple": 2
+  },
   "target_minutes": 10,
   "signature": {
     "function": "missing_number",

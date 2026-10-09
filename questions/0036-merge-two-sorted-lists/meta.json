@@ -8,12 +8,12 @@
     "linked-list",
     "two-pointers"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "apple",
-    "google"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 4,
+    "apple": 3,
+    "google": 2
+  },
   "target_minutes": 10,
   "signature": {
     "function": "merge_two_lists",

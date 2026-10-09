@@ -7,12 +7,12 @@
   "tags": [
     "dynamic-programming"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "microsoft",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 4,
+    "google": 3,
+    "microsoft": 3,
+    "bloomberg": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "coin_change",

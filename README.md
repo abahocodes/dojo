@@ -192,7 +192,6 @@ idle_pause_minutes = 15      # 0 turns it off
 
 [solve]
 strategy = "need"            # what /solve google or /solve 3 does: need or random
-difficulty_order = ["medium", "easy", "hard"]   # order untried questions come in
 ```
 
 Your history is a SQLite database in `~/.local/share/dojo/`. Set `DOJO_HOME`

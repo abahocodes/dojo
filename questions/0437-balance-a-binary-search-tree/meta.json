@@ -9,10 +9,10 @@
     "binary-search-tree",
     "divide-and-conquer"
   ],
-  "companies": [
-    "amazon",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 2,
+    "meta": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "balance_bst",

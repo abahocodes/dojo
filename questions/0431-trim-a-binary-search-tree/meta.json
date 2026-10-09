@@ -9,10 +9,10 @@
     "binary-search-tree",
     "recursion"
   ],
-  "companies": [
-    "amazon",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 2,
+    "bloomberg": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "trim_bst",

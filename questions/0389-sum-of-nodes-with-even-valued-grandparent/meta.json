@@ -9,10 +9,10 @@
     "dfs",
     "bfs"
   ],
-  "companies": [
-    "salesforce",
-    "amazon"
-  ],
+  "companies": {
+    "salesforce": 2,
+    "amazon": 1
+  },
   "target_minutes": 12,
   "signature": {
     "function": "sum_even_grandparent",

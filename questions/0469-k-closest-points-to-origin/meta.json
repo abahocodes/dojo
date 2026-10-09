@@ -10,11 +10,11 @@
     "sorting",
     "quickselect"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "meta": 5,
+    "amazon": 5,
+    "google": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "k_closest",

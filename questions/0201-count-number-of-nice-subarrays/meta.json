@@ -10,10 +10,10 @@
     "prefix-sum",
     "hash-map"
   ],
-  "companies": [
-    "amazon",
-    "roblox"
-  ],
+  "companies": {
+    "amazon": 3,
+    "roblox": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "number_of_nice_subarrays",

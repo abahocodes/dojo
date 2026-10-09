@@ -10,13 +10,13 @@
     "bfs",
     "matrix"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "meta",
-    "microsoft",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 5,
+    "google": 4,
+    "meta": 4,
+    "microsoft": 4,
+    "bloomberg": 4
+  },
   "target_minutes": 20,
   "signature": {
     "function": "num_islands",

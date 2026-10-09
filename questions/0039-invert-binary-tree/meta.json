@@ -9,11 +9,11 @@
     "dfs",
     "bfs"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "meta"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 2,
+    "meta": 2
+  },
   "target_minutes": 10,
   "signature": {
     "function": "invert_tree",

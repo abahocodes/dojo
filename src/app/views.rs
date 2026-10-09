@@ -169,7 +169,7 @@ pub fn question(q: &Question) -> Entry {
     ];
     if !m.companies.is_empty() {
         paras.push(Para::plain(
-            format!("asked at {}", m.companies.join(", ")),
+            format!("asked at {}", m.companies.describe()),
             t.dim(),
         ));
     }
@@ -424,17 +424,6 @@ pub fn config(config: &Config, paths: &Paths) -> Entry {
             "solve picks",
             config.solve.strategy.name().to_string(),
             "  (for /solve google; [solve] strategy in the config file)".into(),
-        ),
-        row(
-            "untried",
-            config
-                .solve
-                .difficulty_order
-                .iter()
-                .map(|d| d.to_string())
-                .collect::<Vec<_>>()
-                .join(", "),
-            "  first ([solve] difficulty_order)".into(),
         ),
         Para::blank(),
         Para::plain("Files", t.heading()),
@@ -978,6 +967,7 @@ pub fn need_picks(picks: &[crate::model::Suggestion], scope: &str) -> Entry {
                 Span::styled(format!("{}. ", i + 1), t.dim()),
                 Span::styled(fit(&format!("#{}", p.question_id), 5), t.accent()),
                 Span::styled(fit(&p.title, 34), t.bold()),
+                Span::raw("  "),
                 Span::styled(p.reason.clone(), t.dim()),
             ])
             .indent(2),
@@ -1166,7 +1156,7 @@ pub fn contrib_review(
     ]));
     if !d.companies.is_empty() {
         paras.push(Para::plain(
-            format!("asked at {}", d.companies.join(", ")),
+            format!("asked at {}", d.companies().describe()),
             t.dim(),
         ));
     }

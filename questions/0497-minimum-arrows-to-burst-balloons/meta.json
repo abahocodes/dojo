@@ -9,11 +9,11 @@
     "greedy",
     "sorting"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "meta": 2,
+    "amazon": 3,
+    "microsoft": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "find_min_arrow_shots",

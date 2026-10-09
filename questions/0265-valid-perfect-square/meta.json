@@ -8,10 +8,10 @@
     "binary-search",
     "math"
   ],
-  "companies": [
-    "linkedin",
-    "amazon"
-  ],
+  "companies": {
+    "linkedin": 2,
+    "amazon": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "is_perfect_square",

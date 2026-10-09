@@ -10,12 +10,12 @@
     "strings",
     "parsing"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "microsoft",
-    "linkedin"
-  ],
+  "companies": {
+    "meta": 5,
+    "amazon": 4,
+    "microsoft": 4,
+    "linkedin": 5
+  },
   "target_minutes": 25,
   "signature": {
     "function": "deserialize",

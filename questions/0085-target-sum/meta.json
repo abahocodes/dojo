@@ -9,12 +9,12 @@
     "knapsack",
     "backtracking"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "google",
-    "bloomberg"
-  ],
+  "companies": {
+    "meta": 3,
+    "amazon": 3,
+    "google": 2,
+    "bloomberg": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "find_target_sum_ways",

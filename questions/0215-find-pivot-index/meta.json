@@ -8,11 +8,11 @@
     "arrays",
     "prefix-sum"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "goldman-sachs"
-  ],
+  "companies": {
+    "meta": 3,
+    "amazon": 3,
+    "goldman-sachs": 3
+  },
   "target_minutes": 10,
   "signature": {
     "function": "pivot_index",

@@ -8,9 +8,9 @@
     "intervals",
     "sorting"
   ],
-  "companies": [
-    "google"
-  ],
+  "companies": {
+    "google": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "remove_covered_intervals",

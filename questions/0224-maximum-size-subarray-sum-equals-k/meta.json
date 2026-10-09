@@ -9,10 +9,10 @@
     "prefix-sum",
     "hash-map"
   ],
-  "companies": [
-    "meta",
-    "palantir"
-  ],
+  "companies": {
+    "meta": 4,
+    "palantir": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "max_sub_array_len",

@@ -9,11 +9,11 @@
     "hash-map",
     "sliding-window"
   ],
-  "companies": [
-    "amazon",
-    "palantir",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 2,
+    "palantir": 3,
+    "microsoft": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "contains_nearby_duplicate",

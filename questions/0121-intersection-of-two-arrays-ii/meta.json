@@ -9,11 +9,11 @@
     "hash-map",
     "counting"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "oracle"
-  ],
+  "companies": {
+    "meta": 3,
+    "amazon": 2,
+    "oracle": 2
+  },
   "target_minutes": 10,
   "signature": {
     "function": "intersect",

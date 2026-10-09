@@ -9,13 +9,13 @@
     "arrays",
     "divide-and-conquer"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "microsoft",
-    "apple",
-    "goldman-sachs"
-  ],
+  "companies": {
+    "google": 4,
+    "amazon": 3,
+    "microsoft": 3,
+    "apple": 3,
+    "goldman-sachs": 3
+  },
   "target_minutes": 40,
   "signature": {
     "function": "find_median_sorted_arrays",

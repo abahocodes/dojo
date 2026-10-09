@@ -10,10 +10,10 @@
     "combinatorics",
     "math"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 2,
+    "amazon": 1
+  },
   "target_minutes": 40,
   "signature": {
     "function": "num_of_ways",

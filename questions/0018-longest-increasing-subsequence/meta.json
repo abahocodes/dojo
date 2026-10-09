@@ -9,11 +9,11 @@
     "binary-search",
     "arrays"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 3,
+    "microsoft": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "longest_increasing_subsequence",

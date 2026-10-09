@@ -8,12 +8,12 @@
     "dynamic-programming",
     "strings"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "microsoft",
-    "bloomberg"
-  ],
+  "companies": {
+    "google": 4,
+    "amazon": 3,
+    "microsoft": 3,
+    "bloomberg": 3
+  },
   "target_minutes": 35,
   "signature": {
     "function": "edit_distance",

@@ -10,10 +10,10 @@
     "dfs",
     "stack"
   ],
-  "companies": [
-    "amazon",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 1,
+    "meta": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "increasing_bst",

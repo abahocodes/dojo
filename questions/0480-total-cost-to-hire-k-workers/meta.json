@@ -9,9 +9,9 @@
     "two-pointers",
     "simulation"
   ],
-  "companies": [
-    "amazon"
-  ],
+  "companies": {
+    "amazon": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "total_cost",

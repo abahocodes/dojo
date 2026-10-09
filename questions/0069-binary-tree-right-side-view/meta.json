@@ -9,12 +9,12 @@
     "bfs",
     "dfs"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "bloomberg",
-    "microsoft"
-  ],
+  "companies": {
+    "meta": 5,
+    "amazon": 3,
+    "bloomberg": 3,
+    "microsoft": 3
+  },
   "target_minutes": 15,
   "signature": {
     "function": "right_side_view",

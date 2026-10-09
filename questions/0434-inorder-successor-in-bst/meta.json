@@ -8,11 +8,11 @@
     "trees",
     "binary-search-tree"
   ],
-  "companies": [
-    "microsoft",
-    "meta",
-    "amazon"
-  ],
+  "companies": {
+    "microsoft": 4,
+    "meta": 4,
+    "amazon": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "inorder_successor",

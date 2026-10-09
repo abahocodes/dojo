@@ -8,10 +8,10 @@
     "strings",
     "two-pointers"
   ],
-  "companies": [
-    "helix",
-    "amazon"
-  ],
+  "companies": {
+    "helix": 2,
+    "amazon": 1
+  },
   "target_minutes": 15,
   "signature": {
     "function": "count_binary_substrings",

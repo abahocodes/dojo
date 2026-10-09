@@ -9,12 +9,12 @@
     "two-pointers",
     "cycle-detection"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "google",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 4,
+    "microsoft": 3,
+    "google": 3,
+    "bloomberg": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "find_duplicate",

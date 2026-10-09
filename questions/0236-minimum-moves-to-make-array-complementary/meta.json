@@ -9,9 +9,9 @@
     "prefix-sum",
     "difference-array"
   ],
-  "companies": [
-    "google"
-  ],
+  "companies": {
+    "google": 2
+  },
   "target_minutes": 40,
   "signature": {
     "function": "min_moves_complementary",

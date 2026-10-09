@@ -9,12 +9,12 @@
     "union-find",
     "dfs"
   ],
-  "companies": [
-    "google",
-    "meta",
-    "linkedin",
-    "amazon"
-  ],
+  "companies": {
+    "google": 3,
+    "meta": 3,
+    "linkedin": 3,
+    "amazon": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "valid_tree",

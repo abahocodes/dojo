@@ -9,12 +9,12 @@
     "greedy",
     "bfs"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "microsoft",
-    "apple"
-  ],
+  "companies": {
+    "amazon": 4,
+    "google": 3,
+    "microsoft": 3,
+    "apple": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "jump",

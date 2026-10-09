@@ -8,12 +8,12 @@
     "trees",
     "dfs"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "microsoft",
-    "linkedin"
-  ],
+  "companies": {
+    "meta": 5,
+    "amazon": 5,
+    "microsoft": 5,
+    "linkedin": 5
+  },
   "target_minutes": 25,
   "signature": {
     "function": "lowest_common_ancestor",

@@ -9,10 +9,10 @@
     "sorting",
     "math"
   ],
-  "companies": [
-    "amazon",
-    "intuit"
-  ],
+  "companies": {
+    "amazon": 3,
+    "intuit": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "maximum_product_three",

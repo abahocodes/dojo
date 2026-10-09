@@ -352,7 +352,15 @@ fn content(q: &Question) -> Vec<String> {
     if m.tags.is_empty() {
         p.push("at least one tag is required".into());
     }
-    for label in m.tags.iter().chain(&m.companies) {
+    for (name, f) in &m.companies.0 {
+        if !(1..=5).contains(&f.0) {
+            p.push(format!(
+                "frequency for `{name}` must be 1 to 5, not {}",
+                f.0
+            ));
+        }
+    }
+    for label in m.tags.iter().chain(m.companies.names()) {
         if RESERVED.contains(&label.as_str()) {
             p.push(format!("`{label}` is reserved (`/solve {label}`)"));
         }

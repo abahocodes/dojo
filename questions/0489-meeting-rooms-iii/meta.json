@@ -10,11 +10,11 @@
     "simulation",
     "sorting"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "google": 4,
+    "amazon": 3,
+    "microsoft": 2
+  },
   "target_minutes": 40,
   "signature": {
     "function": "most_booked",

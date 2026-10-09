@@ -9,14 +9,14 @@
     "arrays",
     "stack"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "goldman-sachs",
-    "meta",
-    "microsoft",
-    "apple"
-  ],
+  "companies": {
+    "amazon": 5,
+    "google": 4,
+    "goldman-sachs": 4,
+    "meta": 3,
+    "microsoft": 3,
+    "apple": 3
+  },
   "target_minutes": 30,
   "signature": {
     "function": "trap",

@@ -10,11 +10,11 @@
     "hash-set",
     "two-pointers"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "samsung"
-  ],
+  "companies": {
+    "amazon": 2,
+    "meta": 2,
+    "samsung": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "find_target",

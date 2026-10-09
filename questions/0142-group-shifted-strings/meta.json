@@ -8,11 +8,11 @@
     "strings",
     "hash-map"
   ],
-  "companies": [
-    "meta",
-    "google",
-    "uber"
-  ],
+  "companies": {
+    "meta": 4,
+    "google": 3,
+    "uber": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "group_strings",

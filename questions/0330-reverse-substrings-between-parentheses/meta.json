@@ -8,10 +8,10 @@
     "stack",
     "strings"
   ],
-  "companies": [
-    "amazon",
-    "adobe"
-  ],
+  "companies": {
+    "amazon": 2,
+    "adobe": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "reverse_parentheses",

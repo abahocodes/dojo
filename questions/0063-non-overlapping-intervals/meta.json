@@ -9,12 +9,12 @@
     "intervals",
     "sorting"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "google",
-    "microsoft"
-  ],
+  "companies": {
+    "meta": 3,
+    "amazon": 3,
+    "google": 3,
+    "microsoft": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "erase_overlap_intervals",

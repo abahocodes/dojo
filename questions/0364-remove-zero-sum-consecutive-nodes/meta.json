@@ -9,10 +9,10 @@
     "prefix-sum",
     "hash-map"
   ],
-  "companies": [
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 2,
+    "microsoft": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "remove_zero_sum_sublists",

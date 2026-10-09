@@ -8,11 +8,11 @@
     "arrays",
     "two-pointers"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "meta": 3,
+    "amazon": 2,
+    "microsoft": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "remove_duplicates_keep_two",

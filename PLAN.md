@@ -140,11 +140,15 @@ happened during an attempt, JSON payloads) and `input_history`.
   (`/solve two sum`) searches titles.
 - `Need` order: gap topics, due reviews, unpracticed topics, then unsolved
   questions (ones tried in the last day after), then the weakest solved
-  ones. Untried questions come mediums first (asked most), then easies,
-  then hards.
-- `[solve]` in the config file: `strategy` (`need` or `random`) is what
-  filter words or a count alone use; `difficulty_order` orders untried
-  questions (unlisted difficulties last). `/config` shows both.
+  ones. Untried and unsolved questions come most asked first, then
+  mediums, easies, hards. With a company filter (`/solve google`), "most
+  asked" means by that company.
+- Frequency: each question's `companies` in meta.json maps company → 1–5
+  (1 rarely, 3 regularly, 5 one of their most asked). These are calibrated
+  estimates, not scraped data (real frequency lists are proprietary);
+  `/show` prints them and `/contribute` drafts them.
+- `[solve] strategy` in the config file (`need` or `random`) is what
+  filter words or a count alone use; `/config` shows it.
 
 ## Contribute
 

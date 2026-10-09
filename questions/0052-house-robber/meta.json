@@ -8,12 +8,12 @@
     "dynamic-programming",
     "arrays"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "microsoft",
-    "cisco"
-  ],
+  "companies": {
+    "amazon": 3,
+    "google": 2,
+    "microsoft": 3,
+    "cisco": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "rob",

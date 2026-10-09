@@ -9,11 +9,11 @@
     "two-pointers",
     "greedy"
   ],
-  "companies": [
-    "amazon",
-    "bloomberg",
-    "google"
-  ],
+  "companies": {
+    "amazon": 4,
+    "bloomberg": 3,
+    "google": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "container_with_most_water",

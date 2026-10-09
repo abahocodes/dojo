@@ -8,9 +8,9 @@
     "intervals",
     "arrays"
   ],
-  "companies": [
-    "google"
-  ],
+  "companies": {
+    "google": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "remove_interval",

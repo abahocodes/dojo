@@ -9,12 +9,12 @@
     "bfs",
     "strings"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "google",
-    "linkedin"
-  ],
+  "companies": {
+    "amazon": 4,
+    "meta": 3,
+    "google": 3,
+    "linkedin": 3
+  },
   "target_minutes": 35,
   "signature": {
     "function": "ladder_length",

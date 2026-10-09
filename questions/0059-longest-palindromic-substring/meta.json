@@ -9,12 +9,12 @@
     "strings",
     "two-pointers"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "google",
-    "adobe"
-  ],
+  "companies": {
+    "amazon": 4,
+    "microsoft": 4,
+    "google": 3,
+    "adobe": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "longest_palindrome",

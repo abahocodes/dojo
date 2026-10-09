@@ -8,12 +8,12 @@
     "dynamic-programming",
     "strings"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "google",
-    "microsoft"
-  ],
+  "companies": {
+    "meta": 4,
+    "amazon": 3,
+    "google": 3,
+    "microsoft": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "num_decodings",

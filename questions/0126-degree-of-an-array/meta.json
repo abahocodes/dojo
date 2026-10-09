@@ -8,10 +8,10 @@
     "arrays",
     "hash-map"
   ],
-  "companies": [
-    "walmart",
-    "ge-digital"
-  ],
+  "companies": {
+    "walmart": 2,
+    "ge-digital": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "find_shortest_sub_array",

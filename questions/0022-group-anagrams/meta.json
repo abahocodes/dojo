@@ -9,11 +9,11 @@
     "hash-map",
     "sorting"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "uber"
-  ],
+  "companies": {
+    "amazon": 4,
+    "meta": 4,
+    "uber": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "group_anagrams",

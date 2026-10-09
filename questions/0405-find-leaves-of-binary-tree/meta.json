@@ -8,11 +8,11 @@
     "trees",
     "dfs"
   ],
-  "companies": [
-    "linkedin",
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "linkedin": 5,
+    "google": 3,
+    "amazon": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "find_leaves",

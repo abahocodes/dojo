@@ -8,11 +8,11 @@
     "linked-list",
     "two-pointers"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "apple"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 3,
+    "apple": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "middle_node",

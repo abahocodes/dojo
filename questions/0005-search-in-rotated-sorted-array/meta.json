@@ -8,13 +8,13 @@
     "binary-search",
     "arrays"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "microsoft",
-    "linkedin",
-    "google"
-  ],
+  "companies": {
+    "amazon": 4,
+    "meta": 4,
+    "microsoft": 3,
+    "linkedin": 4,
+    "google": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "search",

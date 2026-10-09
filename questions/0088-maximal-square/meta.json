@@ -8,13 +8,13 @@
     "dynamic-programming",
     "matrix"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "apple",
-    "microsoft",
-    "bloomberg"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 3,
+    "apple": 3,
+    "microsoft": 3,
+    "bloomberg": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "maximal_square",

@@ -9,12 +9,12 @@
     "stack",
     "arrays"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "microsoft",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 3,
+    "google": 3,
+    "microsoft": 2,
+    "meta": 2
+  },
   "target_minutes": 35,
   "signature": {
     "function": "largest_rectangle_area",

@@ -11,11 +11,11 @@
     "stack",
     "heap"
   ],
-  "companies": [
-    "google",
-    "linkedin",
-    "meta"
-  ],
+  "companies": {
+    "google": 3,
+    "linkedin": 3,
+    "meta": 2
+  },
   "target_minutes": 40,
   "signature": {
     "function": "closest_k_values",

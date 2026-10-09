@@ -9,12 +9,12 @@
     "dynamic-programming",
     "two-pointers"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "linkedin",
-    "google"
-  ],
+  "companies": {
+    "meta": 4,
+    "amazon": 3,
+    "linkedin": 3,
+    "google": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "count_substrings",

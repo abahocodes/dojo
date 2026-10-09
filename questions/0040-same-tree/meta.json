@@ -8,11 +8,11 @@
     "trees",
     "dfs"
   ],
-  "companies": [
-    "amazon",
-    "bloomberg",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 2,
+    "bloomberg": 2,
+    "microsoft": 2
+  },
   "target_minutes": 10,
   "signature": {
     "function": "is_same_tree",

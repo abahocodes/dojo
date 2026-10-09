@@ -9,11 +9,11 @@
     "math",
     "stack"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 4,
+    "bloomberg": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "add_two_numbers_ii",

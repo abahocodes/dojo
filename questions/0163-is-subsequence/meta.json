@@ -8,11 +8,11 @@
     "strings",
     "two-pointers"
   ],
-  "companies": [
-    "meta",
-    "pinterest",
-    "amazon"
-  ],
+  "companies": {
+    "meta": 3,
+    "pinterest": 2,
+    "amazon": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "is_subsequence",

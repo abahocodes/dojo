@@ -9,12 +9,12 @@
     "binary-search-tree",
     "dfs"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "google",
-    "uber"
-  ],
+  "companies": {
+    "amazon": 3,
+    "meta": 3,
+    "google": 2,
+    "uber": 3
+  },
   "target_minutes": 15,
   "signature": {
     "function": "kth_smallest",

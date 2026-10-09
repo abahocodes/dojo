@@ -10,12 +10,12 @@
     "hash-map",
     "sorting"
   ],
-  "companies": [
-    "meta",
-    "google",
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "meta": 5,
+    "google": 4,
+    "amazon": 3,
+    "microsoft": 3
+  },
   "target_minutes": 30,
   "signature": {
     "function": "accounts_merge",

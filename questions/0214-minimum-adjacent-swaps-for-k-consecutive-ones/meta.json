@@ -10,10 +10,10 @@
     "prefix-sum",
     "greedy"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 2,
+    "amazon": 1
+  },
   "target_minutes": 45,
   "signature": {
     "function": "min_moves_k_ones",

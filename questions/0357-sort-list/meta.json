@@ -9,12 +9,12 @@
     "sorting",
     "divide-and-conquer"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "microsoft",
-    "bytedance"
-  ],
+  "companies": {
+    "amazon": 3,
+    "meta": 3,
+    "microsoft": 3,
+    "bytedance": 4
+  },
   "target_minutes": 25,
   "signature": {
     "function": "sort_list",

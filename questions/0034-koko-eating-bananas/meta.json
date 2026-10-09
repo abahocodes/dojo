@@ -8,12 +8,12 @@
     "binary-search",
     "arrays"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "meta",
-    "airbnb"
-  ],
+  "companies": {
+    "google": 4,
+    "amazon": 3,
+    "meta": 2,
+    "airbnb": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "min_eating_speed",

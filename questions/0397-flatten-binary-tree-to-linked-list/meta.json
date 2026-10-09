@@ -10,11 +10,11 @@
     "linked-list",
     "stack"
   ],
-  "companies": [
-    "meta",
-    "microsoft",
-    "amazon"
-  ],
+  "companies": {
+    "meta": 4,
+    "microsoft": 4,
+    "amazon": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "flatten",

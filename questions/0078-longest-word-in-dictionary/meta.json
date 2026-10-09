@@ -9,11 +9,11 @@
     "strings",
     "dfs"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "goldman-sachs"
-  ],
+  "companies": {
+    "google": 2,
+    "amazon": 2,
+    "goldman-sachs": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "longest_word",

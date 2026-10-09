@@ -9,12 +9,12 @@
     "hash-set",
     "cyclic-sort"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "google",
-    "meta"
-  ],
+  "companies": {
+    "amazon": 4,
+    "microsoft": 3,
+    "google": 3,
+    "meta": 3
+  },
   "target_minutes": 40,
   "signature": {
     "function": "first_missing_positive",

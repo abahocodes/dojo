@@ -8,10 +8,10 @@
     "heap",
     "greedy"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 4,
+    "amazon": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "furthest_building",

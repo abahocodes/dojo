@@ -9,11 +9,11 @@
     "binary-search-tree",
     "divide-and-conquer"
   ],
-  "companies": [
-    "amazon",
-    "microsoft",
-    "apple"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 3,
+    "apple": 3
+  },
   "target_minutes": 12,
   "signature": {
     "function": "sorted_array_to_bst",

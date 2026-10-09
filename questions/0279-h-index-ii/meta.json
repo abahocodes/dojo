@@ -8,10 +8,10 @@
     "binary-search",
     "arrays"
   ],
-  "companies": [
-    "meta",
-    "google"
-  ],
+  "companies": {
+    "meta": 2,
+    "google": 2
+  },
   "target_minutes": 20,
   "signature": {
     "function": "h_index_sorted",

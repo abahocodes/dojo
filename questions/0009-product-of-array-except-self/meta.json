@@ -8,13 +8,13 @@
     "arrays",
     "prefix-sum"
   ],
-  "companies": [
-    "amazon",
-    "meta",
-    "microsoft",
-    "apple",
-    "asana"
-  ],
+  "companies": {
+    "amazon": 4,
+    "meta": 5,
+    "microsoft": 3,
+    "apple": 3,
+    "asana": 3
+  },
   "target_minutes": 20,
   "signature": {
     "function": "product_except_self",

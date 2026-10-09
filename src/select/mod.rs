@@ -11,7 +11,7 @@ use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 
 use crate::model::{LabelStat, QuestionStat, Suggestion};
-use crate::questions::{Difficulty, Question};
+use crate::questions::{Companies, Difficulty, Question};
 
 pub use need::Need;
 pub use random::{Clock, Random};
@@ -195,7 +195,7 @@ pub fn looks_numeric(word: &str) -> bool {
 pub trait Labeled {
     fn difficulty(&self) -> Difficulty;
     fn tags(&self) -> &[String];
-    fn companies(&self) -> &[String];
+    fn companies(&self) -> &Companies;
 }
 
 impl Labeled for Question {
@@ -205,7 +205,7 @@ impl Labeled for Question {
     fn tags(&self) -> &[String] {
         &self.meta.tags
     }
-    fn companies(&self) -> &[String] {
+    fn companies(&self) -> &Companies {
         &self.meta.companies
     }
 }
@@ -217,7 +217,7 @@ impl Labeled for QuestionStat {
     fn tags(&self) -> &[String] {
         &self.tags
     }
-    fn companies(&self) -> &[String] {
+    fn companies(&self) -> &Companies {
         &self.companies
     }
 }
@@ -289,16 +289,12 @@ pub struct Preferences {
     /// What `/solve` does with only tags or a count (`/solve google`):
     /// `need` or `random`.
     pub strategy: Kind,
-    /// The order untried questions come in, by difficulty; any left out
-    /// come last. Mediums first by default: they're asked most.
-    pub difficulty_order: Vec<Difficulty>,
 }
 
 impl Default for Preferences {
     fn default() -> Self {
         Preferences {
             strategy: Kind::Need,
-            difficulty_order: vec![Difficulty::Medium, Difficulty::Easy, Difficulty::Hard],
         }
     }
 }
@@ -330,7 +326,6 @@ pub fn select(
     request: &Request,
     library: &impl Library,
     dice: &impl Dice,
-    prefs: &Preferences,
     now: Timestamp,
 ) -> Result<Selection, SelectError> {
     match request {
@@ -369,7 +364,7 @@ pub fn select(
             }
             let picks = match kind {
                 Kind::Need => Need::new(now)
-                    .order(prefs.difficulty_order.clone())
+                    .focus(&filter.labels)
                     .pick(&pool, &topics, *count),
                 Kind::Random => Random::new(dice).pick(&pool, &topics, *count),
             };

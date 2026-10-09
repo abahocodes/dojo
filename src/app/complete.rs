@@ -268,7 +268,7 @@ fn label_detail(bank: &Bank, label: &str) -> String {
         .iter()
         .filter(|q| {
             q.meta.tags.iter().any(|t| t == label)
-                || q.meta.companies.iter().any(|c| c == label)
+                || q.meta.companies.contains(label)
                 || q.meta.difficulty.to_string() == label
         })
         .count();

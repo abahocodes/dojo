@@ -9,11 +9,11 @@
     "sliding-window",
     "two-heaps"
   ],
-  "companies": [
-    "google",
-    "amazon",
-    "meta"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 3,
+    "meta": 2
+  },
   "target_minutes": 40,
   "signature": {
     "function": "median_sliding_window",

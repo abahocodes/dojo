@@ -10,10 +10,10 @@
     "hash-map",
     "math"
   ],
-  "companies": [
-    "meta",
-    "amazon"
-  ],
+  "companies": {
+    "meta": 5,
+    "amazon": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "check_subarray_sum",

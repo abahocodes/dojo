@@ -8,10 +8,10 @@
     "strings",
     "two-pointers"
   ],
-  "companies": [
-    "meta",
-    "google"
-  ],
+  "companies": {
+    "meta": 5,
+    "google": 2
+  },
   "target_minutes": 12,
   "signature": {
     "function": "valid_word_abbreviation",

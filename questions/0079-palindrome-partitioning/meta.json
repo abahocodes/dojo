@@ -9,12 +9,12 @@
     "strings",
     "dynamic-programming"
   ],
-  "companies": [
-    "amazon",
-    "google",
-    "meta",
-    "bloomberg"
-  ],
+  "companies": {
+    "amazon": 3,
+    "google": 3,
+    "meta": 2,
+    "bloomberg": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "partition",

@@ -9,11 +9,11 @@
     "prefix-sum",
     "hash-map"
   ],
-  "companies": [
-    "meta",
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "meta": 4,
+    "amazon": 4,
+    "google": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "find_max_length",

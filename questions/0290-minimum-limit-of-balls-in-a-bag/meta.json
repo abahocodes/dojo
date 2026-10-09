@@ -8,10 +8,10 @@
     "binary-search",
     "arrays"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "minimum_size",

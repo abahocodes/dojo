@@ -10,11 +10,11 @@
     "sorting",
     "strings"
   ],
-  "companies": [
-    "amazon",
-    "bloomberg",
-    "uber"
-  ],
+  "companies": {
+    "amazon": 5,
+    "bloomberg": 4,
+    "uber": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "top_k_frequent_words",

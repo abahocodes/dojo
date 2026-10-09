@@ -9,11 +9,11 @@
     "two-pointers",
     "stack"
   ],
-  "companies": [
-    "google",
-    "meta",
-    "microsoft"
-  ],
+  "companies": {
+    "google": 4,
+    "meta": 3,
+    "microsoft": 2
+  },
   "target_minutes": 15,
   "signature": {
     "function": "backspace_compare",

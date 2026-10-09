@@ -9,10 +9,10 @@
     "dfs",
     "recursion"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 1,
+    "amazon": 1
+  },
   "target_minutes": 15,
   "signature": {
     "function": "evaluate_tree",

@@ -9,10 +9,10 @@
     "shortest-path",
     "heap"
   ],
-  "companies": [
-    "google",
-    "amazon"
-  ],
+  "companies": {
+    "google": 3,
+    "amazon": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "network_delay_time",

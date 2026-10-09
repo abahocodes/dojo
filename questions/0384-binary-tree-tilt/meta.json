@@ -8,10 +8,10 @@
     "trees",
     "dfs"
   ],
-  "companies": [
-    "indeed",
-    "amazon"
-  ],
+  "companies": {
+    "indeed": 2,
+    "amazon": 1
+  },
   "target_minutes": 15,
   "signature": {
     "function": "find_tilt",

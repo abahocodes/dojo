@@ -10,10 +10,10 @@
     "sorting",
     "prefix-sum"
   ],
-  "companies": [
-    "amazon",
-    "google"
-  ],
+  "companies": {
+    "amazon": 3,
+    "google": 3
+  },
   "target_minutes": 25,
   "signature": {
     "function": "max_frequency",

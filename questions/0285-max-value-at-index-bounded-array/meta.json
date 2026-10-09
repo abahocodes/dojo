@@ -9,10 +9,10 @@
     "math",
     "greedy"
   ],
-  "companies": [
-    "amazon",
-    "microsoft"
-  ],
+  "companies": {
+    "amazon": 3,
+    "microsoft": 2
+  },
   "target_minutes": 25,
   "signature": {
     "function": "max_value_at_index",
