@@ -25,6 +25,8 @@ pub trait Library {
     fn history(&self) -> anyhow::Result<(Vec<QuestionStat>, Vec<LabelStat>)>;
     /// Ids matching free text, best first; an exact slug alone.
     fn search(&self, text: &str) -> Vec<u32>;
+    /// The question open now, which a new pick replaces.
+    fn open(&self) -> Option<u32>;
 }
 
 /// A source of chance.
@@ -355,12 +357,20 @@ pub fn select(
             count,
         } => {
             let (questions, topics) = library.history().map_err(SelectError::History)?;
-            let pool: Vec<QuestionStat> = questions
+            let mut pool: Vec<QuestionStat> = questions
                 .into_iter()
                 .filter(|q| filter.matches(q))
                 .collect();
             if pool.is_empty() {
                 return Err(SelectError::NoMatch(filter.words()));
+            }
+            // Asking for something new while a question is open moves on
+            // from it, so it isn't picked again (unless it's all there is).
+            // Asking for it by id or name still restarts it.
+            if pool.len() > 1
+                && let Some(open) = library.open()
+            {
+                pool.retain(|q| q.id != open);
             }
             let picks = match kind {
                 Kind::Need => Need::new(now)
