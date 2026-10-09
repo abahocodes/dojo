@@ -503,10 +503,14 @@ pub fn suggest(
             push(q, format!("{} not practiced yet", t.label), &mut out);
         }
     }
-    // 4. Still short (asked for many): unsolved questions, easiest first,
-    //    then the weakest solved ones.
+    // 4. Still short (asked for many): unsolved questions, easiest first
+    //    (one tried in the last day waits, so a skip isn't offered straight
+    //    back), then the weakest solved ones.
     let mut rest: Vec<&QuestionStat> = questions.iter().filter(|q| !q.solved).collect();
-    rest.sort_by_key(|q| (q.difficulty, q.id));
+    rest.sort_by_key(|q| {
+        let recent = q.last_attempt.is_some_and(|t| age_days(t, now) < 1.0);
+        (recent, q.difficulty, q.id)
+    });
     for q in rest {
         let reason = if q.attempts == 0 {
             "not tried yet"
@@ -622,6 +626,46 @@ mod tests {
             .limit(bank.all().len() + 1)
             .call();
         assert_eq!(all.len(), bank.all().len());
+    }
+
+    #[test]
+    fn solved_and_just_skipped_questions_wait_their_turn() {
+        let bank = Bank::embedded();
+        let now = at(0);
+        let google: Vec<u32> = bank
+            .all()
+            .iter()
+            .filter(|q| q.meta.companies.iter().any(|c| c == "google"))
+            .map(|q| q.meta.id)
+            .collect();
+        let (solved, skipped) = (google[0], google[1]);
+        let attempts = vec![
+            attempt(solved, 0, Outcome::Pass, 60),
+            attempt(skipped, 0, Outcome::Skip, 10),
+        ];
+        let r = build()
+            .bank(&bank)
+            .attempts(&attempts)
+            .now(now)
+            .tz(&TimeZone::UTC)
+            .call();
+        let questions: Vec<QuestionStat> = r
+            .questions
+            .into_iter()
+            .filter(|q| google.contains(&q.id))
+            .collect();
+        let order: Vec<u32> = suggest()
+            .questions(&questions)
+            .topics(&r.topics)
+            .now(now)
+            .limit(usize::MAX)
+            .call()
+            .iter()
+            .map(|s| s.question_id)
+            .collect();
+        assert_eq!(order.len(), google.len());
+        assert_eq!(order.last(), Some(&solved));
+        assert_eq!(order[order.len() - 2], skipped);
     }
 
     #[test]

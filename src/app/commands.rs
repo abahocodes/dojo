@@ -68,7 +68,7 @@ const fn spec(
 pub const COMMANDS: &[Spec] = &[
     spec(
         "solve",
-        "<id | query | need | random> [N]",
+        "<id | query | need | random> [tags…] [N]",
         "start fresh on one or more questions",
         Group::Practice,
         None,

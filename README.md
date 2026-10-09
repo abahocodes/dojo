@@ -74,9 +74,9 @@ Then:
 
 ```text
 /solve 1          start on question 1 (or a slug, or search words: /solve rotting oranges)
-/solve graphs 3   three graph questions in a row
-/solve need       the questions that close your biggest gaps
-/solve random     surprise me
+/solve need       the question that closes your biggest gap (/solve need 3 for three)
+/solve google 3   the three Google questions you most need (tags, companies, difficulty)
+/solve random dp  surprise me, optionally within tags
 ```
 
 dojo shows the problem and starts the timer. Press Enter (or `/edit`) to open

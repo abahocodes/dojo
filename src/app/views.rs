@@ -948,12 +948,14 @@ pub fn summary_text(bank: &Bank, done: &[Done]) -> String {
 }
 
 /// Why `/solve need` picked each question.
-pub fn need_picks(picks: &[crate::model::Suggestion]) -> Entry {
+pub fn need_picks(picks: &[crate::model::Suggestion], scope: &str) -> Entry {
     let t = theme();
-    let mut paras = vec![Para::plain(
-        "Picked for where you need practice",
-        t.heading(),
-    )];
+    let heading = if scope.is_empty() {
+        "Picked for where you need practice".to_string()
+    } else {
+        format!("Picked for where you need practice in {scope}")
+    };
+    let mut paras = vec![Para::plain(heading, t.heading())];
     for (i, p) in picks.iter().enumerate() {
         paras.push(
             Para::new(vec![
