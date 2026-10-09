@@ -191,6 +191,20 @@ fn each_gap_topic_gets_its_own_question() {
 }
 
 #[test]
+fn each_new_topic_gets_its_own_question() {
+    let mut library = MockLibrary::with(vec![
+        asked(question(1, Medium, &["dfs", "graphs"]), "google", 5),
+        question(2, Medium, &["graphs"]),
+        question(3, Medium, &["dfs"]),
+    ]);
+    library.topics = vec![topic("dfs", 0.0, 0), topic("graphs", 0.0, 0)];
+    let s = need(&library, "need 2");
+    // Both topics' best is #1; dfs takes it and graphs gets the next best.
+    assert_eq!(ids(&s), [1, 2]);
+    assert_eq!(s.reasons[1].reason, "graphs not practiced yet");
+}
+
+#[test]
 fn filters_narrow_need() {
     let library = MockLibrary::with(vec![
         question(1, Medium, &["arrays", "google"]),

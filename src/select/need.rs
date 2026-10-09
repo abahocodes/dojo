@@ -113,8 +113,9 @@ impl Strategy for Need {
         for q in due {
             push(q, "due for review".into(), &mut out);
         }
-        // 3. Coverage: the best question in each topic never practiced,
-        //    most asked first (not alphabetically by topic).
+        // 3. Coverage: a question in each topic never practiced, topics
+        //    whose best question is asked most first (not alphabetically),
+        //    each with its own question.
         let mut new_topics: Vec<(&QuestionStat, &str)> = topics
             .iter()
             .filter(|t| t.attempted == 0)
@@ -125,8 +126,13 @@ impl Strategy for Need {
             })
             .collect();
         new_topics.sort_by_key(|(q, _)| self.priority(q));
-        for (q, label) in new_topics {
-            push(q, format!("{label} not practiced yet"), &mut out);
+        for (_, label) in new_topics {
+            if let Some(q) = in_topic(pool, label)
+                .filter(|q| fresh(q, &out))
+                .min_by_key(untried_first)
+            {
+                push(q, format!("{label} not practiced yet"), &mut out);
+            }
         }
         // 4. Unsolved.
         let mut rest: Vec<&QuestionStat> = pool.iter().filter(|q| !q.solved).collect();

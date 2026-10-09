@@ -39,11 +39,29 @@ pub struct Test {
 }
 
 /// A company that asks the question, and how often (1 to 5). A list
-/// rather than a map so the schema stays closed for strict output.
+/// rather than a map so the schema stays closed for strict output. Drafts
+/// saved before ratings existed hold bare names; those count as 3.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(from = "RatingOrName")]
 pub struct CompanyRating {
     pub name: String,
     pub frequency: u8,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum RatingOrName {
+    Rating { name: String, frequency: u8 },
+    Name(String),
+}
+
+impl From<RatingOrName> for CompanyRating {
+    fn from(r: RatingOrName) -> CompanyRating {
+        match r {
+            RatingOrName::Rating { name, frequency } => CompanyRating { name, frequency },
+            RatingOrName::Name(name) => CompanyRating { name, frequency: 3 },
+        }
+    }
 }
 
 /// What the model returns. Every field is required and every object closed,
@@ -717,6 +735,27 @@ fn write_files(draft: &Draft, dir: &Path, id: u32, cases: &[Value]) -> Result<Ve
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn company_ratings_load_old_and_new_drafts() {
+        let new: Vec<CompanyRating> =
+            serde_json::from_str(r#"[{"name": "google", "frequency": 5}]"#).unwrap();
+        let old: Vec<CompanyRating> = serde_json::from_str(r#"["meta"]"#).unwrap();
+        assert_eq!(
+            new[0],
+            CompanyRating {
+                name: "google".into(),
+                frequency: 5
+            }
+        );
+        assert_eq!(
+            old[0],
+            CompanyRating {
+                name: "meta".into(),
+                frequency: 3
+            }
+        );
+    }
 
     /// Climbing Stairs (#13) as a new question, `count_climbs`, with a
     /// reference solution in every language.
