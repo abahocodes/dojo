@@ -67,7 +67,12 @@ impl App {
         }
 
         let library = AppLibrary { app: self, lang };
-        let request = match select::Request::parse(args, &select::Library::labels(&library)) {
+        let prefs = &self.config.solve;
+        let request = match select::Request::parse(
+            args,
+            &select::Library::labels(&library),
+            prefs.strategy,
+        ) {
             Ok(r) => r,
             Err(e) => return Some(views::error(e.to_string())),
         };
@@ -91,6 +96,7 @@ impl App {
             &request,
             &library,
             &select::Clock::new(),
+            prefs,
             jiff::Timestamp::now(),
         ) {
             Ok(c) => c,

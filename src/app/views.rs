@@ -420,6 +420,22 @@ pub fn config(config: &Config, paths: &Paths) -> Entry {
             },
             "  (idle_pause_minutes in the config file)".into(),
         ),
+        row(
+            "solve picks",
+            config.solve.strategy.name().to_string(),
+            "  (for /solve google; [solve] strategy in the config file)".into(),
+        ),
+        row(
+            "untried",
+            config
+                .solve
+                .difficulty_order
+                .iter()
+                .map(|d| d.to_string())
+                .collect::<Vec<_>>()
+                .join(", "),
+            "  first ([solve] difficulty_order)".into(),
+        ),
         Para::blank(),
         Para::plain("Files", t.heading()),
         row(

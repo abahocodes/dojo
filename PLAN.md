@@ -142,6 +142,9 @@ happened during an attempt, JSON payloads) and `input_history`.
   questions (ones tried in the last day after), then the weakest solved
   ones. Untried questions come mediums first (asked most), then easies,
   then hards.
+- `[solve]` in the config file: `strategy` (`need` or `random`) is what
+  filter words or a count alone use; `difficulty_order` orders untried
+  questions (unlisted difficulties last). `/config` shows both.
 
 ## Contribute
 

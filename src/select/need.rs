@@ -2,21 +2,39 @@
 
 use jiff::Timestamp;
 
-use super::{Strategy, untried_rank};
+use super::{Preferences, Strategy};
 use crate::model::{GAP, LabelStat, QuestionStat, Suggestion, age_days};
+use crate::questions::Difficulty;
 
 /// In order: a question in each gap topic (practiced, under the mastery
 /// bar), due reviews (solved, not cleanly, a week or more ago), a question
 /// in each topic never practiced, unsolved questions (ones tried in the last
 /// day waiting, so a skip isn't offered straight back), then the weakest
-/// solved ones. Untried questions come mediums first.
+/// solved ones. Untried questions come in difficulty `order`.
 pub struct Need {
     now: Timestamp,
+    order: Vec<Difficulty>,
 }
 
 impl Need {
+    /// Untried questions in the default order, mediums first.
     pub fn new(now: Timestamp) -> Need {
-        Need { now }
+        Need {
+            now,
+            order: Preferences::default().difficulty_order,
+        }
+    }
+
+    pub fn order(self, order: Vec<Difficulty>) -> Need {
+        Need { order, ..self }
+    }
+
+    /// Where `d` comes in the order; unlisted ones last.
+    fn rank(&self, d: Difficulty) -> usize {
+        self.order
+            .iter()
+            .position(|&o| o == d)
+            .unwrap_or(self.order.len())
     }
 }
 
@@ -35,7 +53,7 @@ impl Strategy for Need {
                 );
             }
         };
-        let untried_first = |q: &&QuestionStat| (untried_rank(q.difficulty), q.id);
+        let untried_first = |q: &&QuestionStat| (self.rank(q.difficulty), q.id);
 
         // 1. Gaps: prefer an untried question there, else the weakest one.
         for t in topics.iter().filter(|t| t.attempted > 0 && t.mastery < GAP) {
@@ -74,7 +92,7 @@ impl Strategy for Need {
         let mut rest: Vec<&QuestionStat> = pool.iter().filter(|q| !q.solved).collect();
         rest.sort_by_key(|q| {
             let recent = q.last_attempt.is_some_and(|t| age_days(t, now) < 1.0);
-            (recent, untried_rank(q.difficulty), q.id)
+            (recent, self.rank(q.difficulty), q.id)
         });
         for q in rest {
             let reason = if q.attempts == 0 {

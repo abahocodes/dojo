@@ -189,6 +189,10 @@ language = "python"          # javascript, typescript, java, cpp or go
 auto_test = true             # run visible tests on every save
 idle_pause_minutes = 15      # 0 turns it off
 # workspace = "/path/to/practice"   # where solution files live
+
+[solve]
+strategy = "need"            # what /solve google or /solve 3 does: need or random
+difficulty_order = ["medium", "easy", "hard"]   # order untried questions come in
 ```
 
 Your history is a SQLite database in `~/.local/share/dojo/`. Set `DOJO_HOME`
