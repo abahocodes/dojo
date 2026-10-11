@@ -10,6 +10,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import math
 import os
 import signal
 import sys
@@ -109,11 +110,18 @@ def decode(ty, v):
     return v
 
 
+class NotAnAnswer(Exception):
+    """A returned value no expected output can equal (infinity, NaN)."""
+
+
 def normalize(v):
     if isinstance(v, (list, tuple)):
         return [normalize(x) for x in v]
     if isinstance(v, dict):
         return {str(k): normalize(x) for k, x in v.items()}
+    if isinstance(v, float) and not math.isfinite(v):
+        # json.dumps would write `Infinity`, which isn't JSON.
+        raise NotAnAnswer(f"returned {v}, which can't be an answer: infinity and NaN never match")
     return v
 
 
@@ -263,9 +271,12 @@ def main():
                 finally:
                     signal.setitimer(signal.ITIMER_REAL, 0)
             got = encode(spec["returns"], got)
-            json.dumps(got)  # must be serializable
+            json.dumps(got, allow_nan=False)  # must be serializable
             result["status"] = "ok"
             result["got"] = got
+        except NotAnAnswer as e:
+            result["status"] = "error"
+            result["error"] = str(e)
         except CaseTimeout:
             result["status"] = "timeout"
             stopped = True

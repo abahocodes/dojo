@@ -93,11 +93,18 @@ function decode(ty, v) {
   return v;
 }
 
+// A returned value no expected output can equal (Infinity, NaN).
+class NotAnAnswer extends Error {}
+
 function encode(ty, v) {
   if (v === undefined) return null;
   if (ty.endsWith('[]')) return v === null ? null : Array.from(v, (x) => encode(ty.slice(0, -2), x));
   if (ty === 'ListNode') return fromListNode(v);
   if (ty === 'TreeNode') return fromTree(v);
+  // JSON.stringify would quietly turn these into null.
+  if (typeof v === 'number' && !Number.isFinite(v)) {
+    throw new NotAnAnswer(`returned ${v}, which can't be an answer: Infinity and NaN never match`);
+  }
   return v;
 }
 
@@ -223,7 +230,7 @@ function main() {
         stopped = true;
       } else {
         r.status = 'error';
-        r.error = explain(e, file);
+        r.error = e instanceof NotAnAnswer ? e.message : explain(e, file);
       }
     }
     r.ms = Math.round(Number(process.hrtime.bigint() - start) / 1e4) / 100;

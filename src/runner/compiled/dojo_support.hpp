@@ -462,8 +462,17 @@ template <class T> T input(const Json &inputs, const char *name) {
 
 // ---- Encoding results --------------------------------------------------------
 
+// A returned value no expected output can equal (infinity, NaN).
+struct NotAnAnswer : std::runtime_error {
+    using std::runtime_error::runtime_error;
+};
+
 inline std::string number(double d) {
-    if (!std::isfinite(d)) return "null";
+    if (!std::isfinite(d)) {
+        // JSON can't hold these; writing null would read as a wrong answer.
+        throw NotAnAnswer(std::string("returned ") + (std::isnan(d) ? "nan" : d > 0 ? "inf" : "-inf") +
+                          ", which can't be an answer: infinity and NaN never match");
+    }
     char buf[32];
     // The shortest form that reads back as the same double.
     for (int precision = 15; precision <= 17; precision++) {
@@ -699,6 +708,8 @@ inline void run_cases(const Job &job) {
                 r.got = job.call(input ? *input : none);
                 r.ok = true;
             } catch (const InputError &e) {
+                r.error = e.what();
+            } catch (const NotAnAnswer &e) {
                 r.error = e.what();
             } catch (const std::exception &e) {
                 r.error = "uncaught exception " + demangle(typeid(e).name()) + ": " + e.what();

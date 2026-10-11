@@ -776,7 +776,11 @@ mod runaway_tests {
     use crate::questions::Bank;
 
     fn run_code(lang: Language, code: &str) -> (RunReport, Duration) {
-        let q = Bank::embedded().get(1).unwrap().clone(); // two_sum, 3 visible
+        run_question(1, lang, code) // two_sum, 3 visible
+    }
+
+    fn run_question(id: u32, lang: Language, code: &str) -> (RunReport, Duration) {
+        let q = Bank::embedded().get(id).unwrap().clone();
         let dir = tempfile::tempdir().unwrap();
         let file = dir.path().join(lang.solution_file());
         std::fs::write(&file, code).unwrap();
@@ -882,6 +886,78 @@ mod runaway_tests {
                 .iter()
                 .all(|c| c.stdout.as_deref().is_some_and(|o| o.contains(printed)))
         );
+    }
+
+    #[rstest]
+    #[case::python_inf(
+        Language::Python,
+        "def coin_change(coins, amount):\n    return float('inf')\n",
+        "inf"
+    )]
+    #[case::python_nan(
+        Language::Python,
+        "def coin_change(coins, amount):\n    return float('nan')\n",
+        "nan"
+    )]
+    #[case::typescript_inf(
+        Language::TypeScript,
+        "function coinChange(coins: number[], amount: number): number {\n  return Infinity;\n}\n",
+        "Infinity"
+    )]
+    #[case::javascript_nan(
+        Language::JavaScript,
+        "function coinChange(coins, amount) {\n  return NaN;\n}\n",
+        "NaN"
+    )]
+    fn infinity_is_an_error_on_its_case(
+        #[case] lang: Language,
+        #[case] code: &str,
+        #[case] shown: &str,
+    ) {
+        // Python's json.dumps wrote `Infinity`, which isn't JSON, so the
+        // whole run failed with "harness wrote invalid results"; JavaScript
+        // quietly turned it into null.
+        let (r, _) = run_question(14, lang, code); // coin_change, returns int
+        assert!(!r.cases.is_empty());
+        assert!(
+            r.cases.iter().all(|c| c.status == Status::Error),
+            "{:?}",
+            statuses(&r)
+        );
+        let err = r.cases[0].error.as_deref().unwrap_or_default();
+        assert!(err.contains(&format!("returned {shown}")), "{err}");
+    }
+
+    #[rstest]
+    #[case::go(
+        Language::Go,
+        "package main\n\nimport \"math\"\n\nfunc findMedianSortedArrays(nums1 []int, nums2 []int) float64 {\n\treturn math.Inf(1)\n}\n",
+        "+Inf"
+    )]
+    #[case::cpp(
+        Language::Cpp,
+        "class Solution {\npublic:\n    double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {\n        return 1.0 / 0.0;\n    }\n};\n",
+        "inf"
+    )]
+    #[case::java(
+        Language::Java,
+        "class Solution {\n    public double findMedianSortedArrays(int[] nums1, int[] nums2) {\n        return Double.POSITIVE_INFINITY;\n    }\n}\n",
+        "Infinity"
+    )]
+    fn compiled_infinity_is_an_error_on_its_case(
+        #[case] lang: Language,
+        #[case] code: &str,
+        #[case] shown: &str,
+    ) {
+        let (r, _) = run_question(35, lang, code); // median, returns float
+        assert!(!r.cases.is_empty());
+        assert!(
+            r.cases.iter().all(|c| c.status == Status::Error),
+            "{:?}",
+            statuses(&r)
+        );
+        let err = r.cases[0].error.as_deref().unwrap_or_default();
+        assert!(err.contains(shown), "{err}");
     }
 
     #[test]
