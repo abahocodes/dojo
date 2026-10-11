@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"reflect"
 	"runtime/debug"
@@ -145,10 +146,17 @@ func dojoJSON(v reflect.Value) any {
 		return out
 	case v.Kind() == reflect.Interface && v.IsNil():
 		return nil
+	case (v.Kind() == reflect.Float64 || v.Kind() == reflect.Float32) &&
+		(math.IsInf(v.Float(), 0) || math.IsNaN(v.Float())):
+		// json.Marshal refuses these, which would lose every result.
+		panic(dojoNotAnAnswer(fmt.Sprintf("returned %v, which can't be an answer: infinity and NaN never match", v.Float())))
 	default:
 		return v.Interface()
 	}
 }
+
+// A returned value no expected output can equal (infinity, NaN).
+type dojoNotAnAnswer string
 
 // dojoStack keeps the panic's frames that are in the solution.
 func dojoStack() string {
@@ -235,6 +243,10 @@ func dojoRun(call func(input map[string]json.RawMessage) any) {
 			defer func() {
 				if p := recover(); p != nil {
 					r.Status = "error"
+					if msg, ok := p.(dojoNotAnAnswer); ok {
+						r.Error = string(msg)
+						return
+					}
 					r.Error = fmt.Sprint("panic: ", p)
 					if stack := dojoStack(); stack != "" {
 						r.Error += "\n" + stack

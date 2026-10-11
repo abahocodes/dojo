@@ -706,7 +706,7 @@ final class Json {
         } else if (v instanceof Double || v instanceof Float) {
             double d = ((Number) v).doubleValue();
             if (Double.isNaN(d) || Double.isInfinite(d)) {
-                throw new DojoError("returned " + d + ", which isn't a number JSON can hold");
+                throw new DojoError("returned " + d + ", which can't be an answer: infinity and NaN never match");
             }
             sb.append(d);
         } else if (v instanceof Map<?, ?> m) {
