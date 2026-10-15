@@ -73,11 +73,17 @@ it found on your machine, and Enter takes the default.
 Then:
 
 ```text
-/solve 1          start on question 1 (or a slug, or search words: /solve rotting oranges)
-/solve need       the question that closes your biggest gap (/solve need 3 for three)
-/solve google 3   the three Google questions you most need (tags, companies, difficulty)
-/solve random dp  surprise me, optionally within tags
+/solve 1              start on question 1 (or a slug, or search words: /solve rotting oranges)
+/solve need           the question that closes your biggest gap (/solve need 3 for three)
+/solve google 3       the three Google questions you most need (tags, companies, difficulty)
+/solve random graphs  surprise me, optionally within tags
+/solve -c google -d hard -n 2   options say outright what each word is
 ```
+
+Words go in any order. Options (`--company`, `--tag`, `--difficulty`,
+`--count`, `--search`, `--need`, `--random`) settle anything ambiguous, a word
+cut off partway asks what you meant instead of guessing, and Tab completes
+names. `/help solve` has the full list.
 
 dojo shows the problem and starts the timer. Press Enter (or `/edit`) to open
 your editor on a fresh file with the problem in a comment on top and the
@@ -121,7 +127,7 @@ How mastery works:
 | | |
 |---|---|
 | **Practice** | |
-| `/solve <id \| query \| need \| random> [N]` | start fresh on one or more questions |
+| `/solve <id \| words…> [options]` | start fresh on one or more questions |
 | `/test` | run the visible tests (also runs on every save) |
 | `/submit` | run every test, including hidden ones |
 | `/hint` | reveal the next hint |

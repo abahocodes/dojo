@@ -327,6 +327,65 @@ fn command_line(c: &Spec) -> Para {
     Para::new(spans).with_prefix(vec![Span::raw("  ")], vec![Span::raw(" ".repeat(34))])
 }
 
+/// A two-column row: `left` in the accent colour, `right` beside it.
+fn help_row(left: &str, right: &str) -> Para {
+    let t = theme();
+    Para::new(vec![
+        Span::styled(fit(left, 30), t.accent()),
+        Span::raw("  "),
+        Span::raw(right.to_string()),
+    ])
+    .with_prefix(vec![Span::raw("  ")], vec![Span::raw(" ".repeat(34))])
+}
+
+/// `/help solve`: examples, how bare words are read, and the options.
+fn solve_help() -> Vec<Para> {
+    let t = theme();
+    let mut paras = vec![Para::blank(), Para::plain("Examples", t.heading())];
+    for (line, about) in [
+        ("/solve 12 7", "these questions"),
+        ("/solve two sum", "search titles"),
+        ("/solve google", "where you need practice, at google"),
+        ("/solve need dfs 3", "three dfs questions you need"),
+        ("/solve random medium", "any medium question"),
+        ("/solve -c google -d hard", "google's hard questions"),
+        ("/solve -s median", "titles with median"),
+    ] {
+        paras.push(help_row(line, about));
+    }
+    paras.push(Para::blank());
+    paras.push(Para::plain("Words", t.heading()));
+    paras.push(
+        Para::plain(
+            "Words go in any order. Each means the first of: need or random, an id or count, \
+             a difficulty, a tag, a company, else title search. A word cut off partway (medi) \
+             asks what you meant; Tab completes it.",
+            t.text(),
+        )
+        .indent(2),
+    );
+    paras.push(Para::blank());
+    paras.push(Para::plain("Options", t.heading()));
+    for (flags, value, about) in crate::select::OPTIONS {
+        let left = if value.is_empty() {
+            flags.to_string()
+        } else {
+            format!("{flags} {value}")
+        };
+        paras.push(help_row(&left, about));
+    }
+    paras.push(
+        Para::plain(
+            "Options say outright what a word is, for when a name could mean two things. Values \
+             repeat or take commas: -t dfs,graphs. Without need or random, [solve] strategy in \
+             /config decides.",
+            t.dim(),
+        )
+        .indent(2),
+    );
+    paras
+}
+
 pub fn help(only: Option<&Spec>) -> Entry {
     let t = theme();
     if let Some(c) = only {
@@ -346,6 +405,9 @@ pub fn help(only: Option<&Spec>) -> Entry {
                 )
                 .indent(2),
             );
+        }
+        if c.name == "solve" {
+            paras.extend(solve_help());
         }
         return entry(paras);
     }
