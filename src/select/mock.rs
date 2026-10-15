@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 
 use jiff::{Timestamp, ToSpan};
 
-use super::{Dice, Library};
+use super::{Dice, Library, Vocabulary};
 use crate::model::{LabelStat, QuestionStat};
 use crate::questions::{Companies, Difficulty, Frequency};
 
@@ -98,15 +98,8 @@ impl MockLibrary {
 }
 
 impl Library for MockLibrary {
-    fn labels(&self) -> Vec<String> {
-        let mut out: Vec<String> = self
-            .questions
-            .iter()
-            .flat_map(|q| q.tags.iter().chain(q.companies.names()).cloned())
-            .collect();
-        out.sort();
-        out.dedup();
-        out
+    fn vocabulary(&self) -> Vocabulary {
+        Vocabulary::of(&self.questions)
     }
 
     fn history(&self) -> anyhow::Result<(Vec<QuestionStat>, Vec<LabelStat>)> {

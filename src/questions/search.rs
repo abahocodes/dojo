@@ -5,7 +5,7 @@ use nucleo_matcher::pattern::{CaseMatching, Normalization, Pattern};
 use nucleo_matcher::{Config, Matcher, Utf32Str};
 
 use super::{Bank, Question};
-use crate::select::Filter;
+use crate::select::{Filter, Vocabulary};
 
 /// Fuzzy-ranks `items` against `query`, best first. Empty query keeps order.
 pub fn rank<'a, T>(query: &str, items: &'a [T], key: impl Fn(&T) -> String) -> Vec<&'a T> {
@@ -30,11 +30,11 @@ pub fn rank<'a, T>(query: &str, items: &'a [T], key: impl Fn(&T) -> String) -> V
 }
 
 pub fn search<'a>(bank: &'a Bank, query: &str) -> Vec<&'a Question> {
-    let labels = bank.labels();
+    let vocab = Vocabulary::of(bank.all());
     let mut filter = Filter::default();
     let rest: Vec<&str> = query
         .split_whitespace()
-        .filter(|w| !filter.add(&w.to_ascii_lowercase(), &labels))
+        .filter(|w| !filter.add(&w.to_ascii_lowercase(), &vocab))
         .collect();
     let candidates: Vec<&Question> = bank.all().iter().filter(|q| filter.matches(*q)).collect();
 

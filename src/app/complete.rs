@@ -5,6 +5,7 @@ use crate::config::EDITOR_PRESETS;
 use crate::questions::Bank;
 use crate::questions::search::{rank, search};
 use crate::runner::Language;
+use crate::select::{OPTIONS, Vocabulary, looks_numeric};
 
 pub const MAX_ITEMS: usize = 8;
 
@@ -135,6 +136,11 @@ fn arguments(bank: &Bank, spec: &Spec, line: &str, args: &str) -> Vec<Item> {
     };
     let position = args.split(' ').count() - 1; // index of the current token
     let previous = args.split(' ').rev().nth(1).unwrap_or("");
+    if spec.name == "solve"
+        && let Some(items) = solve_options(bank, head, args, token)
+    {
+        return items;
+    }
     if token.starts_with('-') || previous.starts_with('-') {
         return vec![];
     }
@@ -173,6 +179,69 @@ fn arguments(bank: &Bank, spec: &Spec, line: &str, args: &str) -> Vec<Item> {
         }
         _ => vec![],
     }
+}
+
+/// What `/solve` offers around its options: the options themselves while
+/// one is being typed, and only that option's values after one (`-c `
+/// lists companies). `None` when no option is involved.
+fn solve_options(bank: &Bank, head: &str, args: &str, token: &str) -> Option<Vec<Item>> {
+    let words: Vec<&str> = args.split(' ').collect();
+    let before = &words[..words.len() - 1];
+    // After --search everything is title words.
+    if before.iter().any(|w| matches!(*w, "-s" | "--search")) {
+        return Some(vec![]);
+    }
+    if token.starts_with('-') && !looks_numeric(token) {
+        let items = OPTIONS
+            .iter()
+            .filter(|(flags, ..)| flags.split(", ").any(|f| f.starts_with(token)))
+            .map(|(flags, value, about)| {
+                let long = flags.rsplit(", ").next().unwrap_or(flags);
+                Item::builder()
+                    .replacement(format!("{head}{long} "))
+                    .label(format!("{long} {value}").trim_end().to_string())
+                    .detail(about.to_string())
+                    .submit(false)
+                    .build()
+            })
+            .collect();
+        return Some(items);
+    }
+    let values = option_values(bank, before.last().copied().unwrap_or(""))?;
+    // `-t dfs,gra` completes the part after the last comma.
+    let (done, part) = token.rsplit_once(',').map_or(("", token), |(d, p)| (d, p));
+    let prefix = if done.is_empty() {
+        String::new()
+    } else {
+        format!("{done},")
+    };
+    Some(
+        rank(part, &values, |v| v.clone())
+            .into_iter()
+            .filter(|v| v.as_str() != part)
+            .take(MAX_ITEMS)
+            .map(|v| {
+                Item::builder()
+                    .replacement(format!("{head}{prefix}{v} "))
+                    .label(v.clone())
+                    .detail(label_detail(bank, v))
+                    .submit(false)
+                    .build()
+            })
+            .collect(),
+    )
+}
+
+/// The values a `/solve` option takes; `None` if `flag` takes none.
+fn option_values(bank: &Bank, flag: &str) -> Option<Vec<String>> {
+    let vocab = Vocabulary::of(bank.all());
+    Some(match flag {
+        "-t" | "--tag" => vocab.tags.into_iter().collect(),
+        "-c" | "--company" => vocab.companies.into_iter().collect(),
+        "-d" | "--difficulty" => ["easy", "medium", "hard"].map(String::from).to_vec(),
+        "-n" | "--count" => vec![],
+        _ => return None,
+    })
 }
 
 /// The named values an argument can take (not question ids).
@@ -216,6 +285,19 @@ pub fn enter_completes(bank: &Bank, line: &str, ctx: Context) -> bool {
     }
     let token = args.rsplit_once(' ').map_or(args, |(_, t)| t);
     let position = args.split(' ').count() - 1;
+    // `/solve --comp` and `/solve -c goo` finish from fixed sets too.
+    if spec.name == "solve" {
+        let previous = args.split(' ').rev().nth(1).unwrap_or("");
+        if token.starts_with('-') && !looks_numeric(token) {
+            return !OPTIONS
+                .iter()
+                .any(|(flags, ..)| flags.split(", ").any(|f| f == token));
+        }
+        if let Some(values) = option_values(bank, previous) {
+            let part = token.rsplit(',').next().unwrap_or(token);
+            return !part.is_empty() && !values.is_empty() && !values.iter().any(|v| v == part);
+        }
+    }
     let fixed_set = matches!((spec.name, position), ("lang" | "help" | "report", 0));
     fixed_set
         && !token.is_empty()
@@ -263,6 +345,17 @@ fn questions(bank: &Bank, token: &str, make: impl Fn(u32) -> (String, bool)) -> 
 }
 
 fn label_detail(bank: &Bank, label: &str) -> String {
+    let what = if ["easy", "medium", "hard"].contains(&label) {
+        "difficulty"
+    } else if bank
+        .all()
+        .iter()
+        .any(|q| q.meta.tags.iter().any(|t| t == label))
+    {
+        "tag"
+    } else {
+        "company"
+    };
     let n = bank
         .all()
         .iter()
@@ -272,7 +365,7 @@ fn label_detail(bank: &Bank, label: &str) -> String {
                 || q.meta.difficulty.to_string() == label
         })
         .count();
-    format!("{n} question{}", if n == 1 { "" } else { "s" })
+    format!("{what} · {n} question{}", if n == 1 { "" } else { "s" })
 }
 
 #[cfg(test)]
@@ -424,7 +517,57 @@ mod tests {
     #[case::exact_report_label("/report graphs", false)]
     #[case::exact_help("/help solve", false)]
     #[case::plain_text("hello", false)]
+    #[case::partial_option("/solve --comp", true)]
+    #[case::exact_option("/solve --company", false)]
+    #[case::partial_company("/solve -c goo", true)]
+    #[case::partial_after_comma("/solve -t dfs,gra", true)]
+    #[case::exact_company("/solve -c google", false)]
+    #[case::count_value("/solve -n 3", false)]
+    #[case::search_words("/solve --search two", false)]
     fn enter_completes_only_partial_names(#[case] line: &str, #[case] completes: bool) {
         assert_eq!(enter_completes(&Bank::embedded(), line, IDLE), completes);
+    }
+
+    fn replacements(line: &str) -> Vec<String> {
+        complete(&Bank::embedded(), line, IDLE)
+            .into_iter()
+            .map(|i| i.replacement)
+            .collect()
+    }
+
+    #[rstest]
+    #[case("/solve -", "/solve --company ")]
+    #[case("/solve --co", "/solve --company ")]
+    #[case("/solve -c", "/solve --company ")]
+    #[case("/solve google --ra", "/solve google --random ")]
+    #[case("/solve -c goo", "/solve -c google ")]
+    #[case("/solve --tag gra", "/solve --tag graphs ")]
+    #[case("/solve -t dfs,gra", "/solve -t dfs,graphs ")]
+    #[case("/solve -d me", "/solve -d medium ")]
+    fn completes_solve_options(#[case] line: &str, #[case] expected: &str) {
+        let r = replacements(line);
+        assert!(r.contains(&expected.to_string()), "{r:?}");
+    }
+
+    /// After an option, only its kind of value: no tags after -c.
+    #[rstest]
+    #[case("/solve -c ", "graphs")]
+    #[case("/solve -t ", "google")]
+    #[case("/solve -d ", "google")]
+    #[case("/solve --search ", "need")]
+    #[case("/solve -n ", "need")]
+    fn option_values_stay_in_kind(#[case] line: &str, #[case] absent: &str) {
+        assert!(!labels(line, IDLE).contains(&absent.to_string()));
+    }
+
+    #[test]
+    fn bare_words_say_what_they_are() {
+        let items = complete(&Bank::embedded(), "/solve medi", IDLE);
+        let medium = items.iter().find(|i| i.label == "medium").unwrap();
+        assert!(
+            medium.detail.starts_with("difficulty · "),
+            "{}",
+            medium.detail
+        );
     }
 }

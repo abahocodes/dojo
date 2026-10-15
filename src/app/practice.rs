@@ -70,7 +70,7 @@ impl App {
         let prefs = &self.config.solve;
         let request = match select::Request::parse(
             args,
-            &select::Library::labels(&library),
+            &select::Library::vocabulary(&library),
             prefs.strategy,
         ) {
             Ok(r) => r,
@@ -829,8 +829,8 @@ struct AppLibrary<'a> {
 }
 
 impl select::Library for AppLibrary<'_> {
-    fn labels(&self) -> Vec<String> {
-        self.app.bank.labels()
+    fn vocabulary(&self) -> select::Vocabulary {
+        select::Vocabulary::of(self.app.bank.all())
     }
 
     fn history(&self) -> anyhow::Result<(Vec<QuestionStat>, Vec<LabelStat>)> {
