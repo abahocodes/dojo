@@ -79,13 +79,10 @@ pub fn topic(label: &str, mastery: f64, attempted: usize) -> LabelStat {
 pub struct MockLibrary {
     pub questions: Vec<QuestionStat>,
     pub topics: Vec<LabelStat>,
-    /// What `search` returns, whatever the text.
-    pub matches: Vec<u32>,
     pub broken: bool,
     /// The question open now.
     pub open: Option<u32>,
     pub history_calls: Cell<usize>,
-    pub searched: RefCell<Vec<String>>,
 }
 
 impl MockLibrary {
@@ -112,11 +109,6 @@ impl Library for MockLibrary {
 
     fn open(&self) -> Option<u32> {
         self.open
-    }
-
-    fn search(&self, text: &str) -> Vec<u32> {
-        self.searched.borrow_mut().push(text.to_string());
-        self.matches.clone()
     }
 }
 

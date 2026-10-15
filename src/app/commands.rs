@@ -68,8 +68,8 @@ const fn spec(
 pub const COMMANDS: &[Spec] = &[
     spec(
         "solve",
-        "<id | words…> [options]",
-        "start fresh on one or more questions",
+        "<id | filters…> [options]",
+        "start questions, or choose from picks",
         Group::Practice,
         None,
     ),

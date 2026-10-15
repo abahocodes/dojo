@@ -18,13 +18,32 @@ use super::views;
 use super::{App, Entry, Msg};
 use crate::model::{LabelStat, QuestionStat};
 use crate::questions::Question;
-use crate::questions::search::search;
 use crate::runner::{self, Language, Which};
 use crate::select;
 use crate::session::{
     self, Attempt, Done, Outcome, Session, Timer, editor_command, is_terminal_editor,
 };
 use crate::store::{AttemptRow, EventKind, OpenAttempt};
+
+/// Questions `/solve` offered, waiting for a choice.
+pub struct Offer {
+    pub ids: Vec<u32>,
+    mode: &'static str,
+    query: Option<String>,
+}
+
+/// The offered questions `answer` picks by number (`2`, `1 3`, `1,3`),
+/// in the order given; `None` if any number is off the list.
+fn pick_offered(ids: &[u32], answer: &str) -> Option<Vec<u32>> {
+    let mut out = Vec::new();
+    for word in answer.split([' ', ',']).filter(|w| !w.is_empty()) {
+        let id = *ids.get(word.parse::<usize>().ok()?.checked_sub(1)?)?;
+        if !out.contains(&id) {
+            out.push(id);
+        }
+    }
+    (!out.is_empty()).then_some(out)
+}
 
 impl App {
     fn current_question(&self) -> Option<&Question> {
@@ -74,7 +93,7 @@ impl App {
             prefs.strategy,
         ) {
             Ok(r) => r,
-            Err(e) => return Some(views::error(e.to_string())),
+            Err(e) => return Some(views::error(self.explain(&e))),
         };
         if let select::Request::Ids(ids) = &request {
             if let Some(missing) = ids.iter().find(|id| self.bank.get(**id).is_none()) {
@@ -101,16 +120,112 @@ impl App {
             Ok(c) => c,
             Err(e) => return Some(views::error(e.to_string())),
         };
-        if !chosen.reasons.is_empty() {
-            let scope = chosen.query.clone().unwrap_or_default();
-            self.transcript
-                .push(views::need_picks(&chosen.reasons, &scope));
+        // Questions named outright start now; picks are offered to choose
+        // from, and nothing changes until one is chosen.
+        if matches!(request, select::Request::Ids(_)) {
+            return self.start_queue(chosen.ids, chosen.mode, chosen.query);
         }
+        let rows: Vec<views::OfferRow> = chosen
+            .reasons
+            .iter()
+            .filter_map(|p| {
+                let q = self.bank.get(p.question_id)?;
+                Some(views::OfferRow {
+                    id: q.meta.id,
+                    title: q.meta.title.clone(),
+                    difficulty: q.meta.difficulty,
+                    reason: p.reason.clone(),
+                })
+            })
+            .collect();
         if chosen.ids.len() < chosen.wanted {
             self.notify(format!("only {} question(s) match", chosen.ids.len()));
         }
-        let (queue, mode, query) = (chosen.ids, chosen.mode, chosen.query);
+        let scope = chosen.query.clone().unwrap_or_default();
+        self.offer = Some(Offer {
+            ids: chosen.ids,
+            mode: chosen.mode,
+            query: chosen.query,
+        });
+        Some(views::offer(&rows, chosen.mode, &scope))
+    }
 
+    /// A parse error, pointing at a question whose title has the unknown
+    /// word (`/solve rotting` → rotting-oranges).
+    fn explain(&self, e: &select::ParseError) -> String {
+        let select::ParseError::Unknown { word, .. } = e else {
+            return e.to_string();
+        };
+        let lower = word.to_lowercase();
+        let named: Vec<String> = crate::questions::search::search(&self.bank, word)
+            .into_iter()
+            .filter(|q| q.meta.title.to_lowercase().contains(&lower))
+            .take(2)
+            .map(|q| format!("/solve {} ({})", q.meta.slug, q.meta.title))
+            .collect();
+        if named.is_empty() {
+            e.to_string()
+        } else {
+            format!("{e}\nquestions named like it: {}", named.join(", "))
+        }
+    }
+
+    /// A line typed while questions are offered: their numbers start them
+    /// (`2`, `1 3`). Returns false when nothing is offered or it's a
+    /// command, so it runs as usual.
+    pub(super) fn offer_text(&mut self, line: &str) -> bool {
+        if line.starts_with('/') {
+            return false;
+        }
+        let Some(offer) = &self.offer else {
+            return false;
+        };
+        let Some(ids) = pick_offered(&offer.ids, line) else {
+            let n = offer.ids.len();
+            self.transcript.push(views::error(if n == 1 {
+                "type 1 to start it, or Esc to dismiss".to_string()
+            } else {
+                format!("pick 1–{n} (several: 1 3), or Esc to dismiss")
+            }));
+            return true;
+        };
+        let offer = self.offer.take().expect("checked");
+        if let Some(e) = self.start_queue(ids, offer.mode, offer.query) {
+            self.transcript.push(e);
+        }
+        true
+    }
+
+    /// Suggestions while questions are offered: the offered questions.
+    pub(super) fn offer_completions(&self, typed: &str) -> Option<Vec<super::complete::Item>> {
+        let offer = self.offer.as_ref()?;
+        if typed.starts_with('/') || typed.is_empty() {
+            return None;
+        }
+        Some(
+            offer
+                .ids
+                .iter()
+                .enumerate()
+                .filter_map(|(i, id)| Some((i + 1, self.bank.get(*id)?)))
+                .filter(|(n, _)| n.to_string().starts_with(typed.trim()))
+                .map(|(n, q)| {
+                    super::complete::Item::builder()
+                        .replacement(n.to_string())
+                        .label(format!("{n}. #{} {}", q.meta.id, q.meta.title))
+                        .detail(q.meta.difficulty.to_string())
+                        .submit(true)
+                        .build()
+                })
+                .collect(),
+        )
+    }
+
+    /// Starts `queue` as the session's questions, moving on from any open
+    /// question.
+    fn start_queue(&mut self, queue: Vec<u32>, mode: &str, query: Option<String>) -> Option<Entry> {
+        let lang = self.config.lang();
+        self.offer = None;
         // Starting something else skips whatever is open (the selection
         // above is already validated, so a typo never skips anything).
         if let Some(a) = self.session.as_ref().and_then(|s| s.attempt.as_ref()) {
@@ -852,17 +967,6 @@ impl select::Library for AppLibrary<'_> {
         let s = self.app.session.as_ref()?;
         s.attempt.as_ref().map(|a| a.question_id)
     }
-
-    fn search(&self, text: &str) -> Vec<u32> {
-        match self.app.bank.by_slug(text) {
-            Some(q) => vec![q.meta.id],
-            None => search(&self.app.bank, text)
-                .into_iter()
-                .filter(|q| q.supports(self.lang))
-                .map(|q| q.meta.id)
-                .collect(),
-        }
-    }
 }
 
 /// Not completed: a fail if tests were run (it was tried), a skip otherwise.
@@ -895,5 +999,19 @@ mod tests {
     #[case(125 * 60, "2 h 05 min")]
     fn away_for_reads_well(#[case] secs: u64, #[case] expected: &str) {
         assert_eq!(super::away_for(Duration::from_secs(secs)), expected);
+    }
+
+    #[rstest::rstest]
+    #[case("1", Some(vec![7]))]
+    #[case("3", Some(vec![9]))]
+    #[case("1 3", Some(vec![7, 9]))]
+    #[case("3,1", Some(vec![9, 7]))]
+    #[case("2 2", Some(vec![8]))]
+    #[case("4", None)]
+    #[case("0", None)]
+    #[case("1 x", None)]
+    #[case("", None)]
+    fn picks_offered_questions_by_number(#[case] answer: &str, #[case] expected: Option<Vec<u32>>) {
+        assert_eq!(super::pick_offered(&[7, 8, 9], answer), expected);
     }
 }

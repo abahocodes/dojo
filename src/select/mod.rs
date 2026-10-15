@@ -7,7 +7,7 @@
 mod need;
 mod random;
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
@@ -25,8 +25,6 @@ pub trait Library {
     /// The questions you can practice now (in your language) with your
     /// history on each, and your mastery per topic.
     fn history(&self) -> anyhow::Result<(Vec<QuestionStat>, Vec<LabelStat>)>;
-    /// Ids matching free text, best first; an exact slug alone.
-    fn search(&self, text: &str) -> Vec<u32>;
     /// The question open now, which a new pick replaces.
     fn open(&self) -> Option<u32>;
 }
@@ -69,14 +67,16 @@ impl Kind {
     }
 }
 
+/// How many questions `/solve` offers when no count is given.
+pub const OFFER: usize = 5;
+
 /// What `/solve` asked for.
 #[derive(Debug, PartialEq)]
 pub enum Request {
-    /// `/solve 3 7`: these questions, in this order.
+    /// `/solve 3 7`, `/solve two-sum`: these questions, in this order.
     Ids(Vec<u32>),
-    /// `/solve two sum`: the best title matches.
-    Search { text: String, count: usize },
-    /// `/solve need google 3`, `/solve dfs easy`, `/solve random`.
+    /// `/solve need google 3`, `/solve dfs easy`, `/solve random`: up to
+    /// `count` questions to choose from.
     Pick {
         kind: Kind,
         filter: Filter,
@@ -87,7 +87,7 @@ pub enum Request {
 #[derive(Debug, PartialEq, thiserror::Error)]
 pub enum ParseError {
     #[error(
-        "what should we practice?  ·  /solve 12, /solve need, /solve google dfs 2  ·  /help solve"
+        "what should we practice?  ·  /solve 12, /solve need, /solve google dfs  ·  /help solve"
     )]
     Empty,
     #[error("-n needs a positive number")]
@@ -100,10 +100,10 @@ pub enum ParseError {
     TwoCounts,
     #[error("pick one of need or random")]
     TwoKinds,
-    #[error(
-        "`{word}` isn't a tag, company or difficulty  ·  /solve {kind} google dfs 2  ·  /help solve"
-    )]
-    NotAFilter { word: String, kind: &'static str },
+    #[error("`{word}` isn't a tag, company or difficulty{hint}  ·  /list {word} searches titles")]
+    Unknown { word: String, hint: String },
+    #[error("`{0}` names a question; give questions alone (/solve {0}) or use filters")]
+    QuestionAndFilters(String),
     #[error("`{0}` isn't an option  ·  /help solve")]
     UnknownOption(String),
     #[error("{0} needs a value  ·  Tab lists them")]
@@ -114,12 +114,6 @@ pub enum ParseError {
         value: String,
         hint: String,
     },
-    #[error(
-        "`{word}` is cut off: {options}?  ·  type it in full (Tab completes), or /solve --search {word}"
-    )]
-    CutOff { word: String, options: String },
-    #[error("--search looks at titles alone; drop need, random and filters")]
-    SearchAndPick,
 }
 
 /// What an option word asks for.
@@ -129,7 +123,6 @@ enum Opt {
     Tag,
     Company,
     Difficulty,
-    Search,
 }
 
 impl Opt {
@@ -141,13 +134,12 @@ impl Opt {
             "-t" | "--tag" => Opt::Tag,
             "-c" | "--company" => Opt::Company,
             "-d" | "--difficulty" => Opt::Difficulty,
-            "-s" | "--search" => Opt::Search,
             _ => return None,
         })
     }
 
     fn takes_value(&self) -> bool {
-        !matches!(self, Opt::Kind(_) | Opt::Search)
+        !matches!(self, Opt::Kind(_))
     }
 }
 
@@ -162,8 +154,7 @@ pub const OPTIONS: &[(&str, &str, &str)] = &[
     ),
     ("-t, --tag", "<name>", "only questions with this tag"),
     ("-d, --difficulty", "<level>", "easy, medium or hard"),
-    ("-n, --count", "<N>", "how many questions"),
-    ("-s, --search", "<words…>", "search titles, nothing else"),
+    ("-n, --count", "<N>", "how many to choose from (default 5)"),
 ];
 
 /// Whether `word` is an option rather than a value (`-1` is a value).
@@ -171,30 +162,35 @@ fn is_option(word: &str) -> bool {
     word.starts_with('-') && word.len() > 1 && !looks_numeric(word)
 }
 
+/// `  ·  did you mean a, b?`, or nothing.
+fn did_you_mean(close: &[&str]) -> String {
+    if close.is_empty() {
+        String::new()
+    } else {
+        format!("  ·  did you mean {}?", close.join(", "))
+    }
+}
+
 impl Request {
     /// `/solve` arguments, given the words the bank knows. Filter words or
     /// a count alone use `default`.
     ///
     /// Bare words mean, in order: need or random, an id or count, a
-    /// difficulty, a tag, a company, else title search. Options say which
-    /// one outright (`--company medium`), and a word cut off partway
-    /// (`medi`) is asked about rather than searched.
+    /// question's slug, a difficulty, a tag, a company. Anything else is a
+    /// mistake, never a guess. Options say which one outright
+    /// (`--company medium`).
     pub fn parse(args: &[&str], vocab: &Vocabulary, default: Kind) -> Result<Request, ParseError> {
         let mut n: Option<usize> = None;
         let mut kinds: Vec<Kind> = Vec::new();
         let mut filter = Filter::default();
         let mut words: Vec<&str> = Vec::new();
-        let mut search: Option<Vec<&str>> = None;
-        // An option other than the count makes this a pick or search.
+        // An option other than the count makes this a pick.
         let mut chose = false;
 
         let mut it = args.iter().copied().peekable();
         while let Some(a) = it.next() {
             if !is_option(a) {
-                match &mut search {
-                    Some(text) => text.push(a),
-                    None => words.push(a),
-                }
+                words.push(a);
                 continue;
             }
             let (flag, inline) = match a.split_once('=') {
@@ -208,7 +204,7 @@ impl Request {
                     _ if matches!(opt, Opt::Count) => return Err(ParseError::BadN),
                     _ => return Err(ParseError::NoValue(flag.to_string())),
                 }
-            } else if inline.is_some() && !matches!(opt, Opt::Search) {
+            } else if inline.is_some() {
                 return Err(ParseError::UnknownOption(a.to_string()));
             } else {
                 None
@@ -224,9 +220,6 @@ impl Request {
                         kinds.push(k);
                     }
                 }
-                Opt::Search => {
-                    search = Some(inline.into_iter().filter(|v| !v.is_empty()).collect())
-                }
                 Opt::Tag | Opt::Company | Opt::Difficulty => {
                     chose = true;
                     for v in value
@@ -240,28 +233,23 @@ impl Request {
             }
         }
 
-        if let Some(text) = search {
-            if chose {
-                return Err(ParseError::SearchAndPick);
-            }
-            words.extend(text);
-            if words.is_empty() {
-                return Err(ParseError::NoValue("--search".into()));
-            }
-            return Ok(Request::Search {
-                text: words.join(" "),
-                count: n.unwrap_or(1),
-            });
-        }
-        if words.is_empty() && !chose {
+        if words.is_empty() && !chose && n.is_none() {
             return Err(ParseError::Empty);
         }
 
-        // Only numbers: ids (`/solve 3 3` practices #3 once).
-        if !chose && words.iter().all(|w| looks_numeric(w)) {
+        // Only numbers and slugs: those questions (`/solve 3 3` practices
+        // #3 once).
+        let slug = |w: &str| vocab.slugs.get(&w.to_ascii_lowercase()).copied();
+        if !chose
+            && !words.is_empty()
+            && words.iter().all(|w| looks_numeric(w) || slug(w).is_some())
+        {
             let mut ids: Vec<u32> = Vec::new();
             for w in &words {
-                let id = w.parse().map_err(|_| ParseError::BadId(w.to_string()))?;
+                let id = match slug(w) {
+                    Some(id) => id,
+                    None => w.parse().map_err(|_| ParseError::BadId(w.to_string()))?,
+                };
                 if !ids.contains(&id) {
                     ids.push(id);
                 }
@@ -270,7 +258,6 @@ impl Request {
         }
 
         let mut counts: Vec<&str> = Vec::new();
-        let mut text: Vec<&str> = Vec::new();
         for &w in &words {
             let lower = w.to_ascii_lowercase();
             if let Some(k) = Kind::parse(&lower) {
@@ -279,54 +266,22 @@ impl Request {
                 }
             } else if looks_numeric(w) {
                 counts.push(w);
-            } else if !filter.add(&lower, vocab) {
-                text.push(w);
-            }
-        }
-
-        // A word cut off partway is asked about, not guessed at, unless
-        // another word shows it's a title search (`house rob`).
-        let titled = text
-            .iter()
-            .any(|w| vocab.title_words.contains(&w.to_ascii_lowercase()));
-        for w in text.iter().filter(|_| !titled) {
-            let options = vocab.completions(&w.to_ascii_lowercase());
-            if !options.is_empty() {
-                let mut shown: Vec<String> = options
-                    .iter()
-                    .take(4)
-                    .map(|(name, what)| format!("{name} ({what})"))
-                    .collect();
-                if options.len() > 4 {
-                    shown.push("…".into());
-                }
-                return Err(ParseError::CutOff {
+            } else if filter.add(&lower, vocab) {
+            } else if slug(w).is_some() {
+                return Err(ParseError::QuestionAndFilters(w.to_string()));
+            } else {
+                let close = vocab.close(&lower);
+                return Err(ParseError::Unknown {
                     word: w.to_string(),
-                    options: shown.join(", "),
+                    hint: did_you_mean(&close.iter().map(String::as_str).collect::<Vec<_>>()),
                 });
             }
-        }
-
-        // Anything else that isn't a keyword, count or filter makes it a
-        // search, numbers included (`/solve 3sum`); a keyword or option
-        // makes it a mistake.
-        if let Some(word) = text.first() {
-            return match (kinds.first(), chose) {
-                (None, false) => Ok(Request::Search {
-                    text: words.join(" "),
-                    count: n.unwrap_or(1),
-                }),
-                (k, _) => Err(ParseError::NotAFilter {
-                    word: word.to_string(),
-                    kind: k.copied().unwrap_or(default).name(),
-                }),
-            };
         }
         if kinds.len() > 1 {
             return Err(ParseError::TwoKinds);
         }
         let count = match counts.as_slice() {
-            [] => n.unwrap_or(1),
+            [] => n.unwrap_or(OFFER),
             [w] => match w.parse::<usize>() {
                 Ok(c) if c > 0 && n.is_none_or(|n| n == c) => c,
                 Ok(c) if c > 0 => return Err(ParseError::TwoCounts),
@@ -342,13 +297,12 @@ impl Request {
     }
 }
 
-/// The words `/solve` knows: tags, companies, and the whole words of
-/// question titles (so `two` searches, but a cut-off `medi` is asked about).
+/// The words `/solve` knows: tags, companies and question slugs.
 #[derive(Debug, Default, Clone)]
 pub struct Vocabulary {
     pub tags: BTreeSet<String>,
     pub companies: BTreeSet<String>,
-    pub title_words: BTreeSet<String>,
+    pub slugs: BTreeMap<String, u32>,
 }
 
 impl Vocabulary {
@@ -357,37 +311,43 @@ impl Vocabulary {
         for q in questions {
             v.tags.extend(q.tags().iter().cloned());
             v.companies.extend(q.companies().names().cloned());
-            v.title_words.extend(
-                q.title()
-                    .split(|c: char| !c.is_alphanumeric())
-                    .filter(|w| !w.is_empty())
-                    .map(str::to_lowercase),
-            );
+            if let Some(slug) = q.slug() {
+                v.slugs.insert(slug.to_string(), q.id());
+            }
         }
         v
     }
 
-    /// The known words `word` is the start of, with what each is, unless
-    /// `word` is itself a word of some title.
-    pub fn completions(&self, word: &str) -> Vec<(String, &'static str)> {
-        if word.is_empty() || self.title_words.contains(word) {
-            return Vec::new();
-        }
-        let fixed = [
-            ("need", "strategy"),
-            ("random", "strategy"),
-            ("easy", "difficulty"),
-            ("medium", "difficulty"),
-            ("hard", "difficulty"),
-        ]
-        .map(|(w, what)| (w.to_string(), what));
-        let tags = self.tags.iter().map(|t| (t.clone(), "tag"));
-        let companies = self.companies.iter().map(|c| (c.clone(), "company"));
-        fixed
+    /// Every word a filter or strategy can be.
+    fn names(&self) -> Vec<String> {
+        let mut names: Vec<String> = ["need", "random", "easy", "medium", "hard"]
             .into_iter()
-            .chain(tags)
-            .chain(companies)
-            .filter(|(name, _)| name.len() > word.len() && name.starts_with(word))
+            .map(String::from)
+            .chain(self.tags.iter().cloned())
+            .chain(self.companies.iter().cloned())
+            .collect();
+        let mut seen = BTreeSet::new();
+        names.retain(|n| seen.insert(n.clone()));
+        names
+    }
+
+    /// Up to three known words `word` was likely meant as: ones it starts,
+    /// else the closest fuzzy matches.
+    pub fn close(&self, word: &str) -> Vec<String> {
+        let names = self.names();
+        let started: Vec<String> = names
+            .iter()
+            .filter(|n| n.starts_with(word))
+            .take(3)
+            .cloned()
+            .collect();
+        if !started.is_empty() {
+            return started;
+        }
+        crate::questions::search::rank(word, &names, |n| n.clone())
+            .into_iter()
+            .take(3)
+            .cloned()
             .collect()
     }
 }
@@ -403,15 +363,20 @@ pub fn looks_numeric(word: &str) -> bool {
 
 /// Anything with a difficulty, tags and companies.
 pub trait Labeled {
-    fn title(&self) -> &str;
+    fn id(&self) -> u32;
+    /// The question's slug, when known.
+    fn slug(&self) -> Option<&str>;
     fn difficulty(&self) -> Difficulty;
     fn tags(&self) -> &[String];
     fn companies(&self) -> &Companies;
 }
 
 impl Labeled for Question {
-    fn title(&self) -> &str {
-        &self.meta.title
+    fn id(&self) -> u32 {
+        self.meta.id
+    }
+    fn slug(&self) -> Option<&str> {
+        Some(&self.meta.slug)
     }
     fn difficulty(&self) -> Difficulty {
         self.meta.difficulty
@@ -425,8 +390,11 @@ impl Labeled for Question {
 }
 
 impl Labeled for QuestionStat {
-    fn title(&self) -> &str {
-        &self.title
+    fn id(&self) -> u32 {
+        self.id
+    }
+    fn slug(&self) -> Option<&str> {
+        None
     }
     fn difficulty(&self) -> Difficulty {
         self.difficulty
@@ -568,11 +536,11 @@ impl Default for Preferences {
 #[derive(Debug)]
 pub struct Selection {
     pub ids: Vec<u32>,
-    /// `need`, `random` or `search`.
+    /// `id`, `need` or `random`.
     pub mode: &'static str,
-    /// The filter or search words, if any.
+    /// The filter words, if any.
     pub query: Option<String>,
-    /// Why each was picked (`need` only).
+    /// Why each was picked (`need` and `random`).
     pub reasons: Vec<Suggestion>,
     /// How many were asked for.
     pub wanted: usize,
@@ -586,7 +554,7 @@ pub enum SelectError {
     History(anyhow::Error),
 }
 
-/// Runs a search or pick request. Ids are the caller's to check.
+/// Runs a pick request. Ids are the caller's to check.
 pub fn select(
     request: &Request,
     library: &impl Library,
@@ -601,19 +569,6 @@ pub fn select(
             reasons: Vec::new(),
             wanted: ids.len(),
         }),
-        Request::Search { text, count } => {
-            let ids: Vec<u32> = library.search(text).into_iter().take(*count).collect();
-            if ids.is_empty() {
-                return Err(SelectError::NoMatch(text.clone()));
-            }
-            Ok(Selection {
-                ids,
-                mode: "search",
-                query: Some(text.clone()),
-                reasons: Vec::new(),
-                wanted: *count,
-            })
-        }
         Request::Pick {
             kind,
             filter,
@@ -645,11 +600,7 @@ pub fn select(
                 ids: picks.iter().map(|p| p.question_id).collect(),
                 mode: kind.name(),
                 query: (!filter.is_empty()).then(|| filter.words()),
-                reasons: if *kind == Kind::Need {
-                    picks
-                } else {
-                    Vec::new()
-                },
+                reasons: picks,
                 wanted: *count,
             })
         }

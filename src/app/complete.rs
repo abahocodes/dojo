@@ -159,7 +159,7 @@ fn arguments(bank: &Bank, spec: &Spec, line: &str, args: &str) -> Vec<Item> {
         }
         "solve" | "list" | "report" => {
             let values = choices(bank, spec.name, position);
-            rank(token, &values, |v| v.clone())
+            let mut items: Vec<Item> = rank(token, &values, |v| v.clone())
                 .into_iter()
                 .filter(|v| v.as_str() != token)
                 .take(MAX_ITEMS)
@@ -171,7 +171,23 @@ fn arguments(bank: &Bank, spec: &Spec, line: &str, args: &str) -> Vec<Item> {
                         .submit(false)
                         .build()
                 })
-                .collect()
+                .collect();
+            // `/solve rott`: questions by title too, taken as their slug,
+            // so a question is found by name but never guessed.
+            if spec.name == "solve" && position == 0 && token.len() >= 3 {
+                let word = token.to_lowercase();
+                let titles: Vec<Item> = questions(bank, token, |id| {
+                    let slug = bank.get(id).map_or(String::new(), |q| q.meta.slug.clone());
+                    (replace(&slug, true), true)
+                })
+                .into_iter()
+                .filter(|i| i.label.to_lowercase().contains(&word))
+                .collect();
+                items.truncate(MAX_ITEMS - titles.len().min(3));
+                let room = MAX_ITEMS - items.len();
+                items.extend(titles.into_iter().take(room));
+            }
+            items
         }
         "editor" | "lang" | "help" if position == 0 => {
             let values = choices(bank, spec.name, position);
@@ -187,10 +203,6 @@ fn arguments(bank: &Bank, spec: &Spec, line: &str, args: &str) -> Vec<Item> {
 fn solve_options(bank: &Bank, head: &str, args: &str, token: &str) -> Option<Vec<Item>> {
     let words: Vec<&str> = args.split(' ').collect();
     let before = &words[..words.len() - 1];
-    // After --search everything is title words.
-    if before.iter().any(|w| matches!(*w, "-s" | "--search")) {
-        return Some(vec![]);
-    }
     if token.starts_with('-') && !looks_numeric(token) {
         let items = OPTIONS
             .iter()
@@ -523,7 +535,6 @@ mod tests {
     #[case::partial_after_comma("/solve -t dfs,gra", true)]
     #[case::exact_company("/solve -c google", false)]
     #[case::count_value("/solve -n 3", false)]
-    #[case::search_words("/solve --search two", false)]
     fn enter_completes_only_partial_names(#[case] line: &str, #[case] completes: bool) {
         assert_eq!(enter_completes(&Bank::embedded(), line, IDLE), completes);
     }
@@ -554,7 +565,6 @@ mod tests {
     #[case("/solve -c ", "graphs")]
     #[case("/solve -t ", "google")]
     #[case("/solve -d ", "google")]
-    #[case("/solve --search ", "need")]
     #[case("/solve -n ", "need")]
     fn option_values_stay_in_kind(#[case] line: &str, #[case] absent: &str) {
         assert!(!labels(line, IDLE).contains(&absent.to_string()));
@@ -568,6 +578,18 @@ mod tests {
             medium.detail.starts_with("difficulty · "),
             "{}",
             medium.detail
+        );
+    }
+
+    #[test]
+    fn solve_finds_questions_by_title_as_slugs() {
+        let items = complete(&Bank::embedded(), "/solve rotting", IDLE);
+        assert!(
+            items
+                .iter()
+                .any(|i| i.replacement == "/solve rotting-oranges"),
+            "{:?}",
+            items.iter().map(|i| &i.replacement).collect::<Vec<_>>()
         );
     }
 }

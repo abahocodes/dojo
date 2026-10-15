@@ -343,23 +343,30 @@ fn solve_help() -> Vec<Para> {
     let t = theme();
     let mut paras = vec![Para::blank(), Para::plain("Examples", t.heading())];
     for (line, about) in [
-        ("/solve 12 7", "these questions"),
-        ("/solve two sum", "search titles"),
-        ("/solve google", "where you need practice, at google"),
-        ("/solve need dfs 3", "three dfs questions you need"),
-        ("/solve random medium", "any medium question"),
-        ("/solve -c google -d hard", "google's hard questions"),
-        ("/solve -s median", "titles with median"),
+        ("/solve 12 7", "start these questions"),
+        ("/solve two-sum", "start this one (Tab finds it by title)"),
+        (
+            "/solve google",
+            "choose from where you need practice at google",
+        ),
+        ("/solve need dfs 3", "choose from three dfs questions"),
+        ("/solve random medium", "choose from five random mediums"),
+        (
+            "/solve -c google -d hard",
+            "choose from google's hard questions",
+        ),
     ] {
         paras.push(help_row(line, about));
     }
     paras.push(Para::blank());
-    paras.push(Para::plain("Words", t.heading()));
+    paras.push(Para::plain("How it reads", t.heading()));
     paras.push(
         Para::plain(
-            "Words go in any order. Each means the first of: need or random, an id or count, \
-             a difficulty, a tag, a company, else title search. A word cut off partway (medi) \
-             asks what you meant; Tab completes it.",
+            "Ids and slugs start those questions. Anything else lists questions to choose from \
+             (5 unless you give a count): type a number to start one, several like 1 3, \
+             ⏎ for the first, Esc to dismiss. Words go in any order, each meaning the first \
+             of: need or random, a count, a difficulty, a tag, a company. Other words are \
+             mistakes, not searches: /list searches titles.",
             t.text(),
         )
         .indent(2),
@@ -1015,26 +1022,46 @@ pub fn summary_text(bank: &Bank, done: &[Done]) -> String {
 }
 
 /// Why `/solve need` picked each question.
-pub fn need_picks(picks: &[crate::model::Suggestion], scope: &str) -> Entry {
+/// A question `/solve` offers.
+pub struct OfferRow {
+    pub id: u32,
+    pub title: String,
+    pub difficulty: crate::questions::Difficulty,
+    pub reason: String,
+}
+
+/// `/solve google`: numbered questions to choose from.
+pub fn offer(rows: &[OfferRow], mode: &str, scope: &str) -> Entry {
     let t = theme();
-    let heading = if scope.is_empty() {
-        "Picked for where you need practice".to_string()
-    } else {
-        format!("Picked for where you need practice in {scope}")
+    let heading = match (mode, scope.is_empty()) {
+        ("random", true) => "Picked at random".to_string(),
+        ("random", false) => format!("Picked at random from {scope}"),
+        (_, true) => "Where you need practice".to_string(),
+        (_, false) => format!("Where you need practice in {scope}"),
     };
     let mut paras = vec![Para::plain(heading, t.heading())];
-    for (i, p) in picks.iter().enumerate() {
-        paras.push(
-            Para::new(vec![
-                Span::styled(format!("{}. ", i + 1), t.dim()),
-                Span::styled(fit(&format!("#{}", p.question_id), 5), t.accent()),
-                Span::styled(fit(&p.title, 34), t.bold()),
-                Span::raw("  "),
-                Span::styled(p.reason.clone(), t.dim()),
-            ])
-            .indent(2),
-        );
+    for (i, r) in rows.iter().enumerate() {
+        let mut spans = vec![
+            Span::styled(format!("{}. ", i + 1), t.accent()),
+            Span::styled(fit(&format!("#{}", r.id), 5), t.dim()),
+            Span::styled(fit(&r.title, 34), t.bold()),
+            Span::raw("  "),
+            Span::styled(fit(&r.difficulty.to_string(), 7), t.dim()),
+        ];
+        if mode != "random" {
+            spans.push(Span::styled(format!("  {}", r.reason), t.dim()));
+        }
+        paras.push(Para::new(spans).indent(2));
     }
+    let how = if rows.len() == 1 {
+        "⏎ starts it  ·  Esc dismisses".to_string()
+    } else {
+        format!(
+            "type 1–{} to start one (several: 1 3)  ·  ⏎ starts 1  ·  Esc dismisses",
+            rows.len()
+        )
+    };
+    paras.push(Para::plain(how, t.dim()).indent(2));
     entry(paras)
 }
 

@@ -135,6 +135,8 @@ pub struct App {
     pub report: Option<ReportView>,
     /// First-run setup, while it runs.
     setup: Option<setup::Setup>,
+    /// Questions `/solve` offered, until one is chosen or dismissed.
+    pub offer: Option<practice::Offer>,
     /// After `/quit`: unsolved questions whose explained solutions are still
     /// to be shown before leaving.
     /// (questions left, how many there were)
@@ -192,6 +194,7 @@ impl App {
             away: None,
             report: None,
             setup: None,
+            offer: None,
             review: None,
             explained: Vec::new(),
             unfinished,
@@ -218,6 +221,20 @@ impl App {
         }
         if let Some(tips) = self.contrib_prompt() {
             return Prompt { enter: None, tips };
+        }
+        if let Some(o) = &self.offer
+            && let Some(q) = o.ids.first().and_then(|id| self.bank.get(*id))
+        {
+            let n = o.ids.len();
+            let mut tips = Vec::new();
+            if n > 1 {
+                tips.push(tip("type", &format!("1–{n} to start one")));
+            }
+            tips.push(tip("Esc", "dismiss"));
+            return Prompt {
+                enter: enter("1", format!("start #{} {}", q.meta.id, q.meta.title)),
+                tips,
+            };
         }
 
         if self.running.is_some() {
@@ -356,6 +373,7 @@ impl App {
         let ctx = self.completion_context();
         self.completions = self
             .setup_completions(self.input.text())
+            .or_else(|| self.offer_completions(self.input.text()))
             .unwrap_or_else(|| complete::complete(&self.bank, self.input.text(), ctx));
         self.selected = 0;
         self.chose = false;
@@ -503,6 +521,12 @@ impl App {
                 self.input.set("");
                 self.transcript.push(views::info("keeping the defaults"));
                 self.finish_setup();
+            }
+            KeyCode::Esc
+                if self.offer.is_some() && !self.popup_open() && self.input.text().is_empty() =>
+            {
+                self.offer = None;
+                self.transcript.push(views::info("dismissed"));
             }
             KeyCode::Esc => {
                 if self.popup_open() {
@@ -690,7 +714,7 @@ impl App {
 
     pub fn execute(&mut self, line: &str) {
         let Some(rest) = line.strip_prefix('/') else {
-            if self.setup_text(line) || self.contrib_text(line) {
+            if self.setup_text(line) || self.offer_text(line) || self.contrib_text(line) {
                 return;
             }
             self.transcript.push(views::info(
