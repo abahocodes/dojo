@@ -9,7 +9,12 @@ fn vocab() -> Vocabulary {
     Vocabulary {
         tags: set(&["dfs", "graphs", "arrays", "two-pointers"]),
         companies: set(&["google", "meta", "amazon", "medium"]),
-        title_words: set(&["two", "sum", "median", "of", "arrays"]),
+        slugs: [
+            ("two-sum".to_string(), 1),
+            ("median-of-two-sorted-arrays".to_string(), 35),
+        ]
+        .into_iter()
+        .collect(),
     }
 }
 
@@ -34,7 +39,8 @@ fn ids(s: &Selection) -> Vec<u32> {
 #[case("random graphs 2", "graphs 2 random")]
 #[case("random graphs 2", "-n 2 random GRAPHS")]
 #[case("need need google", "need google")]
-#[case("need", "need 1")]
+#[case("need", "need 5")]
+#[case("need 3", "-n 3")]
 #[case("medium", "med")]
 #[case("medium", "--difficulty medium")]
 #[case("medium", "-d medium")]
@@ -70,11 +76,9 @@ fn filter_words_alone_mean_need() {
 #[rstest]
 #[case("3", Request::Ids(vec![3]))]
 #[case("3 7 3", Request::Ids(vec![3, 7]))]
-#[case("two sum", Request::Search { text: "two sum".into(), count: 1 })]
-#[case("two sum -n 2", Request::Search { text: "two sum".into(), count: 2 })]
-#[case("google two", Request::Search { text: "google two".into(), count: 1 })]
-#[case("3sum", Request::Search { text: "3sum".into(), count: 1 })]
-fn ids_and_searches(#[case] line: &str, #[case] expected: Request) {
+#[case("two-sum", Request::Ids(vec![1]))]
+#[case("Two-Sum 35 median-of-two-sorted-arrays", Request::Ids(vec![1, 35]))]
+fn ids_and_slugs(#[case] line: &str, #[case] expected: Request) {
     assert_eq!(parse(line), Ok(expected));
 }
 
@@ -88,10 +92,36 @@ fn ids_and_searches(#[case] line: &str, #[case] expected: Request) {
 #[case("need 2 3", ParseError::TwoCounts)]
 #[case("google 3 -n 2", ParseError::TwoCounts)]
 #[case("need random", ParseError::TwoKinds)]
-#[case("need foo", ParseError::NotAFilter { word: "foo".into(), kind: "need" })]
-#[case("google random two", ParseError::NotAFilter { word: "two".into(), kind: "random" })]
+#[case("google two-sum", ParseError::QuestionAndFilters("two-sum".into()))]
 fn rejects(#[case] line: &str, #[case] expected: ParseError) {
     assert_eq!(parse(line), Err(expected));
+}
+
+/// Nothing is searched: a word that isn't a strategy, count, question,
+/// difficulty, tag or company is a mistake, with what it might have meant.
+#[rstest]
+#[case(
+    "two sum",
+    "`two` isn't a tag, company or difficulty  ·  did you mean two-pointers?  ·  /list two searches titles"
+)]
+#[case(
+    "medi",
+    "`medi` isn't a tag, company or difficulty  ·  did you mean medium?  ·  /list medi searches titles"
+)]
+#[case(
+    "google nee",
+    "`nee` isn't a tag, company or difficulty  ·  did you mean need?  ·  /list nee searches titles"
+)]
+#[case(
+    "need foo",
+    "`foo` isn't a tag, company or difficulty  ·  /list foo searches titles"
+)]
+#[case(
+    "graph",
+    "`graph` isn't a tag, company or difficulty  ·  did you mean graphs?  ·  /list graph searches titles"
+)]
+fn unknown_words_are_mistakes(#[case] line: &str, #[case] message: &str) {
+    assert_eq!(parse(line).unwrap_err().to_string(), message);
 }
 
 // ── need ─────────────────────────────────────────────────────────────
@@ -244,11 +274,11 @@ fn the_same_question_isnt_offered_twice_running() {
         question(2, Medium, &["arrays", "google"]),
         question(3, Medium, &["dfs", "google"]),
     ]);
-    assert_eq!(ids(&need(&library, "google")), [2]);
+    assert_eq!(ids(&need(&library, "google 1")), [2]);
     library.questions[1] = tried(library.questions[1].clone(), 0);
-    assert_eq!(ids(&need(&library, "google")), [3]);
+    assert_eq!(ids(&need(&library, "google 1")), [3]);
     library.questions[2] = solved(library.questions[2].clone(), 1.0, 0);
-    assert_eq!(ids(&need(&library, "google")), [1]);
+    assert_eq!(ids(&need(&library, "google 1")), [1]);
 }
 
 #[test]
@@ -300,7 +330,7 @@ fn random_draws_from_the_filtered_pool() {
     assert_eq!(ids(&s), [4, 3]);
     assert_eq!(*dice.asked.borrow(), [3, 2]);
     assert_eq!(s.mode, "random");
-    assert!(s.reasons.is_empty());
+    assert_eq!(s.reasons.len(), 2);
 }
 
 #[test]
@@ -318,37 +348,6 @@ fn random_never_repeats_and_stops_at_the_pool() {
 }
 
 // ── plumbing ─────────────────────────────────────────────────────────
-
-#[test]
-fn search_asks_the_library_and_skips_history() {
-    let library = MockLibrary {
-        matches: vec![9, 8, 7],
-        ..MockLibrary::default()
-    };
-    let s = select(
-        &parse("two sum -n 2").unwrap(),
-        &library,
-        &MockDice::default(),
-        now(),
-    )
-    .unwrap();
-    assert_eq!(ids(&s), [9, 8]);
-    assert_eq!(*library.searched.borrow(), ["two sum"]);
-    assert_eq!(library.history_calls.get(), 0);
-}
-
-#[test]
-fn search_with_no_match_is_an_error() {
-    let library = MockLibrary::default();
-    let e = select(
-        &parse("nothing").unwrap(),
-        &library,
-        &MockDice::default(),
-        now(),
-    )
-    .unwrap_err();
-    assert_eq!(e.to_string(), "no question matches `nothing`");
-}
 
 #[test]
 fn a_filter_nothing_matches_is_an_error() {
@@ -395,7 +394,6 @@ fn ids_pass_through_untouched() {
     .unwrap();
     assert_eq!(ids(&s), [5, 2]);
     assert_eq!(library.history_calls.get(), 0);
-    assert!(library.searched.borrow().is_empty());
 }
 
 // ── preferences ──────────────────────────────────────────────────────
@@ -460,69 +458,16 @@ fn tag_option_only_matches_tags() {
 }
 
 #[rstest]
-#[case("--search two sum", "two sum")]
-#[case("-s google", "google")]
-#[case("--search medi", "medi")]
-#[case("--search=median", "median")]
-#[case("two --search sum", "two sum")]
-fn search_option_searches_titles(#[case] line: &str, #[case] text: &str) {
-    assert_eq!(
-        parse(line),
-        Ok(Request::Search {
-            text: text.into(),
-            count: 1
-        })
-    );
-}
-
-/// `/solve medi` opened the hard Median questions: a word cut off partway
-/// now asks what was meant instead of searching titles.
-#[rstest]
-#[case("medi", "medium (difficulty), medium (company)")]
-#[case("mediu", "medium (difficulty), medium (company)")]
-#[case("google medi", "medium (difficulty), medium (company)")]
-#[case("nee", "need (strategy)")]
-#[case("goo", "google (company)")]
-#[case("gra 2", "graphs (tag)")]
-fn cut_off_words_ask(#[case] line: &str, #[case] options: &str) {
-    match parse(line) {
-        Err(ParseError::CutOff { options: o, .. }) => assert_eq!(o, options),
-        other => panic!("{other:?}"),
-    }
-}
-
-/// Whole title words still search, even when they start a tag
-/// (`two` / two-pointers), and so do words that start nothing.
-#[rstest]
-#[case("two")]
-#[case("median")]
-#[case("trap rain")]
-#[case("two goo")]
-#[case("median medi")]
-fn whole_words_search(#[case] line: &str) {
-    assert!(
-        matches!(parse(line), Ok(Request::Search { .. })),
-        "{:?}",
-        parse(line)
-    );
-}
-
-#[rstest]
 #[case("--company googel", "`googel` isn't a company  ·  Tab lists them")]
 #[case("-c goo", "`goo` isn't a company  ·  did you mean google?")]
 #[case("-d med", "`med` isn't a difficulty  ·  did you mean medium?")]
 #[case("-t", "-t needs a value  ·  Tab lists them")]
 #[case("--company", "--company needs a value  ·  Tab lists them")]
-#[case("--search", "--search needs a value  ·  Tab lists them")]
 #[case("--hard", "`--hard` isn't an option  ·  /help solve")]
 #[case("--need=3", "`--need=3` isn't an option  ·  /help solve")]
 #[case(
-    "--search two -c google",
-    "--search looks at titles alone; drop need, random and filters"
-)]
-#[case(
-    "-c google two",
-    "`two` isn't a tag, company or difficulty  ·  /solve need google dfs 2  ·  /help solve"
+    "-c google zzz",
+    "`zzz` isn't a tag, company or difficulty  ·  /list zzz searches titles"
 )]
 #[case("-n", "-n needs a positive number")]
 #[case("--count x", "-n needs a positive number")]

@@ -73,17 +73,19 @@ it found on your machine, and Enter takes the default.
 Then:
 
 ```text
-/solve 1              start on question 1 (or a slug, or search words: /solve rotting oranges)
-/solve need           the question that closes your biggest gap (/solve need 3 for three)
-/solve google 3       the three Google questions you most need (tags, companies, difficulty)
-/solve random graphs  surprise me, optionally within tags
-/solve -c google -d hard -n 2   options say outright what each word is
+/solve 1              start on question 1 (or its slug: /solve rotting-oranges)
+/solve need           choose from where you need practice most
+/solve google 3       choose from the three Google questions you most need
+/solve random graphs  choose from five random graph questions
+/solve -c google -d hard   options say outright what each word is
 ```
 
-Words go in any order. Options (`--company`, `--tag`, `--difficulty`,
-`--count`, `--search`, `--need`, `--random`) settle anything ambiguous, a word
-cut off partway asks what you meant instead of guessing, and Tab completes
-names. `/help solve` has the full list.
+Ids and slugs start right away. Anything else lists questions to choose
+from: type `2` (or `1 3` for several), Enter for the first, Esc to dismiss.
+Words go in any order; one that isn't a strategy, count, difficulty, tag or
+company is a mistake, never a guess. Tab finds questions by title (taking
+their slug) and completes names. `/list` searches titles; `/help solve` has
+the full list.
 
 dojo shows the problem and starts the timer. Press Enter (or `/edit`) to open
 your editor on a fresh file with the problem in a comment on top and the
@@ -127,7 +129,7 @@ How mastery works:
 | | |
 |---|---|
 | **Practice** | |
-| `/solve <id \| words…> [options]` | start fresh on one or more questions |
+| `/solve <id \| filters…> [options]` | start fresh on one or more questions |
 | `/test` | run the visible tests (also runs on every save) |
 | `/submit` | run every test, including hidden ones |
 | `/hint` | reveal the next hint |

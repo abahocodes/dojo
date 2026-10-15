@@ -66,7 +66,7 @@ Commands (a deliberately tight set; the prompt always suggests the next one):
 
 | Area | Commands |
 |---|---|
-| Practice | `/solve <id \| words…> [options]` (always fresh) |
+| Practice | `/solve <id \| filters…> [options]` (always fresh) |
 | On a question | `/test`, `/submit`, `/hint`, `/solution`, `/edit`, `/pause`, `/skip`, `/next` |
 | Browse | `/list`, `/show`, `/past [id] [n]` |
 | Insight | `/report [tag \| company \| difficulty]` (includes history) |
@@ -136,16 +136,19 @@ happened during an attempt, JSON payloads) and `input_history`.
   `Filter` (tags, companies, difficulties) narrows the pool, and a
   `Strategy` (`Need`, `Random`) orders it. Questions and history come
   through a `Library` trait and chance through `Dice`, so tests use mocks.
-- Filter words alone (`/solve google`) mean `need` within them; free text
-  (`/solve two sum`) searches titles.
-- A bare word means the first of: need/random, an id or count, a
-  difficulty, a tag, a company, else title search. Options say it outright
-  (`-c/--company`, `-t/--tag`, `-d/--difficulty`, `-n/--count`,
-  `-s/--search`, `--need`, `--random`; values repeat or take commas), so a
-  company named like a difficulty stays reachable. A word that starts a
-  known name but isn't a whole title word (`medi`) is a `CutOff` error
-  naming the options, never a guess: it used to search titles and open the
-  hard Median questions. `/help solve` and Tab completion (only the
+- Filter words alone (`/solve google`) mean `need` within them.
+- `/solve` never searches titles. Ids and slugs start those questions;
+  everything else is a pick that lists the top N (5 by default, or the
+  count) to choose from by number (`2`, `1 3`), Enter for the first, Esc
+  to dismiss. Listing changes nothing, so the open question carries on
+  until a choice is made. `/list` is where title search lives, and Tab on
+  `/solve`'s first word finds questions by title, inserting their slug.
+- A bare word means the first of: need/random, an id or count, a slug, a
+  difficulty, a tag, a company; anything else is an error suggesting what
+  it might have meant (`graph` → graphs). Options say it outright
+  (`-c/--company`, `-t/--tag`, `-d/--difficulty`, `-n/--count`, `--need`,
+  `--random`; values repeat or take commas), so a company named like a
+  difficulty stays reachable. `/help solve` and Tab completion (only the
   option's own values after one) teach the options.
 - `Need` order: gap topics, due reviews, unpracticed topics, then unsolved
   questions (ones tried in the last day after), then the weakest solved
