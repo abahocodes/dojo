@@ -275,13 +275,18 @@ impl Filter {
     }
 }
 
+/// `easy`, `medium`, `hard`, or the start of one at least three letters
+/// long (`med`, `mediu`): a cut-off difficulty would otherwise search titles,
+/// and `medi` finds the Median questions.
 fn difficulty(word: &str) -> Option<Difficulty> {
-    match word {
-        "easy" => Some(Difficulty::Easy),
-        "medium" | "med" => Some(Difficulty::Medium),
-        "hard" => Some(Difficulty::Hard),
-        _ => None,
-    }
+    [
+        ("easy", Difficulty::Easy),
+        ("medium", Difficulty::Medium),
+        ("hard", Difficulty::Hard),
+    ]
+    .into_iter()
+    .find(|(name, _)| word.len() >= 3 && name.starts_with(word))
+    .map(|(_, d)| d)
 }
 
 /// How `/solve` picks: `[solve]` in the config file.

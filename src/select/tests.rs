@@ -32,6 +32,10 @@ fn ids(s: &Selection) -> Vec<u32> {
 #[case("random graphs 2", "-n 2 random GRAPHS")]
 #[case("need need google", "need google")]
 #[case("need", "need 1")]
+#[case("medium", "med")]
+#[case("medium", "medi")]
+#[case("medium google", "google mediu")]
+#[case("easy hard", "eas har")]
 fn word_order_does_not_matter(#[case] a: &str, #[case] b: &str) {
     assert_eq!(parse(a), parse(b));
     assert!(parse(a).is_ok());
@@ -413,4 +417,12 @@ fn reads_from_config(#[case] toml_text: &str, #[case] expected: Result<Preferenc
         Ok(p) => assert_eq!(got.unwrap(), p),
         Err(msg) => assert!(got.unwrap_err().to_string().contains(msg)),
     }
+}
+
+#[rstest]
+#[case("me")]
+#[case("mediums")]
+#[case("hardest")]
+fn not_quite_a_difficulty_searches(#[case] word: &str) {
+    assert!(matches!(parse(word), Ok(Request::Search { .. })));
 }
