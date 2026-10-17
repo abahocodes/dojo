@@ -5,7 +5,8 @@
   "title": "Coin Change",
   "difficulty": "medium",
   "tags": [
-    "dynamic-programming"
+    "dynamic-programming",
+    "neetcode-150"
   ],
   "companies": {
     "amazon": 4,

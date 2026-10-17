@@ -6,7 +6,8 @@
   "difficulty": "easy",
   "tags": [
     "arrays",
-    "greedy"
+    "greedy",
+    "neetcode-150"
   ],
   "companies": {
     "amazon": 5,

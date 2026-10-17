@@ -8,7 +8,8 @@
     "heap",
     "geometry",
     "sorting",
-    "quickselect"
+    "quickselect",
+    "neetcode-150"
   ],
   "companies": {
     "meta": 5,

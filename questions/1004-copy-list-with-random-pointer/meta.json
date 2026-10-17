@@ -1,0 +1,60 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 1004,
+  "slug": "copy-list-with-random-pointer",
+  "title": "Copy List with Random Pointer",
+  "difficulty": "medium",
+  "tags": [
+    "linked-list",
+    "hash-map",
+    "neetcode-150"
+  ],
+  "companies": {
+    "amazon": 4,
+    "meta": 4,
+    "microsoft": 3,
+    "bloomberg": 3,
+    "google": 2
+  },
+  "target_minutes": 25,
+  "signature": {
+    "function": "run_copy_random_list",
+    "params": [
+      {
+        "name": "nodes",
+        "type": "int[][]"
+      }
+    ],
+    "returns": "int[][]"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}

@@ -6,7 +6,8 @@
   "difficulty": "medium",
   "tags": [
     "backtracking",
-    "bit-manipulation"
+    "bit-manipulation",
+    "neetcode-150"
   ],
   "companies": {
     "meta": 4,

@@ -6,7 +6,8 @@
   "difficulty": "hard",
   "tags": [
     "dynamic-programming",
-    "strings"
+    "strings",
+    "neetcode-150"
   ],
   "companies": {
     "google": 4,

@@ -7,7 +7,8 @@
   "tags": [
     "heap",
     "hash-map",
-    "bucket-sort"
+    "bucket-sort",
+    "neetcode-150"
   ],
   "companies": {
     "amazon": 5,

@@ -6,7 +6,8 @@
   "difficulty": "easy",
   "tags": [
     "trees",
-    "dfs"
+    "dfs",
+    "neetcode-150"
   ],
   "companies": {
     "amazon": 2,

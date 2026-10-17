@@ -6,7 +6,8 @@
   "difficulty": "medium",
   "tags": [
     "linked-list",
-    "math"
+    "math",
+    "neetcode-150"
   ],
   "companies": {
     "amazon": 4,

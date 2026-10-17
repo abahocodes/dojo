@@ -1,0 +1,60 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 888,
+  "slug": "happy-number",
+  "title": "Happy Number",
+  "difficulty": "easy",
+  "tags": [
+    "math",
+    "hash-set",
+    "two-pointers",
+    "neetcode-150"
+  ],
+  "companies": {
+    "amazon": 3,
+    "google": 2,
+    "apple": 2,
+    "microsoft": 1
+  },
+  "target_minutes": 15,
+  "signature": {
+    "function": "is_happy",
+    "params": [
+      {
+        "name": "n",
+        "type": "int"
+      }
+    ],
+    "returns": "bool"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}

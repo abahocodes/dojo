@@ -77,6 +77,7 @@ Then:
 /solve need           choose from where you need practice most
 /solve google 3       choose from the three Google questions you most need
 /solve random graphs  choose from five random graph questions
+/solve neetcode-150   choose from the NeetCode 150 you most need
 /solve -c google -d hard   options say outright what each word is
 ```
 
@@ -101,7 +102,8 @@ does it.
 
 Each question has a statement, three hints, an explained solution, and visible
 and hidden tests, in Python, JavaScript, TypeScript, Java, C++ and Go. Questions are tagged by topic,
-company and difficulty, and `/list` filters on any of them.
+company and difficulty, and `/list` filters on any of them. Every problem on
+the NeetCode 150 list is tagged `neetcode-150` (`/list neetcode-150`).
 
 <img src="docs/images/list.png" alt="/list dynamic-programming showing 13 questions with their difficulty and tags" width="820">
 
