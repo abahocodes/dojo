@@ -1,0 +1,64 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 1008,
+  "slug": "design-add-and-search-words",
+  "title": "Design Add and Search Words Data Structure",
+  "difficulty": "medium",
+  "tags": [
+    "trie",
+    "strings",
+    "dfs",
+    "neetcode-150"
+  ],
+  "companies": {
+    "meta": 4,
+    "amazon": 3,
+    "google": 2,
+    "microsoft": 2
+  },
+  "target_minutes": 25,
+  "signature": {
+    "function": "run_word_dictionary",
+    "params": [
+      {
+        "name": "ops",
+        "type": "string[]"
+      },
+      {
+        "name": "words",
+        "type": "string[]"
+      }
+    ],
+    "returns": "bool[]"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}

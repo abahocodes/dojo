@@ -6,7 +6,8 @@
   "difficulty": "easy",
   "tags": [
     "linked-list",
-    "two-pointers"
+    "two-pointers",
+    "neetcode-150"
   ],
   "companies": {
     "amazon": 3,

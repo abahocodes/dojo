@@ -1,0 +1,26 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"n": 19}, "output": true},
+    {"input": {"n": 4}, "output": false},
+    {"input": {"n": 1}, "output": true},
+    {"input": {"n": 2}, "output": false, "hidden": true},
+    {"input": {"n": 7}, "output": true, "hidden": true},
+    {"input": {"n": 10}, "output": true, "hidden": true},
+    {"input": {"n": 100}, "output": true, "hidden": true},
+    {"input": {"n": 89}, "output": false, "hidden": true},
+    {"input": {"n": 1111111}, "output": true, "hidden": true},
+    {"input": {"n": 2147483647}, "output": false, "hidden": true},
+    {"input": {"n": 1999999999}, "output": false, "hidden": true},
+    {"input": {"n": 986543210}, "output": true, "hidden": true},
+    {"input": {"n": 3}, "output": false, "hidden": true},
+    {"input": {"n": 20}, "output": false, "hidden": true},
+    {"input": {"n": 58}, "output": false, "hidden": true},
+    {"input": {"n": 2147483646}, "output": false, "hidden": true},
+    {"input": {"n": 123456789}, "output": false, "hidden": true},
+    {"input": {"n": 100000000}, "output": true, "hidden": true},
+    {"input": {"n": 100000003}, "output": true, "hidden": true},
+    {"input": {"n": 100000009}, "output": true, "hidden": true},
+    {"input": {"n": 1000000000}, "output": true, "hidden": true}
+  ]
+}

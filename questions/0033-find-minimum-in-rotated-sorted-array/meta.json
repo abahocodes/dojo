@@ -6,7 +6,8 @@
   "difficulty": "medium",
   "tags": [
     "binary-search",
-    "arrays"
+    "arrays",
+    "neetcode-150"
   ],
   "companies": {
     "amazon": 3,

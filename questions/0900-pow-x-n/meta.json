@@ -1,0 +1,65 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 900,
+  "slug": "pow-x-n",
+  "title": "Pow(x, n)",
+  "difficulty": "medium",
+  "tags": [
+    "math",
+    "divide-and-conquer",
+    "neetcode-150"
+  ],
+  "companies": {
+    "meta": 4,
+    "amazon": 3,
+    "google": 2,
+    "microsoft": 2,
+    "bloomberg": 2
+  },
+  "target_minutes": 20,
+  "signature": {
+    "function": "my_pow",
+    "params": [
+      {
+        "name": "x",
+        "type": "float"
+      },
+      {
+        "name": "n",
+        "type": "int"
+      }
+    ],
+    "returns": "float"
+  },
+  "compare": "float",
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}

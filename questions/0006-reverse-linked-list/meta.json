@@ -5,7 +5,8 @@
   "title": "Reverse a Linked List",
   "difficulty": "easy",
   "tags": [
-    "linked-list"
+    "linked-list",
+    "neetcode-150"
   ],
   "companies": {
     "amazon": 3,

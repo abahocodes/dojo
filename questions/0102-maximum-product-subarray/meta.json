@@ -6,7 +6,8 @@
   "difficulty": "medium",
   "tags": [
     "arrays",
-    "dynamic-programming"
+    "dynamic-programming",
+    "neetcode-150"
   ],
   "companies": {
     "amazon": 4,

@@ -6,7 +6,8 @@
   "difficulty": "medium",
   "tags": [
     "backtracking",
-    "recursion"
+    "recursion",
+    "neetcode-150"
   ],
   "companies": {
     "meta": 3,

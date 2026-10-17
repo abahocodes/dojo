@@ -8,7 +8,8 @@
     "greedy",
     "strings",
     "two-pointers",
-    "hash-map"
+    "hash-map",
+    "neetcode-150"
   ],
   "companies": {
     "amazon": 5,

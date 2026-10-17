@@ -6,7 +6,8 @@
   "difficulty": "medium",
   "tags": [
     "graphs",
-    "topological-sort"
+    "topological-sort",
+    "neetcode-150"
   ],
   "companies": {
     "amazon": 4,

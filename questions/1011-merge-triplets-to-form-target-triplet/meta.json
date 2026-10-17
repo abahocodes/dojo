@@ -1,0 +1,61 @@
+{
+  "$schema": "../../schema/meta.schema.json",
+  "id": 1011,
+  "slug": "merge-triplets-to-form-target-triplet",
+  "title": "Merge Triplets to Form Target Triplet",
+  "difficulty": "medium",
+  "tags": [
+    "greedy",
+    "arrays",
+    "neetcode-150"
+  ],
+  "companies": {
+    "google": 3,
+    "amazon": 2
+  },
+  "target_minutes": 15,
+  "signature": {
+    "function": "merge_triplets",
+    "params": [
+      {
+        "name": "triplets",
+        "type": "int[][]"
+      },
+      {
+        "name": "target",
+        "type": "int[]"
+      }
+    ],
+    "returns": "bool"
+  },
+  "statement": "statement.md",
+  "hints": "hints.md",
+  "explanation": "explanation.md",
+  "tests": "tests.json",
+  "languages": {
+    "python": {
+      "boilerplate": "boilerplate/python.py",
+      "solution": "solutions/python.py"
+    },
+    "javascript": {
+      "boilerplate": "boilerplate/javascript.js",
+      "solution": "solutions/javascript.js"
+    },
+    "typescript": {
+      "boilerplate": "boilerplate/typescript.ts",
+      "solution": "solutions/typescript.ts"
+    },
+    "java": {
+      "boilerplate": "boilerplate/java.java",
+      "solution": "solutions/java.java"
+    },
+    "cpp": {
+      "boilerplate": "boilerplate/cpp.cpp",
+      "solution": "solutions/cpp.cpp"
+    },
+    "go": {
+      "boilerplate": "boilerplate/go.go",
+      "solution": "solutions/go.go"
+    }
+  }
+}

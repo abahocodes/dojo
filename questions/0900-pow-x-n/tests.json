@@ -1,0 +1,29 @@
+{
+  "$schema": "../../schema/tests.schema.json",
+  "cases": [
+    {"input": {"x": 2.0, "n": 10}, "output": 1024.0},
+    {"input": {"x": 2.5, "n": 3}, "output": 15.625},
+    {"input": {"x": 2.0, "n": -3}, "output": 0.125},
+    {"input": {"x": 1.0, "n": 2147483647}, "output": 1.0, "hidden": true},
+    {"input": {"x": 1.0, "n": -2147483648}, "output": 1.0, "hidden": true},
+    {"input": {"x": -1.0, "n": -2147483648}, "output": 1.0, "hidden": true},
+    {"input": {"x": -1.0, "n": 2147483647}, "output": -1.0, "hidden": true},
+    {"input": {"x": 2.0, "n": -2147483648}, "output": 0.0, "hidden": true},
+    {"input": {"x": 0.5, "n": 2147483647}, "output": 0.0, "hidden": true},
+    {"input": {"x": 5.0, "n": 0}, "output": 1.0, "hidden": true},
+    {"input": {"x": 0.0, "n": 5}, "output": 0.0, "hidden": true},
+    {"input": {"x": -2.0, "n": 13}, "output": -8192.0, "hidden": true},
+    {"input": {"x": -3.0, "n": -5}, "output": -0.00411522633744856, "hidden": true},
+    {"input": {"x": 1.0000001, "n": 90000000}, "output": 8103.08032376878, "hidden": true},
+    {"input": {"x": 1.00001, "n": -500000}, "output": 0.006738115448522348, "hidden": true},
+    {"input": {"x": 0.99999, "n": -900000}, "output": 8103.448576655759, "hidden": true},
+    {"input": {"x": -0.9999999, "n": -50000001}, "output": -148.41321065660375, "hidden": true},
+    {"input": {"x": 10.0, "n": 4}, "output": 10000.0, "hidden": true},
+    {"input": {"x": 1.5, "n": 22}, "output": 7481.8276426792145, "hidden": true},
+    {"input": {"x": 99.9, "n": 2}, "output": 9980.010000000002, "hidden": true},
+    {"input": {"x": -0.5, "n": -13}, "output": -8192.0, "hidden": true},
+    {"input": {"x": 0.1, "n": -4}, "output": 9999.999999999998, "hidden": true},
+    {"input": {"x": 1.00001, "n": -2147483648}, "output": 0.0, "hidden": true},
+    {"input": {"x": 0.999, "n": 2147483647}, "output": 0.0, "hidden": true}
+  ]
+}

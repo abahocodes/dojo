@@ -1,0 +1,68 @@
+class Node {
+  val: number;
+  neighbors: Node[];
+
+  constructor(val: number = 0, neighbors: Node[] = []) {
+    this.val = val;
+    this.neighbors = neighbors;
+  }
+}
+
+function cloneGraph(node: Node | null): Node | null {
+  if (node === null) return null;
+  // Iterative DFS; a node gets its copy the first time it is seen.
+  const copies = new Map<Node, Node>([[node, new Node(node.val)]]);
+  const stack: Node[] = [node];
+  while (stack.length > 0) {
+    const cur = stack.pop()!;
+    for (const nb of cur.neighbors) {
+      if (!copies.has(nb)) {
+        copies.set(nb, new Node(nb.val));
+        stack.push(nb);
+      }
+      copies.get(cur)!.neighbors.push(copies.get(nb)!);
+    }
+  }
+  return copies.get(node)!;
+}
+
+// dojo calls this to run the tests; you don't need to change it.
+function runCloneGraph(adjList: number[][]): number[][] {
+  const n = adjList.length;
+  const originals = adjList.map((_, i) => new Node(i + 1));
+  adjList.forEach((nbrs, i) => {
+    originals[i].neighbors = nbrs.map((v) => originals[v - 1]);
+  });
+  const clone = cloneGraph(n > 0 ? originals[0] : null);
+
+  // The original graph must be left as it was.
+  for (let i = 0; i < n; i++) {
+    const node = originals[i];
+    const nbrs = adjList[i];
+    if (node.val !== i + 1 || node.neighbors.length !== nbrs.length ||
+        nbrs.some((v, j) => node.neighbors[j] !== originals[v - 1])) {
+      return [[-1]];
+    }
+  }
+  if (clone == null) return [];
+  // Explore the clone: no original node, one node per value 1..n.
+  const originalSet = new Set<Node>(originals);
+  const seen = new Set<Node>();
+  const byVal = new Map<number, Node>();
+  const stack: Node[] = [clone];
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    if (originalSet.has(node)) return [[-1]];
+    if (seen.has(node)) continue;
+    seen.add(node);
+    if (byVal.has(node.val) || !(node.val >= 1 && node.val <= n)) return [[-1]];
+    byVal.set(node.val, node);
+    stack.push(...node.neighbors);
+  }
+  const result: number[][] = [];
+  for (let v = 1; v <= n; v++) {
+    const node = byVal.get(v);
+    result.push(node ? node.neighbors.map((nb) => nb.val).sort((a, b) => a - b) : []);
+  }
+  return result;
+}

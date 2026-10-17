@@ -58,6 +58,14 @@ problems, and problems with random output. Where a design problem has a
 batch form ("process these operations, return the answers"), that form is
 used instead.
 
+The NeetCode 150 is the exception: it includes several of those staples, and the
+whole list is in the bank (tagged `neetcode-150`). For them the user writes the
+LeetCode-shaped class or node-based function, and a short driver function in the
+same file, which dojo calls, turns the test input (an operation list, an encoded
+list or graph) into calls and returns plain values. Drivers for copies and
+clones also check that nothing in the result is shared with the original. They
+have ids after 1000; see [NeetCode 150 extras](#neetcode-150-extras-12).
+
 ## Coverage: topic × difficulty (all 1000)
 
 | Topic | Easy | Medium | Hard | Total | Existing (1–115) | Planned (116–1000) |
@@ -614,7 +622,7 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 502 | Count Days Without Meetings | medium | planned |
 | 503 | Maximum Number of Events That Can Be Attended | medium | planned |
 | 504 | Video Stitching | medium | planned |
-| 505 | Minimum Interval to Include Each Query | hard | planned |
+| 505 | Minimum Interval to Include Each Query | hard | done |
 | 506 | Employee Free Time | hard | planned |
 | 507 | My Calendar III | hard | planned |
 | 508 | Set Intersection Size At Least Two | hard | planned |
@@ -643,7 +651,7 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 520 | Two City Scheduling | medium | planned |
 | 521 | Queue Reconstruction by Height | medium | planned |
 | 522 | Wiggle Subsequence | medium | planned |
-| 523 | Valid Parenthesis String | medium | planned |
+| 523 | Valid Parenthesis String | medium | done |
 | 524 | Broken Calculator | medium | planned |
 | 525 | Monotone Increasing Digits | medium | planned |
 | 526 | Bag of Tokens | medium | planned |
@@ -681,12 +689,12 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 546 | Letter Case Permutation | easy | planned |
 | 547 | Binary Watch | easy | planned |
 | 548 | Sum of All Subset XOR Totals | easy | planned |
-| 549 | Subsets II | medium | planned |
+| 549 | Subsets II | medium | done |
 | 550 | Permutations II | medium | planned |
 | 551 | Combinations | medium | planned |
-| 552 | Combination Sum II | medium | planned |
+| 552 | Combination Sum II | medium | done |
 | 553 | Combination Sum III | medium | planned |
-| 554 | Letter Combinations of a Phone Number | medium | planned |
+| 554 | Letter Combinations of a Phone Number | medium | done |
 | 555 | Restore IP Addresses | medium | planned |
 | 556 | Matchsticks to Square | medium | planned |
 | 557 | Partition to K Equal Sum Subsets | medium | planned |
@@ -700,7 +708,7 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 565 | Split Array into Fibonacci Sequence | medium | planned |
 | 566 | Letter Tile Possibilities | medium | planned |
 | 567 | Brace Expansion | medium | planned |
-| 568 | N-Queens | hard | planned |
+| 568 | N-Queens | hard | done |
 | 569 | Sudoku Solver | hard | planned |
 | 570 | Word Break II | hard | planned |
 | 571 | Expression Add Operators | hard | planned |
@@ -732,7 +740,7 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 583 | Shortest Hops from a Source | easy | planned |
 | 584 | Find the Champion in a Tournament DAG | easy | planned |
 | 585 | Maximal Network Rank | easy | planned |
-| 586 | Max Area of Island | medium | planned |
+| 586 | Max Area of Island | medium | done |
 | 587 | Number of Closed Islands | medium | planned |
 | 588 | Number of Enclaves | medium | planned |
 | 589 | Count Sub Islands | medium | planned |
@@ -848,7 +856,7 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 675 | Longest Cycle in a Graph | medium | planned |
 | 676 | Kth Ancestor Queries | medium | planned |
 | 677 | Minimum Number of Vertices to Reach All Nodes | medium | planned |
-| 678 | Reconstruct Itinerary | hard | planned |
+| 678 | Reconstruct Itinerary | hard | done |
 | 679 | Valid Arrangement of Pairs | hard | planned |
 | 680 | Cracking the Safe | hard | planned |
 | 681 | Critical Connections in a Network | hard | planned |
@@ -871,7 +879,7 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 55 | Word Break | medium | done |
 | 101 | Maximum Subarray | medium | done |
 | 102 | Maximum Product Subarray | medium | done |
-| 687 | Min Cost Climbing Stairs | easy | planned |
+| 687 | Min Cost Climbing Stairs | easy | done |
 | 688 | N-th Tribonacci Number | easy | planned |
 | 689 | Divisor Game | easy | planned |
 | 690 | Get Maximum in Generated Array | easy | planned |
@@ -972,7 +980,7 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 760 | Unique Substrings in Wraparound String | medium | planned |
 | 761 | Palindrome Partitioning II | medium | planned |
 | 762 | Max Dot Product of Two Subsequences | medium | planned |
-| 763 | Distinct Subsequences | hard | planned |
+| 763 | Distinct Subsequences | hard | done |
 | 764 | Wildcard Matching | hard | planned |
 | 765 | Shortest Common Supersequence | hard | planned |
 | 766 | Scramble String | hard | planned |
@@ -1048,7 +1056,7 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 |---:|---|---|---|
 | 810 | Best Time to Buy and Sell Stock II | easy | planned |
 | 811 | Paint House | easy | planned |
-| 812 | Best Time to Buy and Sell Stock with Cooldown | medium | planned |
+| 812 | Best Time to Buy and Sell Stock with Cooldown | medium | done |
 | 813 | Best Time to Buy and Sell Stock with Transaction Fee | medium | planned |
 | 814 | Minimum Swaps To Make Sequences Increasing | medium | planned |
 | 815 | Count Vowels Permutation | medium | planned |
@@ -1082,7 +1090,7 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 836 | Zigzag Conversion | medium | planned |
 | 837 | Compare Version Numbers | medium | planned |
 | 838 | Count and Say | medium | planned |
-| 839 | Multiply Strings | medium | planned |
+| 839 | Multiply Strings | medium | done |
 | 840 | Validate IP Address | medium | planned |
 | 841 | Longest Absolute File Path | medium | planned |
 | 842 | Fraction to Recurring Decimal | medium | planned |
@@ -1148,8 +1156,8 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | ID | Title | Difficulty | Status |
 |---:|---|---|---|
 | 886 | Fizz Buzz | easy | planned |
-| 887 | Plus One | easy | planned |
-| 888 | Happy Number | easy | planned |
+| 887 | Plus One | easy | done |
+| 888 | Happy Number | easy | done |
 | 889 | Power of Three | easy | planned |
 | 890 | Ugly Number | easy | planned |
 | 891 | Add Digits | easy | planned |
@@ -1160,8 +1168,8 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 896 | Greatest Common Divisor of Strings | easy | planned |
 | 897 | Find Greatest Common Divisor of Array | easy | planned |
 | 898 | Count Odd Numbers in an Interval Range | easy | planned |
-| 899 | Reverse Integer | medium | planned |
-| 900 | Pow(x, n) | medium | planned |
+| 899 | Reverse Integer | medium | done |
+| 900 | Pow(x, n) | medium | done |
 | 901 | Factorial Trailing Zeroes | medium | planned |
 | 902 | Count Primes | medium | planned |
 | 903 | Ugly Number II | medium | planned |
@@ -1196,8 +1204,8 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 108 | Single Number | easy | done |
 | 109 | Counting Bits | easy | done |
 | 110 | Missing Number | easy | done |
-| 922 | Number of 1 Bits | easy | planned |
-| 923 | Reverse Bits | easy | planned |
+| 922 | Number of 1 Bits | easy | done |
+| 923 | Reverse Bits | easy | done |
 | 924 | Power of Two | easy | planned |
 | 925 | Power of Four | easy | planned |
 | 926 | Hamming Distance | easy | planned |
@@ -1211,7 +1219,7 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 934 | Single Number II | medium | planned |
 | 935 | Single Number III | medium | planned |
 | 936 | Bitwise AND of Numbers Range | medium | planned |
-| 937 | Sum of Two Integers | medium | planned |
+| 937 | Sum of Two Integers | medium | done |
 | 938 | Divide Two Integers | medium | planned |
 | 939 | UTF-8 Validation | medium | planned |
 | 940 | Maximum Product of Word Lengths | medium | planned |
@@ -1256,7 +1264,7 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 967 | Cells with Odd Values in a Matrix | easy | planned |
 | 968 | Matrix Diagonal Sum | easy | planned |
 | 969 | Transpose Matrix | easy | planned |
-| 970 | Set Matrix Zeroes | medium | planned |
+| 970 | Set Matrix Zeroes | medium | done |
 | 971 | Spiral Matrix II | medium | planned |
 | 972 | Game of Life | medium | planned |
 | 973 | Diagonal Traverse | medium | planned |
@@ -1297,3 +1305,24 @@ IDs 1–115 already exist in `questions/`; 116–1000 are planned. Planned IDs a
 | 998 | Closest Subsequence Sum | hard | planned |
 | 999 | Partition Array Into Two Arrays to Minimize Sum Difference | hard | planned |
 | 1000 | Rectangle Area II | hard | planned |
+
+### NeetCode 150 extras (12)
+
+Problems from the NeetCode 150 that fit no topic's plan above because they need a
+driver (see [What every question must fit](#what-every-question-must-fit)), plus
+one greedy problem the plan missed.
+
+| ID | Title | Difficulty | Status |
+|---:|---|---|---|
+| 1001 | Encode and Decode Strings | medium | done |
+| 1002 | Min Stack | medium | done |
+| 1003 | Time Based Key-Value Store | medium | done |
+| 1004 | Copy List with Random Pointer | medium | done |
+| 1005 | Linked List Cycle | easy | done |
+| 1006 | LRU Cache | medium | done |
+| 1007 | Implement Trie (Prefix Tree) | medium | done |
+| 1008 | Design Add and Search Words Data Structure | medium | done |
+| 1009 | Design Twitter | medium | done |
+| 1010 | Clone Graph | medium | done |
+| 1011 | Merge Triplets to Form Target Triplet | medium | done |
+| 1012 | Detect Squares | medium | done |
